@@ -19,6 +19,30 @@
 
   languages.c.enable = true;
 
+  git-hooks.hooks = {
+    clang-format = {
+      enable = true;
+      types_or = ["c" "c++"];
+      files = "^native/";
+    };
+
+    lint = {
+      enable = true;
+      name = "clang-tidy static analysis";
+      entry = "just -f native/justfile lint";
+      pass_filenames = false;
+      stages = ["pre-push"];
+    };
+
+    test = {
+      enable = true;
+      name = "Run unit tests";
+      entry = "just -f native/justfile test";
+      pass_filenames = false;
+      stages = ["pre-push"];
+    };
+  };
+
   enterShell = ''
     if [ ! -f "build/default/build.ninja" ]; then
         cmake --preset default
