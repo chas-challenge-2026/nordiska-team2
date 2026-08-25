@@ -1,0 +1,57 @@
+name: Native CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  pull_request:
+    branches: [ main, devlop ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+
+defaults:
+  run:
+    working-directory: native
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: cachix/devenv-action@v11
+        with:
+          run: just fmt-check
+
+  lint:
+    name: Clang-Tidy Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: cachix/devenv-action@v11
+        with:
+          run: just lint
+
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: cachix/devenv-action@v11
+        with:
+          run: just test
