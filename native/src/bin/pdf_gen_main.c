@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     }
 
     PdfDocConfigT config = {.title  = "Monthly Bank Statement",
-                               .author = "PDF Engine"};
+                            .author = "PDF Engine"};
 
     if (!pdf_gen_create_document("output.pdf", &config)) {
         fprintf(stderr, "Document creation failed.\n");

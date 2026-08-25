@@ -11,8 +11,8 @@
  * @brief Configuration settings for a new PDF document.
  */
 typedef struct {
-    const char *title;  /**< Document title displayed in properties */
-    const char *author; /**< Document author metadata */
+    const char* title;  /**< Document title displayed in properties */
+    const char* author; /**< Document author metadata */
 } PdfDocConfigT;
 
 /**
@@ -28,4 +28,5 @@ bool pdf_gen_init(void);
  * @param config Pointer to document configuration struct.
  * @return true if PDF creation succeeded, false otherwise.
  */
-bool pdf_gen_create_document(const char *output_path, const PdfDocConfigT *config);
+bool pdf_gen_create_document(const char*          output_path,
+                             const PdfDocConfigT* config);

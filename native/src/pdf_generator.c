@@ -7,7 +7,7 @@ bool pdf_gen_init(void) {
     return true;
 }
 
-bool pdf_gen_create_document(const char*             output_path,
+bool pdf_gen_create_document(const char*          output_path,
                              const PdfDocConfigT* config) {
     if (!output_path || !config) {
         return false;
