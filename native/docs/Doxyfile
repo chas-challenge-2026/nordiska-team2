@@ -1,0 +1,10 @@
+PROJECT_NAME           = "Native PDF Generator and Signer"
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+INPUT                  = include src
+RECURSIVE              = YES
+FILE_PATTERNS          = *.c *.h
+OUTPUT_DIRECTORY       = build/default/docs
