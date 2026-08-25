@@ -2,12 +2,12 @@ name: Native CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths:
       - 'native/**'
       - '.github/workflows/native.yml'
   pull_request:
-    branches: [ main, devlop ]
+    branches: [ main, dev ]
     paths:
       - 'native/**'
       - '.github/workflows/native.yml'
