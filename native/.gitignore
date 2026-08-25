@@ -3,8 +3,14 @@
 devenv.local.nix
 devenv.local.yaml
 
-# direnv
+# cache 
 .direnv
+.cache/
 
 # pre-commit
 .pre-commit-config.yaml
+
+# build artifacts
+compile_commands.json
+build/
+
