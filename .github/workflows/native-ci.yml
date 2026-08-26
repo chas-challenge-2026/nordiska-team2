@@ -12,10 +12,6 @@ on:
       - 'native/**'
       - '.github/workflows/native.yml'
 
-defaults:
-  run:
-    working-directory: native
-
 jobs:
   format-check:
     name: Format Check
@@ -28,6 +24,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: cachix/devenv-action@v11
         with:
+          working-directory: native
           run: just fmt-check
 
   lint:
@@ -41,6 +38,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: cachix/devenv-action@v11
         with:
+          working-directory: native
           run: just lint
 
   build-and-test:
@@ -54,4 +52,5 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: cachix/devenv-action@v11
         with:
+          working-directory: native
           run: just test
