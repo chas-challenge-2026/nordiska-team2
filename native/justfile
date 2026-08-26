@@ -1,0 +1,44 @@
+default:
+    @just --list
+
+configure:
+    cmake --preset default
+
+configure-asan:
+    cmake --preset asan
+
+build:
+    cmake --build --preset default
+
+# Parameterized run command: `just run pdf_gen_cli`
+run name="pdf_gen_cli" *args="":
+    cmake --build --preset default --target {{ name }}
+    ./build/default/src/{{ name }} {{ args }}
+
+test:
+    cmake --build --preset default
+    ctest --test-dir build/default --output-on-failure
+
+valgrind target="pdf_gen_cli":
+    cmake --build --preset default --target {{ target }}
+    valgrind --leak-check=full --error-exitcode=1 ./build/default/src/{{ target }}
+
+docs:
+    cmake --build --preset default --target docs
+    xdg-open build/default/docs/html/index.html
+
+# Automatically format all C source and header files
+fmt:
+    clang-format -i $(find src include tests -name '*.c' -o -name '*.h')
+
+# Check formatting without modifying files (exits 1 on error for CI)
+fmt-check:
+    clang-format --dry-run --Werror $(find src include tests -name '*.c' -o -name '*.h')
+
+# Run static analysis (requires compile_commands.json from CMake)
+lint: configure
+    clang-tidy -p build/default $(find src -name '*.c')
+    ln -sf build/default/compile_commands.json .
+
+clean:
+    rm -rf build/

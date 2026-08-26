@@ -1,0 +1,60 @@
+name: Native CI
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  pull_request:
+    branches: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+
+defaults:
+  run:
+    working-directory: native
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - name: Format Check
+        run: devenv shell -- just fmt-check
+
+  lint:
+    name: Clang-Tidy Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - name: Clang-Tidy Lint
+        run: devenv shell -- just lint
+
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: Install devenv
+        run: nix profile install nixpkgs#devenv
+      - name: Build & Test
+        run: devenv shell -- just test

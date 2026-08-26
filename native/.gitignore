@@ -1,0 +1,18 @@
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+.devenv.flake.nix
+.pre-commit-config.yaml
+
+# cache 
+.direnv
+.cache/
+
+# pre-commit
+.pre-commit-config.yaml
+
+# build artifacts
+compile_commands.json
+build/
+
