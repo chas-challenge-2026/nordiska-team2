@@ -1,3 +1,6 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,14 +15,34 @@ builder.Services.AddSwaggerGen();
 // Health checks
 builder.Services.AddHealthChecks();
 
+// Rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // TODO Update Rate Limiter to be customer based.
+    // "SensitiveEndpoints" from PingController.cs is a stand in and is ping based for testing purposes.
+    options.AddPolicy("SensitiveEndpoints", httpContext =>
+    {
+        var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Swagger
     if (app.Environment.IsDevelopment())
     {
+        // Swagger
         app.UseSwagger();
         app.UseSwaggerUI();
     }
@@ -28,6 +51,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// Rate Limiter
+app.UseRateLimiter();
 
 app.MapControllers();
 
