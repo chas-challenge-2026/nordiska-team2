@@ -29,15 +29,15 @@
     lint = {
       enable = true;
       name = "clang-tidy static analysis";
-      entry = "just -f native/justfile lint";
+      entry = "sh -c 'cd native && devenv shell -- just lint'";
       pass_filenames = false;
       stages = ["pre-push"];
     };
 
     test = {
       enable = true;
-      name = "Run unit tests";
-      entry = "just -f native/justfile test";
+      name = "run unit tests";
+      entry = "sh -c 'cd native && devenv shell -- just test'";
       pass_filenames = false;
       stages = ["pre-push"];
     };
