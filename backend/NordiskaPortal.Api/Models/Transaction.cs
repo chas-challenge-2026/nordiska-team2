@@ -1,0 +1,58 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NordiskaPortal.Api.Models
+{
+    public enum TransactionStatus
+    {
+        Pending,
+        Posted,
+        Cancelled
+    }
+
+    public class Transaction
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
+        [Required]
+        public int AccountId { get; set; }
+
+        [ForeignKey(nameof(AccountId))]
+        public SavingsAccount? SavingsAccount { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string Type { get; set; } = string.Empty;
+
+        [Column(TypeName = "decimal(15,2)")]
+        public decimal Amount { get; set; }
+
+        [Column(TypeName = "decimal(15,2)")]
+        public decimal? BalanceAfter { get; set; }
+
+        public DateTime TransactionDate { get; set; }
+
+        public DateTime PostingDate { get; set; }
+
+        [Required]
+        public TransactionStatus Status { get; set; } = TransactionStatus.Pending;
+
+        public static DateTime CalculatePostingDate(DateTime transactionDate, int gapDays = 2)
+        {
+            var postingDate = transactionDate.AddDays(gapDays);
+
+            if (postingDate.DayOfWeek == DayOfWeek.Saturday)
+            {
+                postingDate = postingDate.AddDays(2);
+            }
+                
+            else if (postingDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                postingDate = postingDate.AddDays(1);
+            }
+            return postingDate;
+        }
+    }
+}
