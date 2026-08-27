@@ -7,23 +7,22 @@ configure:
 configure-asan:
     cmake --preset asan
 
-build:
+build: configure
     cmake --build --preset default
 
 # Parameterized run command: `just run pdf_gen_cli`
-run name="pdf_gen_cli" *args="":
-    cmake --build --preset default --target {{ name }}
+run name="pdf_tax_reporter" *args="": build
     ./build/default/src/{{ name }} {{ args }}
 
-test:
+test: build
     cmake --build --preset default
     ctest --test-dir build/default --output-on-failure
 
-valgrind target="pdf_gen_cli":
+valgrind target="pdf_gen_cli": build
     cmake --build --preset default --target {{ target }}
     valgrind --leak-check=full --error-exitcode=1 ./build/default/src/{{ target }}
 
-docs:
+docs: build
     cmake --build --preset default --target docs
     xdg-open build/default/docs/html/index.html
 
