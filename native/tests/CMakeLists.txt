@@ -6,7 +6,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(unity)
 
-add_executable(test_interop_api test_interop_api.c)
-target_link_libraries(test_interop_api PRIVATE pdf_engine unity)
+add_executable(test_pdf_engine test_pdf_engine.c)
+target_link_libraries(test_pdf_engine PRIVATE pdf_engine unity)
 
-add_test(NAME test_interop_api COMMAND test_interop_api)
+add_test(NAME test_pdf_engine COMMAND test_pdf_engine)

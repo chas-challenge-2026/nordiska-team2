@@ -5,7 +5,7 @@ add_library(pdf_engine SHARED
     signer/pdf_signer.h
     layouts/tax_report.c
     layouts/tax_report.h
-    interop/interop_api.c
+    pdf_engine/pdf_engine.c
 )
 
 # Set up include paths so modules can find each other cleanly

@@ -1,4 +1,4 @@
-#include "interop_api.h"
+#include "pdf_engine.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     printf("Generating mock tax report to %s...\n", out_path);
 
     int result =
-        pdf_generate_and_sign_tax_report(mock_json, out_path, NULL, NULL);
+        pdf_engine_generate_and_sign(mock_json, 0, out_path, NULL, NULL);
 
     if (result == 0) {
         printf("Successfully generated tax report PDF at: %s\n", out_path);

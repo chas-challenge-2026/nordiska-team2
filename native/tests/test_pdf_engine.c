@@ -1,4 +1,4 @@
-#include "interop_api.h"
+#include "pdf_engine.h"
 #include "unity.h"
 
 #include <stdio.h>
@@ -16,9 +16,8 @@ void test_pdf_generate_and_sign_tax_report_mock(void) {
                               "  \"total_deductions\": 10000.00\n"
                               "}";
 
-    // Call the interop function
     int result =
-        pdf_generate_and_sign_tax_report(mock_json, test_output, NULL, NULL);
+        pdf_engine_generate_and_sign(mock_json, 0, test_output, NULL, NULL);
 
     // Assert that generation succeeded (returns 0)
     TEST_ASSERT_EQUAL_INT(0, result);
