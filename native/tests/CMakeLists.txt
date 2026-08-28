@@ -6,7 +6,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(unity)
 
-add_executable(test_generator test_generator.c)
-target_link_libraries(test_generator PRIVATE pdf_gen_lib unity)
+add_executable(test_pdf_engine test_pdf_engine.c)
+target_link_libraries(test_pdf_engine PRIVATE pdf_engine unity)
 
-add_test(NAME GeneratorTest COMMAND test_generator)
+add_test(NAME test_pdf_engine COMMAND test_pdf_engine)
