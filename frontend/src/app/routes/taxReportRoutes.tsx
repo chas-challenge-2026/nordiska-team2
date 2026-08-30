@@ -1,6 +1,6 @@
 import TaxReportsPage from '../../features/Taxreports/TaxReportsPage';
 
 export default {
-    path: "/taxreport",
-    element: <TaxReportsPage />
+                path: "/taxreport",
+                element: <TaxReportsPage />
 };
