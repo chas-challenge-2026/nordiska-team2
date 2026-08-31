@@ -16,3 +16,7 @@ devenv.local.yaml
 compile_commands.json
 build/
 
+*.pfx
+*.pem
+
+/data

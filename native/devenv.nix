@@ -10,8 +10,9 @@
     pkg-config
 
     #C libs
-    cjson
     libharu
+    openssl
+    cjson
 
     just
     doxygen

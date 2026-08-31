@@ -1,14 +1,29 @@
-# Core Static/Shared Library
-add_library(pdf_gen_lib
-    pdf_generator.c
+add_library(pdf_engine SHARED
+    generator/pdf_generator.c
+    generator/pdf_generator.h
+    signer/pdf_signer.c
+    signer/pdf_signer.h
+    layouts/tax_report.c
+    layouts/tax_report.h
+    pdf_engine/pdf_engine.c
 )
 
-target_include_directories(pdf_gen_lib
+# Set up include paths so modules can find each other cleanly
+target_include_directories(pdf_engine
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-        $<INSTALL_INTERFACE:include>
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Primary PDF Generator CLI
-add_executable(pdf_gen_cli bin/pdf_gen_main.c)
-target_link_libraries(pdf_gen_cli PRIVATE pdf_gen_lib)
+# external dependencies
+target_link_libraries(pdf_engine
+    PUBLIC
+        hpdf
+        OpenSSL::Crypto
+        ${CJSON_LIBRARIES}
+)
+
+# executables
+add_executable(pdf_tax_reporter bin/pdf_tax_reporter.c)
+target_link_libraries(pdf_tax_reporter PRIVATE pdf_engine)

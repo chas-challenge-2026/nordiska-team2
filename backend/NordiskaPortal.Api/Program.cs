@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using NordiskaPortal.Api.Service;
+using NordiskaPortal.Api.Data;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Scalar.AspNetCore;
@@ -37,6 +40,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
