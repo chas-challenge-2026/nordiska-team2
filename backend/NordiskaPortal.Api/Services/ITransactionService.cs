@@ -3,7 +3,7 @@ using NordiskaPortal.Api.Models;
 
 namespace NordiskaPortal.Api.Services
 {
-    public record TransactionResult(bool Success, string? Error, Transaction? Transaction);
+    public record TransactionResult(bool Success, string? Error, LedgerEntryDto? Entry);
 
     // No Update or Delete here, immutable and transactions are append-only
     // Corrections never edits an existing row and instead are new offsetting transactions.
