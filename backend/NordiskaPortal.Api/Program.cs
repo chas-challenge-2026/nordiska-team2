@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using NordiskaPortal.Api.Service;
 using NordiskaPortal.Api.Data;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,22 +10,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger
+// Swagger, used for OpenAPI JSON generator for Scalar. No UI.
 builder.Services.AddSwaggerGen();
 
+// Database
+var connStr = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+    ?? throw new InvalidOperationException("No database connection string configured.");
+
+builder.Services.AddDbContext<BankContext>(options => options.UseNpgsql(connStr));
+
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks().AddNpgSql(connStr);
 
 // Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // TODO Update Rate Limiter to be customer based.
-    // "SensitiveEndpoints" from PingController.cs is a stand in and is ping based for testing purposes.
     options.AddPolicy("SensitiveEndpoints", httpContext =>
     {
         var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -41,7 +45,6 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -54,14 +57,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseRateLimiter(); // Rate Limiter
 
-// Rate Limiter
-app.UseRateLimiter();
+app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check endpoint
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health"); // Health check endpoint
 
 app.Run();
