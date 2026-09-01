@@ -21,7 +21,7 @@ namespace NordiskaPortal.Api.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PasswordMd5 = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -38,7 +38,6 @@ namespace NordiskaPortal.Api.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CustomerId = table.Column<int>(type: "integer", nullable: false),
                     AccountNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Balance = table.Column<decimal>(type: "numeric(15,2)", nullable: false),
                     InterestRate = table.Column<decimal>(type: "numeric(5,4)", nullable: false),
                     AccountType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -63,7 +62,6 @@ namespace NordiskaPortal.Api.Migrations
                     AccountId = table.Column<int>(type: "integer", nullable: false),
                     Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(15,2)", nullable: false),
-                    BalanceAfter = table.Column<decimal>(type: "numeric(15,2)", nullable: true),
                     TransactionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     PostingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false)
@@ -81,31 +79,31 @@ namespace NordiskaPortal.Api.Migrations
 
             migrationBuilder.InsertData(
                 table: "Customers",
-                columns: new[] { "Id", "CreatedAt", "Email", "Name", "PasswordMd5" },
+                columns: new[] { "Id", "CreatedAt", "Email", "Name", "PasswordHash" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "anna@example.com", "Anna Lindqvist", "482c811da5d5b4bc6d497ffa98491e38" },
-                    { 2, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "erik@example.com", "Erik Johansson", "482c811da5d5b4bc6d497ffa98491e38" }
+                    { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "anna@example.com", "Anna Lindqvist", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO" },
+                    { 2, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "erik@example.com", "Erik Johansson", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO" }
                 });
 
             migrationBuilder.InsertData(
                 table: "SavingsAccounts",
-                columns: new[] { "Id", "AccountNumber", "AccountType", "Balance", "CreatedAt", "CustomerId", "InterestRate" },
+                columns: new[] { "Id", "AccountNumber", "AccountType", "CreatedAt", "CustomerId", "InterestRate" },
                 values: new object[,]
                 {
-                    { 1, "NKM-10001", "Savings", 125000.00m, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
-                    { 2, "NKM-10002", "Savings", 45000.00m, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
-                    { 3, "NKM-20001", "Savings", 89500.00m, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
+                    { 1, "NKM-10001", "Savings", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
+                    { 2, "NKM-10002", "Savings", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
+                    { 3, "NKM-20001", "Savings", new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
                 });
 
             migrationBuilder.InsertData(
                 table: "Transactions",
-                columns: new[] { "Id", "AccountId", "Amount", "BalanceAfter", "PostingDate", "Status", "TransactionDate", "Type" },
+                columns: new[] { "Id", "AccountId", "Amount", "PostingDate", "Status", "TransactionDate", "Type" },
                 values: new object[,]
                 {
-                    { 1, 1, 125000.00m, 125000.00m, new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
-                    { 2, 2, 45000.00m, 45000.00m, new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
-                    { 3, 3, 89500.00m, 89500.00m, new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Withdrawal" }
+                    { 1, 1, 125000.00m, new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 2, 2, 45000.00m, new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 3, 3, 89500.00m, new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" }
                 });
 
             migrationBuilder.CreateIndex(
