@@ -18,6 +18,18 @@ test: build
     cmake --build --preset default
     ctest --test-dir build/default --output-on-failure
 
+# Build fully bundled, self-contained .so for standalone deployment
+bundle:
+    cmake -B build/bundled -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+        -DOPENSSL_USE_STATIC_LIBS=ON \
+        -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_STATIC_LIB" \
+        -DOPENSSL_INCLUDE_DIR="$OPENSSL_STATIC_INC"
+    cmake --build build/bundled
+    @echo "\n--- Dynamic Dependency Check (ldd) ---"
+    @ldd build/bundled/src/libpdf_engine.so
+
 valgrind target="pdf_gen_cli": build
     cmake --build --preset default --target {{ target }}
     valgrind --leak-check=full --error-exitcode=1 ./build/default/src/{{ target }}

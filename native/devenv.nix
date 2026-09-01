@@ -13,10 +13,14 @@
     libharu
     openssl
     cjson
+    pkgsStatic.cjson
 
     just
     doxygen
   ];
+
+  env.OPENSSL_STATIC_LIB = "${pkgs.pkgsStatic.openssl.out}/lib/libcrypto.a";
+  env.OPENSSL_STATIC_INC = "${pkgs.pkgsStatic.openssl.dev}/include";
 
   languages.c.enable = true;
 
