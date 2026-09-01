@@ -1,12 +1,8 @@
 name: Native Windows DLL Build
 
-# Only feature branches — main/dev use the Linux native.yml workflow instead.
+# Manual trigger only — run from the Actions tab (or gh CLI) on whichever
+# branch you're testing, rather than on every push to every feature branch.
 on:
-  push:
-    branches-ignore: [ main, dev ]
-    paths:
-      - 'native/**'
-      - '.github/workflows/native-windows.yml'
   workflow_dispatch: {}
 
 defaults:
@@ -18,6 +14,10 @@ jobs:
   build-windows-dll:
     name: Build pdf_engine.dll (x64)
     runs-on: windows-latest
+
+    concurrency:
+      group: native-windows-${{ github.ref }}
+      cancel-in-progress: true
 
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
