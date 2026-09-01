@@ -13,9 +13,11 @@ namespace NordiskaPortal.Api.Models
         [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
+        // Renamed from PasswordMd5. 
+        // BCrypt hashes are around60 chars but the algorithm identifier prefix can vary, so 100 leaves headroom.
         [Required]
-        [MaxLength(32)]
-        public string PasswordMd5 { get; set; } = string.Empty;
+        [MaxLength(100)]
+        public string PasswordHash { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
