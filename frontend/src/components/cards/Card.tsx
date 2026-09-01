@@ -20,12 +20,16 @@ export default function Card({
         <section
             aria-labelledby={titleId}
             aria-describedby={subtitle ? subtitleId : undefined}
-            className={`overflow-hidden rounded-default border border-border bg-card shadow-sm ${className}`}
+            className={`flex h-full flex-col overflow-hidden 
+                        w-full md:max-w-65 rounded-default 
+                        border border-border bg-card 
+                        shadow-sm ${className}`}
             >
-                <header className="border-b border-border-light px-6 py-4 bg-brand">
+                <header className="border-b border-border-light 
+                                    px-6 py-4 bg-brand">
                     <h2 
                     id={titleId}
-                    className="text-card-title font-semibold text-white">
+                    className="text-medium font-semibold text-white">
                         {title}
                     </h2>
 
@@ -39,7 +43,7 @@ export default function Card({
                     )}
                 </header>
 
-                <div className="p-6 text-foreground">
+                <div className="flex flex-1 flex-col p-3 pl-6 text-foreground">
                     {children}
                 </div>
         </section>

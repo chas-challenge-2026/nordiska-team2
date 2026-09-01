@@ -25,12 +25,12 @@
 
   /* Font sizes */
   --text-body: 18px;
-  --text-medium: 16px;
   --text-small: 14px;
-  --text-card-title: 18px;
+  --text-medium: 16px;
+  --text-large: 22px;
   --text-section-title: 30px;
   --text-page-title: 36px;
-  --text-balance: 24px;
+  --text-balance: 20px;
 }
 
 @layer base {

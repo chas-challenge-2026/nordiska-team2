@@ -3,7 +3,8 @@ import Navbar from "./Navbar";
 
 export default function AuthenticatedLayout() {
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-12">
+    <div className="grid min-h-screen grid-cols-1 
+                    lg:grid-cols-12">
       <Navbar />
 
       <main className="bg-background p-6 lg:col-span-7">
