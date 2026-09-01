@@ -56,6 +56,8 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
