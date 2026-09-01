@@ -27,8 +27,8 @@ namespace NordiskaPortal.Api.Services
             /*
                 A deposit is a pure insert so nothing is read then written back.
                 Two concurrent deposits just become two independent rows.
-                There's no shared mutable value for them to race over. 
-                
+                There's no shared mutable value for them to race over.
+
                 This is the core structural fix for v1's race condition.
             */
 
@@ -49,34 +49,39 @@ namespace NordiskaPortal.Api.Services
                 PostingDate = Transaction.CalculatePostingDate(now),
                 Status = TransactionStatus.Posted
             };
-            
+
             _db.Transactions.Add(transaction);
             await _db.SaveChangesAsync();
 
-            return new TransactionResult(true, null, transaction);
+            // Map to a DTO here, before returning — the entity we just inserted
+            // now has its SavingsAccount navigation populated by EF's automatic
+            // relationship fixup (since `account` was already tracked), which
+            // creates a circular reference if serialized directly.
+            var entry = new LedgerEntryDto(transaction.TransactionDate, "Insättning", transaction.Amount);
+            return new TransactionResult(true, null, entry);
         }
 
         public async Task<TransactionResult> WithdrawAsync(int accountId, decimal amount)
         {
-            if (amount <= 0) 
+            if (amount <= 0)
             {
                 return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
             }
-                
+
             /*
-                Withdrawal has a race condition that deposit doesn't: 
-                "is there enough balance" requires reading a derived 
-                SUM before deciding whether to insert. 
-                
-                Two concurrent withdrawals could both read the same 
-                balance and both pass the check, together overdrawing 
+                Withdrawal has a race condition that deposit doesn't:
+                "is there enough balance" requires reading a derived
+                SUM before deciding whether to insert.
+
+                Two concurrent withdrawals could both read the same
+                balance and both pass the check, together overdrawing
                 the account.
-                
+
                 The same category of bug as v1, just moved from
-                "stored balance column" to "insufficient funds check". 
-                
-                Wrapping the read + insert in a Serializable transaction makes 
-                Postgres detect that conflict and fail one of the two attempts 
+                "stored balance column" to "insufficient funds check".
+
+                Wrapping the read + insert in a Serializable transaction makes
+                Postgres detect that conflict and fail one of the two attempts
                 instead of silently allowing both.
             */
             using var dbTransaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -114,23 +119,24 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                return new TransactionResult(true, null, withdrawal);
+                var entry = new LedgerEntryDto(withdrawal.TransactionDate, "Uttag", -withdrawal.Amount);
+                return new TransactionResult(true, null, entry);
             }
             catch (Exception)
             {
                 /*
-                    Postgres raises a serialization failure (SQLSTATE 40001) 
-                    here when it detects the race described above. 
-                    
-                    A production system would typically catch that specific 
-                    error and retry the whole operation automatically a few 
-                    times before giving up. This catches broadly and just 
+                    Postgres raises a serialization failure (SQLSTATE 40001)
+                    here when it detects the race described above.
+
+                    A production system would typically catch that specific
+                    error and retry the whole operation automatically a few
+                    times before giving up. This catches broadly and just
                     reports failure instead.
 
-                    Simplified for now and not the full production-grade 
+                    Simplified for now and not the full production-grade
                     answer.
                 */
-                await dbTransaction.RollbackAsync();
+                //await dbTransaction.RollbackAsync();
                 return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
             }
         }
@@ -142,8 +148,6 @@ namespace NordiskaPortal.Api.Services
                 .OrderByDescending(t => t.TransactionDate)
                 .ToListAsync();
 
-            // Mapping happens here inside the service.
-            // Controller and any client never see the raw Transaction entity or its internal fields (Status, PostingDate, etc).
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
                 Description: t.Type == "Deposit" ? "Insättning" : "Uttag",
