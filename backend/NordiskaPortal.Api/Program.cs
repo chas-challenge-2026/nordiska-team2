@@ -1,16 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
-using NordiskaPortal.Api.Service;
-using NordiskaPortal.Api.Data;
 using System.Threading.RateLimiting;
 using Scalar.AspNetCore;
+using FluentValidation;
+
+using NordiskaPortal.Api.Data;
+using NordiskaPortal.Api.Filters;
+using NordiskaPortal.Api.Services;
+using NordiskaPortal.Api.Middleware;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => 
+{ 
+    options.Filters.Add<ValidationFilter>(); 
+});
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Swagger, used for OpenAPI JSON generator for Scalar. No UI.
 builder.Services.AddSwaggerGen();

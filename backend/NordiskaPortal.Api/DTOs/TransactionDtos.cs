@@ -1,7 +1,6 @@
-namespace NordiskaPortal.Api.DTOs;
+namespace NordiskaPortal.Api.DTOs
+{
+    public record DepositRequest(int AccountId, decimal Amount);
 
-public record DepositRequest(Guid AccountId, decimal Amount);
-
-public record WithdrawRequest(Guid AccountId, decimal Amount);
-
-public record TransactionDto(Guid Id, decimal Amount, string Type, DateTime CreatedAt);
+    public record WithdrawRequest(int AccountId, decimal Amount);
+}
