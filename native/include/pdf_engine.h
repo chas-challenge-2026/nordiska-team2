@@ -20,27 +20,24 @@ typedef enum {
 } PdfReportType;
 
 /**
- * @brief Generates and optionally signs PDF documents from a structured JSON
- * payload.
+ * @brief Generates and optionally signs a PDF document from a JSON file.
  *
- * This function handles multi-report JSON payloads (arrays or single report
- * objects), renders the layout pages according to the specified report type,
- * and optionally applies a digital PKCS#12 signature.
+ * Renders the layout specified by `report_type` using data provided in
+ * `json_file_path`. Optionally applies a digital PKCS#12 signature if a PFX
+ * file is provided.
  *
- * @param json_data A null-terminated UTF-8 JSON payload (object or array of
- * reports).
- * @param report_type The report layout strategy to apply, or
- * PDF_REPORT_TYPE_AUTO.
- * @param out_path  Output path on disk for the compiled PDF file.
- * @param pfx_path  Optional path to a .pfx/.p12 signing certificate (pass NULL
- * if unsigned).
- * @param password  Optional password to unlock the PFX certificate (pass NULL
- * if unencrypted/unused).
+ * @param[in] json_file_path Path to the JSON file on disk containing report
+ * data (object or array).
+ * @param[in] report_type    Layout type to apply.
+ * @param[in] out_path       Destination path on disk for the generated PDF.
+ * @param[in] pfx_path       Optional path to a .pfx/.p12 certificate for
+ * signing. Pass NULL for unsigned.
+ * @param[in] password       Optional password for the PFX certificate. Pass
+ * NULL if unencrypted or unused.
  *
- * @return int Returns `0` (PDF_SUCCESS) on success, or a negative error code on
- * failure.
+ * @return Returns 0 on success, or a negative error code on failure.
  */
-PDF_ENGINE_API int pdf_engine_generate_and_sign(const char*   json_data,
+PDF_ENGINE_API int pdf_engine_generate_and_sign(const char*   json_file_path,
                                                 PdfReportType report_type,
                                                 const char*   out_path,
                                                 const char*   pfx_path,
