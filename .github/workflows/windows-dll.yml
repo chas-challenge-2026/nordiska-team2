@@ -1,0 +1,63 @@
+name: Native Windows DLL Build
+
+# Only feature branches — main/dev use the Linux native.yml workflow instead.
+on:
+  push:
+    branches-ignore: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native-windows.yml'
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: native
+    shell: pwsh
+
+jobs:
+  build-windows-dll:
+    name: Build pdf_engine.dll (x64)
+    runs-on: windows-latest
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sets up vcpkg + enables GitHub Actions binary caching so repeat
+      # builds don't rebuild openssl/libharu/cjson from source every time.
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'a1b26cd5cc5aa2f3c1c05f0dc1dda0e2e4c6bb2c' # pin for reproducibility; bump when needed
+
+      - name: Install dependencies via vcpkg
+        run: |
+          vcpkg install openssl:x64-windows-static-md cjson:x64-windows-static-md libharu:x64-windows-static-md
+
+      - name: Configure (Release, tests off)
+        run: >
+          cmake -S . -B build/windows
+          -G "Visual Studio 17 2022" -A x64
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          -DBUILD_TESTING=OFF
+
+      - name: Build pdf_engine
+        run: cmake --build build/windows --config Release --target pdf_engine
+
+      - name: Verify DLL exists
+        run: |
+          $dll = Get-ChildItem -Recurse -Path build/windows -Filter pdf_engine.dll | Select-Object -First 1
+          if (-not $dll) { throw "pdf_engine.dll not found in build output" }
+          Write-Host "Found: $($dll.FullName)"
+          echo "DLL_PATH=$($dll.FullName)" >> $env:GITHUB_ENV
+
+      - name: Upload pdf_engine.dll artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf_engine-win-x64-${{ github.sha }}
+          path: ${{ env.DLL_PATH }}
+          if-no-files-found: error
+          retention-days: 14
