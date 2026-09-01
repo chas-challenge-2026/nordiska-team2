@@ -1,0 +1,73 @@
+name: Native Windows DLL Build
+
+# Only feature branches — main/dev use the Linux native.yml workflow instead
+on:
+  push:
+    branches-ignore: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native-windows.yml'
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: native
+    shell: pwsh
+
+jobs:
+  build-windows-dll:
+    name: Build pdf_engine.dll (x64)
+    runs-on: windows-latest
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static-md
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sets up vcpkg + enables GitHub Actions binary caching so repeat
+      # builds don't rebuild openssl/libharu/cjson from source every time.
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '301856f5f2824f788a3ffa6332293861cccd23b4' # vcpkg master @ 2026-07-08; bump periodically
+
+      - name: Install dependencies via vcpkg
+        run: |
+          vcpkg install openssl:x64-windows-static-md cjson:x64-windows-static-md libharu:x64-windows-static-md
+
+      # Loads cl.exe/link.exe and the Windows SDK into PATH/env for this job,
+      # so we can use the Ninja generator instead of pinning a specific
+      # Visual Studio generator string (which breaks every time GitHub
+      # bumps the VS version on windows-latest, as happened June 2026).
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure (Release, tests off)
+        run: >
+          cmake -S . -B build/windows
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          -DBUILD_TESTING=OFF
+
+      - name: Build pdf_engine
+        run: cmake --build build/windows --target pdf_engine
+
+      - name: Verify DLL exists
+        run: |
+          $dll = Get-ChildItem -Recurse -Path build/windows -Filter pdf_engine.dll | Select-Object -First 1
+          if (-not $dll) { throw "pdf_engine.dll not found in build output" }
+          Write-Host "Found: $($dll.FullName)"
+          echo "DLL_PATH=$($dll.FullName)" >> $env:GITHUB_ENV
+
+      - name: Upload pdf_engine.dll artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf_engine-win-x64-${{ github.sha }}
+          path: ${{ env.DLL_PATH }}
+          if-no-files-found: error
+          retention-days: 14
