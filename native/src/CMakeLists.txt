@@ -25,7 +25,7 @@ if(WIN32)
         PRIVATE
             hpdf
             OpenSSL::Crypto
-            cJSON::cjson
+            cjson
     )
 else()
     target_link_libraries(pdf_engine
