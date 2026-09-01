@@ -26,6 +26,7 @@ if(WIN32)
             hpdf
             OpenSSL::Crypto
             cjson
+            ZLIB::ZLIB
     )
 else()
     target_link_libraries(pdf_engine

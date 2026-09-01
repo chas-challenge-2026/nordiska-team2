@@ -11,6 +11,7 @@ option(BUILD_TESTING "Build unit/integration tests" ON)
 
 if(WIN32)
     find_package(cJSON CONFIG REQUIRED)
+    find_package(ZLIB REQUIRED)
 else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(CJSON REQUIRED libcjson)
