@@ -6,7 +6,7 @@ on:
     branches-ignore: [ main, dev ]
     paths:
       - 'native/**'
-      - '.github/workflows/native-windows.yml'
+      - '.github/workflows/windows-dll.yml'
   workflow_dispatch: {}
 
 defaults:
@@ -30,7 +30,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 'a1b26cd5cc5aa2f3c1c05f0dc1dda0e2e4c6bb2c' # pin for reproducibility; bump when needed
+          vcpkgGitCommitId: '301856f5f2824f788a3ffa6332293861cccd23b4' # vcpkg master @ 2026-07-08; bump periodically
 
       - name: Install dependencies via vcpkg
         run: |
