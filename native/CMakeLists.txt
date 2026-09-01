@@ -9,22 +9,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTING "Build unit/integration tests" ON)
 
-# Find system/nix packages via pkg-config
-find_package(PkgConfig REQUIRED)
+if(WIN32)
+    find_package(cJSON CONFIG REQUIRED)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CJSON REQUIRED libcjson)
+endif()
 
-# Find cjson and libHaru (hpdf) from devenv environment
-pkg_check_modules(CJSON REQUIRED libcjson)
+find_package(OpenSSL REQUIRED)
 
-# Manually locate libharu headers and libraries from the environment
-find_path(HPDF_INCLUDE_DIR hpdf.h
+find_path(HPDF_INCLUDE_DIR hpdf.h REQUIRED)
+find_library(HPDF_LIBRARY
+    NAMES hpdf_static libhpdf_static hpdf libhpdf
     REQUIRED
 )
 
-find_library(HPDF_LIBRARY NAMES hpdf libhpdf
-    REQUIRED
-)
-
-# Create an imported target so you can link it cleanly like a modern library
 if(NOT TARGET hpdf)
     add_library(hpdf UNKNOWN IMPORTED)
     set_target_properties(hpdf PROPERTIES
@@ -32,10 +31,7 @@ if(NOT TARGET hpdf)
         INTERFACE_INCLUDE_DIRECTORIES "${HPDF_INCLUDE_DIR}"
     )
 endif()
-# Find system OpenSSL
-find_package(OpenSSL REQUIRED)
 
-# Documentation Target
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     add_custom_target(docs
