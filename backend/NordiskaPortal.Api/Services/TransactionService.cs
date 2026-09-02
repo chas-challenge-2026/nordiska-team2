@@ -19,7 +19,7 @@ namespace NordiskaPortal.Api.Services
         {
             return await _db.Transactions
                 .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
-                .SumAsync(t => t.Type == "Deposit" ? t.Amount : -t.Amount);
+                .SumAsync(t => t.Type == TransactionType.Deposit ? t.Amount : -t.Amount);
         }
 
         public async Task<TransactionResult> DepositAsync(int accountId, decimal amount)
@@ -40,10 +40,11 @@ namespace NordiskaPortal.Api.Services
                 return new TransactionResult(false, "Kontot kunde inte hittas.", null);
 
             var now = DateTime.UtcNow;
+
             var transaction = new Transaction
             {
                 AccountId = accountId,
-                Type = "Deposit",
+                Type = TransactionType.Deposit,
                 Amount = amount,
                 TransactionDate = now,
                 PostingDate = Transaction.CalculatePostingDate(now),
@@ -92,7 +93,7 @@ namespace NordiskaPortal.Api.Services
 
                 var currentBalance = await _db.Transactions
                     .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
-                    .SumAsync(t => t.Type == "Deposit" ? t.Amount : -t.Amount);
+                    .SumAsync(t => t.Type == TransactionType.Deposit ? t.Amount : -t.Amount);
 
                 if (currentBalance < amount)
                 {
@@ -104,7 +105,7 @@ namespace NordiskaPortal.Api.Services
                 var withdrawal = new Transaction
                 {
                     AccountId = accountId,
-                    Type = "Withdrawal",
+                    Type = TransactionType.Withdrawal,
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = Transaction.CalculatePostingDate(now),
@@ -145,9 +146,10 @@ namespace NordiskaPortal.Api.Services
 
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
-                Description: t.Type == "Deposit" ? "Insättning" : "Uttag",
-                Amount: t.Type == "Deposit" ? t.Amount : -t.Amount
+                Description: t.Type == TransactionType.Deposit ? "Insättning" : "Uttag",
+                Amount: t.Type == TransactionType.Deposit ? t.Amount : -t.Amount
             )).ToList();
+
         }
     }
 }
