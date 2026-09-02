@@ -9,7 +9,7 @@ void tearDown(void) {}
 
 void test_pdf_generate_and_sign_tax_report_mock(void) {
     const char* test_output = "test_tax_report.pdf";
-    const char* mock_json   = "{\n"
+    const char* json_path   = "{\n"
                               "  \"tax_year\": 2025,\n"
                               "  \"user_name\": \"Unity Test User\",\n"
                               "  \"total_income\": 300000.00,\n"
@@ -17,7 +17,7 @@ void test_pdf_generate_and_sign_tax_report_mock(void) {
                               "}";
 
     int result =
-        pdf_engine_generate_and_sign(mock_json, 0, test_output, NULL, NULL);
+        pdf_engine_generate_and_sign(json_path, 0, test_output, NULL, NULL);
 
     // Assert that generation succeeded (returns 0)
     TEST_ASSERT_EQUAL_INT(0, result);

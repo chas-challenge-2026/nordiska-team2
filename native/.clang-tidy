@@ -59,6 +59,6 @@ CheckOptions:
   - key: readability-non-const-parameter.IgnoreAllCaps
     value: 1
 # Only naming violations will cause CI to fail
-WarningsAsErrors: 'readability-identifier-naming,bugprone-*,clang-analyzer-*'
+WarningsAsErrors: 'readability-identifier-naming,readability-braces-around-statements,bugprone-*,clang-analyzer-*'
 FormatStyle: file
 HeaderFilterRegex: '.*'
