@@ -10,6 +10,14 @@ namespace NordiskaPortal.Api.Models
         Cancelled
     }
 
+    public enum TransactionType
+    {
+        Deposit,
+        Withdrawal,
+        Interest,
+        Tax
+    }
+
     public class Transaction
     {
         [Key]
@@ -24,26 +32,15 @@ namespace NordiskaPortal.Api.Models
 
         [Required]
         [MaxLength(20)]
-        public string Type { get; set; } = string.Empty;
-        // "deposit" or "withdrawal"
+        // "Deposit" or "Withdrawal"
+        public string Type { get; set; }
+
+        // Description which can be typed in any language, eg: Årsränta 2026
+        [MaxLength(100)]
+        public string Description { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(15,2)")]
         public decimal Amount { get; set; }
-        // always stored positive; sign applied by Type when summing for balance
-
-        // [Column(TypeName = "decimal(15,2)")]
-        // public decimal? BalanceAfter { get; set; }
-
-        /*
-            Removed BalanceAfter. 
-            
-            This was a stored point-in-time snapshot, same problem as SavingsAccount.Balance.
-            It can drift from what SUM(Transactions) actually produces, which is exactly the 
-            kind of derived/duplicated state the ledger pattern exists to eliminate. 
-            
-            If a historical balance is ever needed, compute it by summing Posted transactions 
-            up to that point.
-        */
 
         public DateTime TransactionDate { get; set; }
 
@@ -52,12 +49,6 @@ namespace NordiskaPortal.Api.Models
         [Required]
         public TransactionStatus Status { get; set; } = TransactionStatus.Pending;
 
-        /*
-            Current balance = SUM of Amount (signed by Type) for all Transactions
-            on this account where Status == Posted. 
-            
-            Pending transactions do not yet affect balance.
-        */
 
         public static DateTime CalculatePostingDate(DateTime transactionDate, int gapDays = 2)
         {
