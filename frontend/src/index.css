@@ -25,10 +25,11 @@
 
   /* Font sizes */
   --text-body: 18px;
+  --text-xsmall: 12px;
   --text-small: 14px;
   --text-medium: 16px;
   --text-large: 22px;
-  --text-section-title: 30px;
+  --text-title: 24px;
   --text-page-title: 36px;
   --text-balance: 20px;
 }

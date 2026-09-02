@@ -21,11 +21,11 @@ export default function Card({
             aria-labelledby={titleId}
             aria-describedby={subtitle ? subtitleId : undefined}
             className={`flex h-full flex-col overflow-hidden 
-                        w-full md:max-w-65 rounded-default 
+                        w-full rounded-default 
                         border border-border bg-card 
                         shadow-sm ${className}`}
             >
-                <header className="border-b border-border-light 
+                <header className="flex flex-col gap-1 border-b border-border-light 
                                     px-6 py-4 bg-brand">
                     <h2 
                     id={titleId}
@@ -36,7 +36,7 @@ export default function Card({
                     {subtitle && (
                         <p 
                         id={subtitleId}
-                        className="mt-1 text-small text-white"
+                        className="text-small text-white"
                         >
                             {subtitle}
                         </p>

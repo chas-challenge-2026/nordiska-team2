@@ -3,7 +3,7 @@ import { Link, type LinkProps } from "react-router-dom";
 
 type LinkButtonProps =  LinkProps & {
     variant?: "primary" | "secondary"
-    size?: "small" | "medium" | "large"
+    size?: "xsmall" | "small" | "medium" | "large"
     icon?: ReactNode;
 }
 
@@ -13,9 +13,10 @@ const variantClasses = {
 }
 
 const sizeClasses = {
-    small: "px-3 py-2 text-small",
-    medium: "px-4 py-2 text-medium",
-    large: "px-6 py-4 text-large",
+    xsmall: "text-xsmall",
+    small: "text-small",
+    medium: "text-medium",
+    large: "text-large",
 }
 
 export default function LinkButton({
@@ -39,7 +40,7 @@ export default function LinkButton({
                 focus-visible:outline-2
                 focus-visible:outline-offset-2
                 focus-visible:outline-brand
-                w-full max-w-37 h-25 gap-2
+                w-full h-20 gap-1 sm:h-25 sm:gap-2
                 ${variantClasses[variant]}
                 ${sizeClasses[size]}
                 ${className}
