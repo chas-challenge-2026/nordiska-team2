@@ -5,6 +5,8 @@ add_library(pdf_engine SHARED
     signer/pdf_signer.h
     layouts/tax_report.c
     layouts/tax_report.h
+    json_streamer/json_streamer.h
+    json_streamer/json_streamer.c
     pdf_engine/pdf_engine.c
 )
 
@@ -15,7 +17,6 @@ set_target_properties(pdf_engine PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_include_directories(pdf_engine
     PUBLIC
         ${CMAKE_SOURCE_DIR}/include
-    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
