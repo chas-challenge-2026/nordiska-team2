@@ -23,7 +23,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-// Swagger, used for OpenAPI JSON generator for Scalar. No UI.
+// Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
 
 // Database
@@ -36,12 +36,25 @@ builder.Services.AddDbContext<BankContext>(options => options.UseNpgsql(connStr)
 // Health checks
 builder.Services.AddHealthChecks().AddNpgSql(connStr);
 
+// CORS
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .WithHeaders("Authorization", "Content-Type");
+    });
+});
+
 // Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddPolicy("SensitiveEndpoints", httpContext =>
+    options.AddPolicy("SensitiveEndpoints", httpContext => 
     {
         var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
@@ -51,6 +64,15 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         });
+    });
+
+    options.AddSlidingWindowLimiter("sliding", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 20;
+        limiterOptions.Window = TimeSpan.FromSeconds(30);
+        limiterOptions.SegmentsPerWindow = 6;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 5;
     });
 });
 
@@ -69,13 +91,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseRateLimiter(); // Rate Limiter
-
+app.UseCors("AllowFrontend");   // CORS
+app.UseRateLimiter();           // Rate Limiter
 app.UseAuthorization();
-
-app.MapControllers();
-
 app.MapHealthChecks("/health"); // Health check endpoint
+app.MapControllers().RequireRateLimiting("sliding");
 
 app.Run();
