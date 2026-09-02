@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NordiskaPortal.Api.Migrations
 {
     [DbContext(typeof(BankContext))]
-    [Migration("20260826133544_InitialCreate")]
+    [Migration("20260831132834_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,10 +46,10 @@ namespace NordiskaPortal.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("PasswordMd5")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -65,7 +65,7 @@ namespace NordiskaPortal.Api.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "anna@example.com",
                             Name = "Anna Lindqvist",
-                            PasswordMd5 = "482c811da5d5b4bc6d497ffa98491e38"
+                            PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO"
                         },
                         new
                         {
@@ -73,7 +73,7 @@ namespace NordiskaPortal.Api.Migrations
                             CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "erik@example.com",
                             Name = "Erik Johansson",
-                            PasswordMd5 = "482c811da5d5b4bc6d497ffa98491e38"
+                            PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO"
                         });
                 });
 
@@ -94,9 +94,6 @@ namespace NordiskaPortal.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
-
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(15,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -119,7 +116,6 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 1,
                             AccountNumber = "NKM-10001",
                             AccountType = "Savings",
-                            Balance = 125000.00m,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CustomerId = 1,
                             InterestRate = 0.0350m
@@ -129,7 +125,6 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 2,
                             AccountNumber = "NKM-10002",
                             AccountType = "Savings",
-                            Balance = 45000.00m,
                             CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
                             CustomerId = 1,
                             InterestRate = 0.0280m
@@ -139,7 +134,6 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 3,
                             AccountNumber = "NKM-20001",
                             AccountType = "Savings",
-                            Balance = 89500.00m,
                             CreatedAt = new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
                             CustomerId = 2,
                             InterestRate = 0.0350m
@@ -158,9 +152,6 @@ namespace NordiskaPortal.Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(15,2)");
-
-                    b.Property<decimal?>("BalanceAfter")
                         .HasColumnType("decimal(15,2)");
 
                     b.Property<DateTime>("PostingDate")
@@ -189,7 +180,6 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 1,
                             AccountId = 1,
                             Amount = 125000.00m,
-                            BalanceAfter = 125000.00m,
                             PostingDate = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -200,7 +190,6 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 2,
                             AccountId = 2,
                             Amount = 45000.00m,
-                            BalanceAfter = 45000.00m,
                             PostingDate = new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -211,11 +200,10 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 3,
                             AccountId = 3,
                             Amount = 89500.00m,
-                            BalanceAfter = 89500.00m,
                             PostingDate = new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Type = "Withdrawal"
+                            Type = "Deposit"
                         });
                 });
 
@@ -233,12 +221,17 @@ namespace NordiskaPortal.Api.Migrations
             modelBuilder.Entity("NordiskaPortal.Api.Models.Transaction", b =>
                 {
                     b.HasOne("NordiskaPortal.Api.Models.SavingsAccount", "SavingsAccount")
-                        .WithMany()
+                        .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SavingsAccount");
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsAccount", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }
