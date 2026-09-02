@@ -53,10 +53,6 @@ namespace NordiskaPortal.Api.Services
             _db.Transactions.Add(transaction);
             await _db.SaveChangesAsync();
 
-            // Map to a DTO here, before returning — the entity we just inserted
-            // now has its SavingsAccount navigation populated by EF's automatic
-            // relationship fixup (since `account` was already tracked), which
-            // creates a circular reference if serialized directly.
             var entry = new LedgerEntryDto(transaction.TransactionDate, "Insättning", transaction.Amount);
             return new TransactionResult(true, null, entry);
         }
@@ -136,7 +132,6 @@ namespace NordiskaPortal.Api.Services
                     Simplified for now and not the full production-grade
                     answer.
                 */
-                //await dbTransaction.RollbackAsync();
                 return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
             }
         }

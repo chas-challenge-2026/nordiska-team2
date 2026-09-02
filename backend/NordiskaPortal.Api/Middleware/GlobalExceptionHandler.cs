@@ -28,7 +28,8 @@ namespace NordiskaPortal.Api.Middleware
                 TraceIdentifier is ASP.NET Core's built-in per-request ID
                 and used here as the correlation ID. 
                 
-                Swap for a custom X-Correlation-Id header value later if you need one that flows across services
+                TODO: Swap for a custom X-Correlation-Id header value later 
+                if one that flows across services is needed.
                 (e.g. into the native PDF module or a future BankID call).
             */
             var correlationId = httpContext.TraceIdentifier;
