@@ -17,6 +17,7 @@ This directory is reserved for v2 native modules.
 - **What it does:** Computes SHA-256 hash of PDF content, signs with private key (PKCS#1), embeds signature in PDF metadata.
 - **Why not in .NET?** HSM (Hardware Security Module) integration requires direct PKCS#11 C bindings; .NET wrappers add latency and reduce audit surface clarity.
 
+<<<<<<< HEAD
 ## Development Setup
 
 ### Quickstart (`devenv`) - Recommended
@@ -50,6 +51,13 @@ just fmt-check   # Check C code formatting rules
 just lint        # Run static analysis via clang-tidy
 ```
 see justfile for all targets
+=======
+## Build requirements (v2)
+- CMake 3.25+
+- OpenSSL 3.x dev headers (for pdf_signer)
+- libharu (for pdf_generator)
+- Valgrind for memory safety verification before integration
+>>>>>>> frontend/layout
 
 ## Integration pattern (v2)
 Native modules expose a minimal C ABI (`extern "C"`) consumed by the .NET app via P/Invoke or `ProcessStartInfo`. No direct memory sharing between runtimes.
