@@ -17,17 +17,12 @@ int main(int argc, char** argv) {
 
     const char* out_path = "data/tax_report.pdf";
 
-    const char* mock_json = "{\n"
-                            "  \"tax_year\": 2025,\n"
-                            "  \"user_name\": \"Test User\",\n"
-                            "  \"total_income\": 450000.00,\n"
-                            "  \"total_deductions\": 25000.00\n"
-                            "}";
+    const char* json_path = "tax_data.json";
 
     printf("Generating mock tax report to %s...\n", out_path);
 
     int result =
-        pdf_engine_generate_and_sign(mock_json, 0, out_path, NULL, NULL);
+        pdf_engine_generate_and_sign(json_path, 0, out_path, NULL, NULL);
 
     if (result == 0) {
         printf("Successfully generated tax report PDF at: %s\n", out_path);
