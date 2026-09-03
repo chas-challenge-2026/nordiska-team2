@@ -1,4 +1,7 @@
-﻿protected override void OnModelCreating(ModelBuilder modelBuilder)
+﻿using Microsoft.EntityFrameworkCore;
+using NordiskaPortal.Api.Models;
+
+namespace NordiskaPortal.Api.Data
 {
     public class BankContext : DbContext
     {
@@ -10,6 +13,7 @@
         public DbSet<Customer> Customers { get; set; }
         public DbSet<SavingsAccount> SavingsAccounts { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
