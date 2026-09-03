@@ -1,0 +1,13 @@
+# Visual Studio solution-level cache (lives next to the .sln, not inside a project folder)
+.vs/
+*.user
+*.suo
+
+# OS junk files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor swap/backup files
+*~
+*.swp

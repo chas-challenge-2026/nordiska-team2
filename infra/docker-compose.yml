@@ -21,7 +21,6 @@ services:
       POSTGRES_PASSWORD: nordiska123
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
     expose:
       - "5432"
     healthcheck:

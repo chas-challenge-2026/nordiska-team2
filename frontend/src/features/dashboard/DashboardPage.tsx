@@ -1,52 +1,56 @@
-import AccountCard from "./components/AccountCard";
-    
+import AccountOverview from "./components/AccountOverview";
+import { accounts } from "./data/accounts";
+import RecentTransactions from "./components/RecentTransactions";
+import { transactions } from "./data/transactions";
+import QuickActions from "./components/QuickActions";
+import { quickActions } from "./data/quickActions";
 
-    const accounts= [
-        {
-            id: 1,
-            name: "Lönekonto",
-            accountNumber: "1234 556 789-01",
-            balance: "3 427,00"
-        },
-        {
-            id: 2,
-            name: "Sparkonto",
-            accountNumber: "6548 185 881-09",
-            balance: "130 000,00"
-        },
-        {
-            id: 3,
-            name: "ISK",
-            accountNumber: "2234 577 123-06",
-            balance: "50 100,00"
-        },
-    ];
-    
+import FinancialOverview from "./components/FinancialOverview"
+import { financialOverviews } from "./data/financialOverview";
+import SavingsGoal from "./components/SavingsGoal";
+import { savingsGoal } from "./data/savingsGoal";
+import FaqOverview from "./components/Faq";
+import SearchBar from "./components/searchbar";
+import Footer from "./components/Footer";
+
 
 export default function DashboardPage() {
 
     return ( 
-            <>
-                    <header className="mb-6">
-                        <h1 className="text-section-title">
-                            Välkommen tillbaka, NAMN!
-                        </h1>
-                        <p className="text-muted">
-                            Inloggad via BankID
-                        </p>
-                    </header>
-                        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                            {accounts.map((accounts) => (
-                                <AccountCard
-                                key={accounts.id}  
-                                name={accounts.name}
-                                accountNumber={accounts.accountNumber}
-                                balance={accounts.balance}
-                                />
-                            ))}         
-                        </div>
+        <div className="grid min-h-full grid-cols-1 lg:grid-cols-[repeat(14,minmax(0,1fr))]">
+            <section className="flex flex-1 flex-col 
+                            min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
+                <header>
+                    <h1 className="text-xl sm:text-title">
+                        Välkommen tillbaka, NAMN!
+                    </h1>
+                    <p className="text-muted text-small">
+                        Inloggad via BankID
+                    </p>
+                </header>
 
-            </>
+                <AccountOverview accounts={accounts}/>
+                <RecentTransactions transactions={transactions} />
+                <QuickActions actions={quickActions}/>
+
+                <Footer />
+            </section>
+
+            <aside className=" flex flex-col gap-4 min-w-0 w-full 
+                                lg:col-span-4 mt-3 lg:mt-0">
+                        <SearchBar />
+                        <FinancialOverview 
+                            accounts={accounts}
+                            financials={financialOverviews}
+                            />
+                        <SavingsGoal 
+                            accounts={accounts}
+                            goal={savingsGoal.goal} />
+                        <FaqOverview />
+            </aside>
+        </div>
+
     )
 }
+
 
