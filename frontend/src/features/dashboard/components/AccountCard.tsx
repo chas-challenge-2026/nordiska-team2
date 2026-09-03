@@ -1,11 +1,17 @@
 import Card from "../../../components/cards/Card";
 import { Link } from "react-router-dom";
 
+
+const currencyFormatter = new Intl.NumberFormat("sv-SE", {
+    style: "currency",
+    currency: "SEK",
+});
+
 type AccountCardProps = {
     name: string;
     accountNumber: string; 
-    balance: string; 
-    interest?: string;
+    balance: number; 
+    interest?: number;
     to?: string;
 }
 
@@ -20,12 +26,13 @@ export default function AccountCard({
         <Card 
             title={name}
             subtitle={accountNumber}
+            headerVariant="primary"
         >
             <p className="text-small text-muted">
                 Tillgängligt saldo
             </p>
             <p className="text-balance font-bold text-brand"> 
-                {balance} SEK
+                {currencyFormatter.format(balance)}
             </p>
             {interest !== undefined &&(
                 <p className="text-muted text-small">

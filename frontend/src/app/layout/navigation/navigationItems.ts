@@ -13,10 +13,12 @@ import settingsDark from "../../../assets/svg/settings-dark.svg"
 
 export type NavigationItem = {
     name: string;
+    mobileLabel?: string,
     to: string;
     iconWhite: string;
     iconDark: string;
     startsSection?: boolean;
+    showInMobileNav?: boolean;
 };
 
 export const navigationItems: NavigationItem[] = [
@@ -25,12 +27,14 @@ export const navigationItems: NavigationItem[] = [
         to: "/dashboard" ,
         iconWhite: homeWhite,
         iconDark: homeDark,
+        showInMobileNav: true,
     },
         {
         name: "Konton",
         to: "/transactions" ,
         iconWhite: profileWhite,
         iconDark: profileDark,
+        showInMobileNav: true,
     },
     {
         name: "Skatterapporter",
@@ -40,16 +44,20 @@ export const navigationItems: NavigationItem[] = [
     },
     {
         name: "Vanliga frågor",
+        mobileLabel: "FAQ",
         to: "/faq" ,
         iconWhite: faqWhite,
         iconDark: faqDark,
+        showInMobileNav: true
     },
     {
         name: "Inställningar",
+        mobileLabel: "Inst.",
         to: "/faq" ,
         iconWhite: settingsWhite,
         iconDark: settingsDark,
         startsSection: true,
+        showInMobileNav: true,
     },
     {
         name: "Logga ut",
