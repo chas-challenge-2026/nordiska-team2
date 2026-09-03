@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NordiskaPortal.Api.Models;
-
-namespace NordiskaPortal.Api.Data
+﻿protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
     public class BankContext : DbContext
     {
