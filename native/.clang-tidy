@@ -13,52 +13,38 @@ Checks: >
   cppcoreguidelines-pro-type-const-cast,
   cppcoreguidelines-pro-type-reinterpret-cast,
 CheckOptions:
-  # ---------- Naming Rules ----------
-  # All identifiers should use clear and consistent naming conventions
-  # Global variables start with g_ and are snake_case
   - key: readability-identifier-naming.GlobalVariablePrefix
     value: g_
   - key: readability-identifier-naming.GlobalVariableCase
     value: lower_case
-  # Constants (non-static) are ALL_CAPS
   - key: readability-identifier-naming.ConstantCase
     value: UPPER_CASE
-  # Static const variables (file-scoped constants) are also ALL_CAPS
   - key: readability-identifier-naming.StaticConstVariableCase
     value: UPPER_CASE
-  # Local variables, parameters, and typedefs use snake_case
   - key: readability-identifier-naming.VariableCase
     value: lower_case
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
   - key: readability-identifier-naming.TypedefCase
     value: CamelCase
-  # Structs, unions, and enums use PascalCase (common C convention)
   - key: readability-identifier-naming.StructCase
     value: CamelCase
   - key: readability-identifier-naming.UnionCase
     value: CamelCase
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
-  # Enum constants and macros are ALL_CAPS
   - key: readability-identifier-naming.EnumConstantCase
     value: UPPER_CASE
   - key: readability-identifier-naming.MacroCase
     value: UPPER_CASE
-  # Functions use snake_case
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
-  # ---------- General Readability Rules ----------
-  # Require braces even for single-line if/while/for
   - key: readability-braces-around-statements.ShortStatementLines
     value: 1
-  # Warn on large functions (>50 lines)
   - key: readability-function-size.LineThreshold
     value: 300
-  # Warn if a non-const parameter should be const
   - key: readability-non-const-parameter.IgnoreAllCaps
     value: 1
-# Only naming violations will cause CI to fail
 WarningsAsErrors: 'readability-identifier-naming,readability-braces-around-statements,bugprone-*,clang-analyzer-*'
 FormatStyle: file
 HeaderFilterRegex: '.*'
