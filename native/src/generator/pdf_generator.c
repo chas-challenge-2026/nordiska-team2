@@ -1,13 +1,15 @@
 #include "pdf_generator.h"
 
-#include <stdio.h>
+#include "logging/log.h"
+
 #include <stdlib.h>
 
 // Error handler callback for libHaru so it doesn't crash on failure
 static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
                           void* user_data) {
-    fprintf(stderr, "libHaru error: error_no=0x%04X, detail_no=%d\n",
-            (unsigned int)error_no, (int)detail_no);
+    (void)user_data;
+    LOG_ERROR("libHaru error: error_no=0x%04X, detail_no=%d",
+              (unsigned int)error_no, (int)detail_no);
 }
 
 int pdf_generator_generate(const char* json_str, const char* output_path,
@@ -26,9 +28,8 @@ int pdf_generator_generate(const char* json_str, const char* output_path,
         root = cJSON_Parse(json_str);
         if (root == NULL) {
             const char* error_ptr = cJSON_GetErrorPtr();
-            if (error_ptr != NULL) {
-                fprintf(stderr, "cJSON Error before: %s\n", error_ptr);
-            }
+            LOG_ERROR("Failed to parse report JSON near: %s",
+                      error_ptr ? error_ptr : "(unknown)");
             HPDF_Free(pdf);
             return PDF_ERROR_JSON_PARSE;
         }

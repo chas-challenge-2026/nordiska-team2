@@ -7,6 +7,10 @@ add_library(pdf_engine SHARED
     layouts/tax_report.h
     json_streamer/json_streamer.h
     json_streamer/json_streamer.c
+    logging/log.h
+    logging/log.c
+    utils/utils.h
+    utils/utils.c
     pdf_engine/pdf_engine.c
 )
 
