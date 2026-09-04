@@ -1,10 +1,10 @@
 ﻿using NordiskaPortal.Api.Interop;
 
-namespace NordiskaPortal.Api.Service
+namespace NordiskaPortal.Api.Services
 {
     public class PdfGeneratorService
     {
-        public bool GenerateTaxReport(string jsonData, string outPath, string pfxPath, string password)
+        public bool GenerateTaxReport(string jsonData, string outPath, string? pfxPath, string? password)
         {
             int result = PdfEngineNative.pdf_engine_generate_and_sign(
                 jsonData,
@@ -14,7 +14,7 @@ namespace NordiskaPortal.Api.Service
                 password
             );
 
-            return result == 0; 
+            return result == 0;
         }
     }
 }

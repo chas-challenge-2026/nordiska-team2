@@ -2,13 +2,9 @@ name: infra-guard
 
 on:
   push:
-<<<<<<< HEAD
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
-=======
-    branches: [main, develop]
->>>>>>> frontend/layout
 
 jobs:
   guard:
