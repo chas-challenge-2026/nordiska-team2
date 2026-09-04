@@ -61,7 +61,7 @@ static void sanitize_filename_component(const char* raw, char* out,
          raw != NULL && *p != '\0' && out_len + 1 < out_cap; p++) {
         char c    = *p;
         int  safe = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-                    (c >= '0' && c <= '9') || c == '-' || c == '_';
+                   (c >= '0' && c <= '9') || c == '-' || c == '_';
         if (safe) {
             out[out_len] = c;
         } else {
