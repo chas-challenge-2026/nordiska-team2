@@ -1,7 +1,11 @@
 services:
   app:
+    volumes:
+      - ./pdf-output:/app/output
     ports:
       - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
   db:
     ports:
       - "5433:5432"

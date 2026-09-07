@@ -1,6 +1,6 @@
 ﻿using NordiskaPortal.Api.DTOs;
 
-namespace NordiskaPortal.Api.Service
+namespace NordiskaPortal.Api.Services
 {
     public class TaxReportService
     {
