@@ -12,11 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NordiskaPortal.Api.Migrations
 {
     [DbContext(typeof(BankContext))]
-<<<<<<<< HEAD:backend/NordiskaPortal.Api/Migrations/20260903092414_InitialCreate.Designer.cs
-    [Migration("20260903092414_InitialCreate")]
-========
-    [Migration("20260903111330_InitialCreate")]
->>>>>>>> origin/dev:backend/NordiskaPortal.Api/Migrations/20260903111330_InitialCreate.Designer.cs
+    [Migration("20260907080334_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -92,6 +88,38 @@ namespace NordiskaPortal.Api.Migrations
                             PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                             PersonalId = "19991212-5678"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsAccount", b =>
@@ -230,6 +258,17 @@ namespace NordiskaPortal.Api.Migrations
                             TransactionDate = new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsAccount", b =>
