@@ -1,19 +1,31 @@
 import { useState } from "react";
 import Card from "../../components/cards/Card"
+import { apiClient } from "../../client"
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    
 
-       function handleSubmit(e: React.FormEvent) {
+       async function handleSubmit(e: React.FormEvent) {
                 e.preventDefault()
                 if (email === '' || password === '') {
                     setErrorMessage('Vänligen fyll i både e-post och lösenord')
                 } else {
                     setIsLoading(true)
+                    try {
+                    const response = await apiClient.post('/auth/login', { email, password })
+                    console.log('Access token:', response.data.accessToken)
+                    setIsLoading(false)
+                } catch (error) {
+                    setErrorMessage('Fel e-post eller lösenord, försök igen!')
+                    
+                    setIsLoading(false)
                 }
+
+            }
 
             }
 
