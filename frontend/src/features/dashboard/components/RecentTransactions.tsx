@@ -72,7 +72,7 @@ export default function RecentTransactions({ transactions }: RecentTransactionPr
                     to="/transactions"
                     className="flex w-full items-center 
                                justify-center 
-                               px3 py-2 text-small text-brand
+                               px-3 py-2 text-small text-brand
                                transition hover:bg-background
                                focus-visible:outline-2
                                focus-visible:outline-offset-2
