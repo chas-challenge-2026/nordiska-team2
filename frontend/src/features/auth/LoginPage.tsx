@@ -1,12 +1,14 @@
 import { useState } from "react";
 import Card from "../../components/cards/Card"
 import { apiClient } from "../../client"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     
 
        async function handleSubmit(e: React.FormEvent) {
@@ -35,7 +37,12 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
                 
                 <input type="email" placeholder="E-post" value={email} onChange={(e) => setEmail(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full"/>
-                <input type="password" placeholder="Lösenord" value={password} onChange={(e) => setPassword(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full"/>
+                <div className="relative">
+                <input type={showPassword ? "text" : "password"} placeholder="Lösenord" value={password} onChange={(e) => setPassword(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full"/>
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
+                     {showPassword ? <Eye /> : <EyeOff />}
+                </button>
+                </div>
                 <div className="flex justify-center">
                 <button className="bg-brand hover:bg-brand/90 text-white rounded-default px-4 py-2">{isLoading ? 'Loggar in...' : 'Logga in'}</button>
                 </div>
