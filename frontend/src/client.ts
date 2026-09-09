@@ -2,6 +2,7 @@ import axios from "axios";
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -16,3 +17,11 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export function setAuthToken(token: string | null) {
+  if (token) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers.common['Authorization'];
+  }
+}
