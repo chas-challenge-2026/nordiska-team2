@@ -87,6 +87,38 @@ namespace NordiskaPortal.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -223,6 +255,17 @@ namespace NordiskaPortal.Api.Migrations
                             TransactionDate = new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsAccount", b =>
