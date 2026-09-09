@@ -3,6 +3,7 @@ import Card from "../../components/cards/Card"
 import { apiClient } from "../../client"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "./useAuth"
+import { useNavigate } from "react-router-dom"
 
 
 export default function LoginPage() {
@@ -12,6 +13,7 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const auth = useAuth()
+    const navigate = useNavigate()
     
 
        async function handleSubmit(e: React.FormEvent) {
