@@ -1,8 +1,9 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import Card from "../../components/cards/Card"
 import { apiClient } from "../../client"
 import { Eye, EyeOff } from "lucide-react"
-import { AuthContext } from "./AuthContext";
+import { useAuth } from "./useAuth"
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -10,11 +11,8 @@ export default function LoginPage() {
     const [errorMessage, setErrorMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
-    const auth = useContext(AuthContext)
+    const auth = useAuth()
     
-        if (!auth) {
-            throw new Error("Loginpage has to be inside AuthProvider")
-        }
 
        async function handleSubmit(e: React.FormEvent) {
                 e.preventDefault()
@@ -24,7 +22,7 @@ export default function LoginPage() {
                     setIsLoading(true)
                     try {
                     const response = await apiClient.post('/auth/login', { email, password })
-                    auth?.setAccessToken(response.data.accessToken)
+                    auth.setAccessToken(response.data.accessToken)
                     setIsLoading(false)
                 } catch (error) {
                     setErrorMessage('Fel e-post eller lösenord, försök igen!')
