@@ -18,10 +18,6 @@ if ($confirmation -ne "yes") {
     Write-Host "Cancelled. No changes made." -ForegroundColor Cyan
     exit
 }
-
-param(
-    [switch]$RegenerateMigrations
-)
  
 Write-Host ""
 Write-Host "This will PERMANENTLY DELETE all local data in the nordiska database" -ForegroundColor Yellow
