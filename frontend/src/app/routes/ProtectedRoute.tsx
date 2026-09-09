@@ -7,4 +7,5 @@ export default function ProtectedRoute() {
     if (auth.accessToken == null) {
         return <Navigate to="/login" />
     }
+    return <Outlet />
 }
