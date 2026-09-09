@@ -18,10 +18,31 @@ if ($confirmation -ne "yes") {
     Write-Host "Cancelled. No changes made." -ForegroundColor Cyan
     exit
 }
+ 
+Write-Host ""
+Write-Host "This will PERMANENTLY DELETE all local data in the nordiska database" -ForegroundColor Yellow
+Write-Host "(Docker volume removed, then migrations reapplied from scratch)." -ForegroundColor Yellow
+Write-Host ""
+$confirmation = Read-Host "Type 'yes' to continue, anything else to cancel"
+ 
+if ($confirmation -ne "yes") {
+    Write-Host "Cancelled. No changes made." -ForegroundColor Cyan
+    exit
+}
+ 
+Write-Host "Deleting existing migrations..."
+Set-Location "$PSScriptRoot\..\..\..\backend\NordiskaPortal.Api"
+Remove-Item -Path "Migrations" -Recurse -Force
+
+Write-Host "Generating a fresh InitialCreate migration..."
+dotnet ef migrations add InitialCreate
 
 Write-Host "Stopping and removing the local database volume..."
 Set-Location "$PSScriptRoot\..\..\..\infra"
 docker compose down -v
+
+Write-Host "Rebuilding the local database volume..."
+docker compose build --no-cache app
 
 Write-Host "Starting a fresh database container..."
 docker compose up -d
