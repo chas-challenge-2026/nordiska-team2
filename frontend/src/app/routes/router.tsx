@@ -6,7 +6,7 @@ import DashboardPage from '../../features/dashboard/DashboardPage';
 import TransactionPage from '../../features/transactions/TransactionPage';
 import TaxReportsPage from '../../features/Taxreports/TaxReportsPage';
 import FaqPage from '../../features/FAQ/FaqPage';
-import ProtectedRoute from '../../features/auth/ProtectedRoute';
+import ProtectedRoute from './ProtectedRoute';
 
 
 const router = createBrowserRouter([

@@ -2,7 +2,7 @@ import { useState } from "react";
 import Card from "../../components/cards/Card"
 import { apiClient } from "../../client"
 import { Eye, EyeOff } from "lucide-react"
-import { useAuth } from "./useAuth"
+import { useAuth } from "../../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
 
 
@@ -25,6 +25,7 @@ export default function LoginPage() {
                     try {
                     const response = await apiClient.post('/auth/login', { email, password })
                     auth.setAccessToken(response.data.accessToken)
+                    navigate("/dashboard")
                     setIsLoading(false)
                 } catch (error) {
                     setErrorMessage('Fel e-post eller lösenord, försök igen!')
