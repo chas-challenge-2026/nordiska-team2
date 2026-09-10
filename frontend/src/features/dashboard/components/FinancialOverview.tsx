@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Card from "../../../components/cards/Card";
 import type { FinancialOverviewData } from "../data/financialOverview";
-import type { Account } from "../data/accounts";
+import type { Account } from "../../../types/account"
 
 type FinancialOverviewProps = {
     accounts: Account[];

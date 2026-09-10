@@ -1,9 +1,9 @@
 type buttonVariant = "primary" | "secondary" | "success" | "cancel";
 
 const buttonVariantClasses: Record<buttonVariant, string> = {
-    primary: "bg-white text-brand text-small hover:bg-border",
+    primary: "bg-white text-brand text-small hover:bg-border hover:border-brand",
     secondary: "bg-brand text-white text-small hover:opacity-90",
-    success: "bg-success text-white text-small hover:opacity-90",
+    success: "bg-success text-white text-small hover:opacity-90 hover:border-brand",
     cancel: "bg-cancel text-white text-small hover:bg-opacity-90"
 }
 
@@ -13,16 +13,14 @@ type ButtonProps = {
     className?: string;
     onClick: () => void;
     disabled?: boolean;
-
 }
 
 export default function Button({
         label, 
         variant="primary", 
-        className="",
         onClick,
-        disabled= false
-    
+        className="",
+        disabled=false
     }: ButtonProps){
     return(
         <>

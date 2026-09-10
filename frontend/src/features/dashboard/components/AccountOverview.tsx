@@ -1,5 +1,5 @@
 import AccountCard from "./AccountCard";
-import type { Account } from "../data/accounts";
+import type { Account } from "../../../types/account"
 
 type AccountOverviewProps = {
     accounts: Account[]; 
@@ -8,7 +8,8 @@ type AccountOverviewProps = {
 export default function AccountOverview({ accounts }: AccountOverviewProps) {
     return (
             <div className="grid grid-cols-1 justify-items-stretch 
-                            md:grid-cols-2 xl:grid-cols-3 gap-3">
+                            md:grid-cols-2 xl:grid-cols-3 gap-3
+                            ">
                                 {accounts.map((account) => (
                                     <AccountCard
                                         key={account.id}  

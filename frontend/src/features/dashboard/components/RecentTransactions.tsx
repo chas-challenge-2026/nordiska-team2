@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Transaction } from "../data/transactions";
+import type { Transaction } from "../../../types/transaction";
 
 type RecentTransactionProps = {
     transactions: Transaction[];
