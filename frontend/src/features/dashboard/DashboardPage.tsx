@@ -16,19 +16,21 @@ import Button from "../../components/ui/Button";
 import TestModal from "../../components/TestModal";
 import TestSelect from "../../components/TestSelect";
 import TestAlert from "../../components/TestAlert";
-import { useAccounts } from "../../hooks/useAccounts";
+// import { useAccounts } from "../../hooks/useAccounts";
 import Alert from "../../components/ui/Alert";
 
+import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT: mock istället för backend
 
 
 
 
 export default function DashboardPage() {
-    const { data: accounts, isLoading, isError } = useAccounts();
-    const[isModalOpen, setIsModalOpen] = useState(false);
+     // const { data: accounts, isLoading, isError } = useAccounts();
+     const accounts = mockAccounts; // TILLFÄLLIGT
+      const [isModalOpen, setIsModalOpen] = useState(false);
 
-    if (isLoading) return <Alert type="info" message="Laddar konton" />
-    if (isError) return <Alert type="error" message="Kunde inte hämta konton" />
+    // if (isLoading) return <Alert type="info" message="Laddar konton" />
+    // if (isError) return <Alert type="error" message="Kunde inte hämta konton" />
     if (!accounts) return null;
 
 
