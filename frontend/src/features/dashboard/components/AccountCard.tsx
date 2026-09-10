@@ -27,6 +27,7 @@ export default function AccountCard({
             title={name}
             subtitle={accountNumber}
             headerVariant="primary"
+            className="hover:-translate-y-2 transition duration-150"
         >
             <p className="text-small text-muted">
                 Tillgängligt saldo
