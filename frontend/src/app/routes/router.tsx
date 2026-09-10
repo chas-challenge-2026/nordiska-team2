@@ -7,6 +7,8 @@ import TransactionPage from '../../features/transactions/TransactionPage';
 import TaxReportsPage from '../../features/Taxreports/TaxReportsPage';
 import FaqPage from '../../features/FAQ/FaqPage';
 import ProtectedRoute from './ProtectedRoute';
+import SettingsPage from '../../features/settings/SettingsPage';
+
 
 
 const router = createBrowserRouter([
@@ -38,6 +40,10 @@ const router = createBrowserRouter([
         path: "faq",
         element: <FaqPage />,
       },
+      {
+        path: "settings",
+        element: <SettingsPage />
+      }
     ],
   },
   ],

@@ -1,5 +1,5 @@
 import Card from "../../../components/cards/Card";
-import type { Account } from "../data/accounts";
+import type { Account } from "../../../types/account"
 
 type SavingOverviewProps = {
     accounts: Account[];

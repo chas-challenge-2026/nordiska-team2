@@ -53,7 +53,7 @@ export const navigationItems: NavigationItem[] = [
     {
         name: "Inställningar",
         mobileLabel: "Inst.",
-        to: "/faq" ,
+        to: "/settings" ,
         iconWhite: settingsWhite,
         iconDark: settingsDark,
         startsSection: true,

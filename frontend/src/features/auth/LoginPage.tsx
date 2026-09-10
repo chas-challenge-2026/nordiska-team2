@@ -49,6 +49,7 @@ export default function LoginPage() {
                      {showPassword ? <Eye /> : <EyeOff />}
                 </button>
                 </div>
+                <input type="password" placeholder="Lösenord" value={password} onChange={(e) => setPassword(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full"/>
                 <div className="flex justify-center">
                 <button className="bg-brand hover:bg-brand/90 text-white rounded-default px-4 py-2">{isLoading ? 'Loggar in...' : 'Logga in'}</button>
                 </div>
