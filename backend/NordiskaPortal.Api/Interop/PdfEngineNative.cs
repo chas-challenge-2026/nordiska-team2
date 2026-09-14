@@ -13,11 +13,13 @@ namespace NordiskaPortal.Api.Interop
 
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern int pdf_engine_generate_and_sign(
-            string jsonData,
+            string jsonFilePath,
             PdfReportType reportType,
-            string outPath,
+            string outDir,
             string? pfxPath,
-            string? password
+            string? password,
+            IntPtr progressCb,
+            IntPtr progressCtx
         );
     }
 }

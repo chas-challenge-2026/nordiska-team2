@@ -12,6 +12,7 @@
   --color-border-light: #eeeeee;
   --color-success: #5cb85c;
   --color-success-border: #4cae4c;
+  --color-cancel: #CB4F4F;
 
   /* Border radius */
   --radius-default: 4px;
@@ -43,6 +44,7 @@
 
   body {
     margin: 0;
+    padding: 0;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);

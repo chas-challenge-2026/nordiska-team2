@@ -14,6 +14,7 @@ public class BankContext : DbContext
     public DbSet<SavingsAccount> SavingsAccounts { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<TaxReport> TaxReports { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,8 @@ public class BankContext : DbContext
             .HasConversion<string>();
 
         modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
+
+        modelBuilder.Entity<TaxReport>().HasIndex(r => new { r.AccountId, r.Year }).IsUnique();
 
         modelBuilder.Entity<Customer>().HasData(
             new Customer

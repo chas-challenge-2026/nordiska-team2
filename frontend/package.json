@@ -14,9 +14,12 @@
     "@tanstack/react-query": "^5.102.7",
     "axios": "^1.20.0",
     "console": "^0.7.2",
+    "lucide-react": "^1.42.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.2",
+    "react-select": "^5.10.2",
+    "select": "^1.1.2",
     "tailwindcss": "^4.3.3",
     "tanstack": "^2.0.3"
   },

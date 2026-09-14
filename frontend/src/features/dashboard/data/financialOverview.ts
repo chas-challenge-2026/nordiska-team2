@@ -3,7 +3,7 @@ export type FinancialOverviewData = {
     expenses: number;
 }
 
-export const financialOverviews: FinancialOverviewData =
+export const financialOverview: FinancialOverviewData =
     {
         income: 34000,
         expenses: 21010,

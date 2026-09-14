@@ -1,19 +1,4 @@
-export type Transactions = {
-    id: string;
-    description: string;
-    account: string;
-    date: string;
-    amount: string
-    icon?: string;
-}
-
-export type Transaction = {
-    id: string;
-    description: string;
-    account: string;
-    date: string;
-    amount: number;
-};
+import type { Transaction } from "../../../types/transaction";
 
 export const transactions: Transaction[] = [
     {
