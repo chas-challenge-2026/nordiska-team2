@@ -79,6 +79,29 @@ namespace NordiskaPortal.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TaxReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    ReportId = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    PdfData = table.Column<byte[]>(type: "bytea", nullable: false),
+                    GeneratedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaxReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaxReports_SavingsAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "SavingsAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -149,6 +172,12 @@ namespace NordiskaPortal.Api.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TaxReports_AccountId_Year",
+                table: "TaxReports",
+                columns: new[] { "AccountId", "Year" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_AccountId",
                 table: "Transactions",
                 column: "AccountId");
@@ -159,6 +188,9 @@ namespace NordiskaPortal.Api.Migrations
         {
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "TaxReports");
 
             migrationBuilder.DropTable(
                 name: "Transactions");

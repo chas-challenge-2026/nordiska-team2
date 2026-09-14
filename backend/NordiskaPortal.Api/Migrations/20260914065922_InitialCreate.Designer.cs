@@ -12,7 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NordiskaPortal.Api.Migrations
 {
     [DbContext(typeof(BankContext))]
+<<<<<<<< HEAD:backend/NordiskaPortal.Api/Migrations/20260909092617_InitialCreate.Designer.cs
     [Migration("20260909092617_InitialCreate")]
+========
+    [Migration("20260914065922_InitialCreate")]
+>>>>>>>> origin/dev:backend/NordiskaPortal.Api/Migrations/20260914065922_InitialCreate.Designer.cs
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -185,6 +189,40 @@ namespace NordiskaPortal.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NordiskaPortal.Api.Models.TaxReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("PdfData")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ReportId")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "Year")
+                        .IsUnique();
+
+                    b.ToTable("TaxReports");
+                });
+
             modelBuilder.Entity("NordiskaPortal.Api.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -280,6 +318,17 @@ namespace NordiskaPortal.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.TaxReport", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.SavingsAccount", "SavingsAccount")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SavingsAccount");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.Transaction", b =>

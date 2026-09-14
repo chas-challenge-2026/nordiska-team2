@@ -39,6 +39,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
       - PdfOutput__Directory=/app/output
+      - PdfTemp__Directory=/app/temp
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=nordiska;Username=nordiska;Password=${DB_PASSWORD}
       - Jwt__Key=${JWT_KEY}
     depends_on:

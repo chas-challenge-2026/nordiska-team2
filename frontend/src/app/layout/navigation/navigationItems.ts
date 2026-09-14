@@ -6,10 +6,11 @@ import taxesWhite from "../../../assets/svg/taxes-white.svg";
 import taxesDark from "../../../assets/svg/taxes-dark.svg";
 import faqWhite from "../../../assets/svg/faq-white.svg";
 import faqDark from "../../../assets/svg/faq-dark.svg";
-import logoutWhite from "../../../assets/svg/logout-white.svg";
+import logoutWhite from "../../../assets/svg/logout-white.svg"
 import logoutDark from "../../../assets/svg/logout-dark.svg";
 import settingsWhite from "../../../assets/svg/settings-white.svg"
 import settingsDark from "../../../assets/svg/settings-dark.svg"
+
 
 export type NavigationItem = {
     name: string;
@@ -19,6 +20,7 @@ export type NavigationItem = {
     iconDark: string;
     startsSection?: boolean;
     showInMobileNav?: boolean;
+    onCLick?: () => void; 
 };
 
 export const navigationItems: NavigationItem[] = [
@@ -53,16 +55,16 @@ export const navigationItems: NavigationItem[] = [
     {
         name: "Inställningar",
         mobileLabel: "Inst.",
-        to: "/faq" ,
+        to: "/settings" ,
         iconWhite: settingsWhite,
         iconDark: settingsDark,
         startsSection: true,
         showInMobileNav: true,
     },
-    {
-        name: "Logga ut",
-        to: "/login" ,
-        iconWhite: logoutWhite,
-        iconDark: logoutDark,
-    },
+    // {
+    //     // name: "Logga ut",
+    //     // to: "/login" ,
+    //     iconWhite: logoutWhite,
+    //     iconDark: logoutDark,
+    // },
 ];

@@ -1,20 +1,33 @@
+// import { useState } from "react";
 import AccountOverview from "./components/AccountOverview";
-import { accounts } from "./data/accounts";
 import RecentTransactions from "./components/RecentTransactions";
 import { transactions } from "./data/transactions";
 import QuickActions from "./components/QuickActions";
 import { quickActions } from "./data/quickActions";
 
 import FinancialOverview from "./components/FinancialOverview"
-import { financialOverviews } from "./data/financialOverview";
+import { financialOverview } from "./data/financialOverview";
 import SavingsGoal from "./components/SavingsGoal";
 import { savingsGoal } from "./data/savingsGoal";
 import FaqOverview from "./components/Faq";
 import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
+import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
+import Alert from "../../components/ui/Alert"; // RIKTIG DATA
+
+// import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
+
+
 
 
 export default function DashboardPage() {
+     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
+    //  const accounts = mockAccounts; // TILLFÄLLIGT
+
+    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
+    if (!accounts) return null;
+
 
     return ( 
         <div className="grid min-h-full grid-cols-1 lg:grid-cols-[repeat(14,minmax(0,1fr))]">
@@ -30,9 +43,9 @@ export default function DashboardPage() {
                 </header>
 
                 <AccountOverview accounts={accounts}/>
-                <RecentTransactions transactions={transactions} />
                 <QuickActions actions={quickActions}/>
-
+                <RecentTransactions transactions={transactions} />
+                
                 <Footer />
             </section>
 
@@ -41,12 +54,13 @@ export default function DashboardPage() {
                         <SearchBar />
                         <FinancialOverview 
                             accounts={accounts}
-                            financials={financialOverviews}
+                            financial={financialOverview}
                             />
                         <SavingsGoal 
                             accounts={accounts}
                             goal={savingsGoal.goal} />
                         <FaqOverview />
+
             </aside>
         </div>
 

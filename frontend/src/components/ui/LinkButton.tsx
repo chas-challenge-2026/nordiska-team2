@@ -8,7 +8,7 @@ type LinkButtonProps =  LinkProps & {
 }
 
 const variantClasses = {
-    primary: "bg-white text-brand hover:bg-border",
+    primary: "bg-white text-brand hover:bg-border hover:border-brand",
     secondary: "bg-brand text-white hover:opacity-90",
 }
 

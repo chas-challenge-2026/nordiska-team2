@@ -23,7 +23,7 @@ const footerLinks: FooterLinkProps[] = [
 
 export default function Footer(){
     return (
-        <div className="text-xsmall text-muted mt-2">
+        <footer className="text-xsmall text-muted mt-2">
             <div className="flex gap-10 justify-center">
                 {footerLinks.map((footerLink) => (
                     <Link
@@ -36,6 +36,6 @@ export default function Footer(){
         
             <div className="flex justify-center mt-2">
                 © {new Date().getFullYear()} Nordiska . </div>
-        </div>
+        </footer>
     )
 }
