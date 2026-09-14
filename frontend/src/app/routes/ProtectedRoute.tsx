@@ -1,11 +1,11 @@
-// import { Navigate, Outlet } from "react-router-dom"
-// import { useAuth } from "../../hooks/useAuth"
+import { Navigate, Outlet } from "react-router-dom"
+import { useAuth } from "../../hooks/useAuth"
 
-// export default function ProtectedRoute() {
-//     const auth = useAuth()
+export default function ProtectedRoute() {
+    const auth = useAuth()
 
-//     if (auth.accessToken == null) {
-//         return <Navigate to="/login" />
-//     }
-//     return <Outlet />
-// }
+    if (auth.accessToken == null) {
+        return <Navigate to="/login" />
+    }
+    return <Outlet />
+}
