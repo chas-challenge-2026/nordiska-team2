@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 type buttonVariant = "primary" | "secondary" | "success" | "cancel";
 
 const buttonVariantClasses: Record<buttonVariant, string> = {
@@ -13,6 +14,8 @@ type ButtonProps = {
     className?: string;
     onClick: () => void;
     disabled?: boolean;
+    icon?: ReactNode;
+    children?: ReactNode;
 }
 
 export default function Button({
@@ -20,7 +23,9 @@ export default function Button({
         variant="primary", 
         onClick,
         className="",
-        disabled=false
+        disabled=false,
+        icon,
+        children,
     }: ButtonProps){
     return(
         <>
@@ -32,8 +37,10 @@ export default function Button({
                             ${buttonVariantClasses[variant]} ${className}`}
                 disabled={disabled}
                 onClick={onClick}
-                >
+                > 
+                {icon}
                 {label}
+                {children}
             </button>
         </>
     )

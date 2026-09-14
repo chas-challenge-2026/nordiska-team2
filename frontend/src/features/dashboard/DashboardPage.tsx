@@ -1,4 +1,4 @@
-import { useState } from "react";
+// import { useState } from "react";
 import AccountOverview from "./components/AccountOverview";
 import RecentTransactions from "./components/RecentTransactions";
 import { transactions } from "./data/transactions";
@@ -10,16 +10,12 @@ import { financialOverview } from "./data/financialOverview";
 import SavingsGoal from "./components/SavingsGoal";
 import { savingsGoal } from "./data/savingsGoal";
 import FaqOverview from "./components/Faq";
-import SearchBar from "./components/Searchbar";
+import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
-import Button from "../../components/ui/Button";
-import TestModal from "../../components/TestModal";
-import TestSelect from "../../components/TestSelect";
-import TestAlert from "../../components/TestAlert";
 // import { useAccounts } from "../../hooks/useAccounts";
-import Alert from "../../components/ui/Alert";
+// import Alert from "../../components/ui/Alert";
 
-import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT: mock istället för backend
+import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
 
 
 
@@ -27,7 +23,6 @@ import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT: moc
 export default function DashboardPage() {
      // const { data: accounts, isLoading, isError } = useAccounts();
      const accounts = mockAccounts; // TILLFÄLLIGT
-      const [isModalOpen, setIsModalOpen] = useState(false);
 
     // if (isLoading) return <Alert type="info" message="Laddar konton" />
     // if (isError) return <Alert type="error" message="Kunde inte hämta konton" />
@@ -65,21 +60,6 @@ export default function DashboardPage() {
                             accounts={accounts}
                             goal={savingsGoal.goal} />
                         <FaqOverview />
-
-                    <Button 
-                        label="Klicka här"
-                        onClick={() => setIsModalOpen(true)} 
-                        variant="success"
-                            />
-                    <TestModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                    />
-
-                    <TestSelect />
-
-                    
-                    <TestAlert />
 
             </aside>
         </div>

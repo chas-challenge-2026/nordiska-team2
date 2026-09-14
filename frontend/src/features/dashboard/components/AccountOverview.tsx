@@ -1,4 +1,4 @@
-import AccountCard from "./AccountCard";
+import AccountCard from "../../../components/cards/AccountCard";
 import type { Account } from "../../../types/account"
 
 type AccountOverviewProps = {
