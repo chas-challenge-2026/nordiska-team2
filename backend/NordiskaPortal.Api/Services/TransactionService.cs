@@ -15,11 +15,29 @@ namespace NordiskaPortal.Api.Services
             _db = db;
         }
 
-        public async Task<decimal> GetBalanceAsync(int accountId)
+        private static decimal GetSignedAmount(Transaction transaction) 
         {
-            return await _db.Transactions
-                .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
-                .SumAsync(t => t.Type == TransactionType.Deposit ? t.Amount : -t.Amount);
+            switch (transaction.Type)
+            {
+                case TransactionType.Deposit:
+                case TransactionType.Interest:
+                    return transaction.Amount;
+
+                case TransactionType.Withdrawal:
+                case TransactionType.Tax:
+                    return -transaction.Amount;
+
+                default:
+                    return 0m;
+            }
+        }
+
+        public async Task<decimal> GetBalanceAsync(int accountId) 
+        { 
+            var transactions = await _db.Transactions
+                .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted).ToListAsync(); 
+            
+            return transactions.Sum(GetSignedAmount); 
         }
 
         public async Task<TransactionResult> DepositAsync(int accountId, decimal amount)
