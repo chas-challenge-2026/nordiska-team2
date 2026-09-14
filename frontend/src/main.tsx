@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './app/Context/AuthContext'
 import { AlertProvider } from './hooks/AlertProvider'
 
+import { apiClient } from './client'; (window as any).apiClient = apiClient;
+
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
