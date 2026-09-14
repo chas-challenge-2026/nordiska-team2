@@ -5,7 +5,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddSession(options =>
 {
-    // Session never expires server-side — intentional bug
+    // Session never expires server-side — intentional bug 
     options.IdleTimeout = TimeSpan.FromDays(365);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
