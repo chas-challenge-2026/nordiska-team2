@@ -1,5 +1,4 @@
-import Card from "../../../components/cards/Card";
-import { Link } from "react-router-dom";
+import Card from "./Card";
 
 
 const currencyFormatter = new Intl.NumberFormat("sv-SE", {
@@ -28,6 +27,7 @@ export default function AccountCard({
             subtitle={accountNumber}
             headerVariant="primary"
             className="hover:-translate-y-2 transition duration-150"
+            to={to}
         >
             <p className="text-small text-muted">
                 Tillgängligt saldo
@@ -39,20 +39,7 @@ export default function AccountCard({
                 <p className="text-muted text-small">
                     Ränta {interest} %
                 </p>
-            )} {to 
-                ? (
-                    <Link 
-                        to={to} 
-                        aria-label={`Visa detaljer för ${name}`} 
-                        className="mt-auto self-end text-large font-bold">
-                            ››
-                    </Link>)
-                : (
-                    <span aria-hidden="true"
-                        className="mt-auto self-end text-large font-bold">
-                            ››
-                    </span>
-                )}
+            )} 
         </Card>
     )
 }
