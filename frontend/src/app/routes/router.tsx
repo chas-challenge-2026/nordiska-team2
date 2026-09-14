@@ -10,7 +10,6 @@ import ProtectedRoute from './ProtectedRoute';
 import SettingsPage from '../../features/settings/SettingsPage';
 
 
-
 const router = createBrowserRouter([
    {
     path: "/login",
@@ -20,33 +19,33 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
-  {
-    path: "/",
-    element: <AuthenticatedLayout />,
-    children: [
       {
-        path: "dashboard",
-        element: <DashboardPage />,
+        path: "/",
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+          },
+          {
+            path: "transactions",
+            element: <TransactionPage />,
+          },
+          {
+            path: "taxreport",
+            element: <TaxReportsPage />,
+          },
+          {
+            path: "faq",
+            element: <FaqPage />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />
+          }
+        ],
       },
-      {
-        path: "transactions",
-        element: <TransactionPage />,
-      },
-      {
-        path: "taxreport",
-        element: <TaxReportsPage />,
-      },
-      {
-        path: "faq",
-        element: <FaqPage />,
-      },
-      {
-        path: "settings",
-        element: <SettingsPage />
-      }
     ],
-  },
-  ],
   },
 ])
 
