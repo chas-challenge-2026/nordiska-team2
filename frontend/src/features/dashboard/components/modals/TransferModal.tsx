@@ -4,8 +4,8 @@ import InputField from "../../../../components/ui/Input";
 import Modal from "../../../../components/ui/Modal"  
 import TextareaInput from "../../../../components/ui/TextareaInput";  
 import SelectOptions from "../../../../components/ui/Select";
-// import { useAccounts } from "../../../../hooks/useAccounts";
-import { accounts as mockAccounts } from "../../data/accounts"; // TILLFÄLLIGT
+import { useAccounts } from "../../../../hooks/useAccounts"; // RIKTIG DATA
+// import { accounts as mockAccounts } from "../../data/accounts"; // TILLFÄLLIGT
 import type { TransferType } from "../../../../types/transfer";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
@@ -19,8 +19,8 @@ export default function TransferModal({
     isOpen,
     onClose,
 }: TransferProps) {
-    // const { data: accounts } = useAccounts();
-    const accounts = mockAccounts; // TILLFÄLLIGT
+    const { data: accounts } = useAccounts(); // RIKTIG DATA
+    // const accounts = mockAccounts; // TILLFÄLLIGT
     const { showAlert } = useAlert();
     const accountOptions: OptionType[] = accounts?.map((account) => ({
         value: String(account.id), label: account.name })) ?? []
@@ -32,7 +32,7 @@ export default function TransferModal({
 
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
     const amountValue = Number(amount);
-    const fromAccountData = accounts.find((account) => String(account.id) === fromAccount?.value);
+    const fromAccountData = accounts?.find((account) => String(account.id) === fromAccount?.value);
     const insufficientFunds = fromAccountData !== undefined && amountValue > fromAccountData.balance;
     const isMissingFields = fromAccount === null || toAccount === null || amount.trim() === "";
     const sameAccount = fromAccount !== null && toAccount !== null && fromAccount.value === toAccount.value;

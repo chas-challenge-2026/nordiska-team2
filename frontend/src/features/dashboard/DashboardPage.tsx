@@ -12,20 +12,20 @@ import { savingsGoal } from "./data/savingsGoal";
 import FaqOverview from "./components/Faq";
 import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
-// import { useAccounts } from "../../hooks/useAccounts";
-// import Alert from "../../components/ui/Alert";
+import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
+import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 
-import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
+// import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
 
 
 
 
 export default function DashboardPage() {
-     // const { data: accounts, isLoading, isError } = useAccounts();
-     const accounts = mockAccounts; // TILLFÄLLIGT
+     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
+    //  const accounts = mockAccounts; // TILLFÄLLIGT
 
-    // if (isLoading) return <Alert type="info" message="Laddar konton" />
-    // if (isError) return <Alert type="error" message="Kunde inte hämta konton" />
+    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
     if (!accounts) return null;
 
 
