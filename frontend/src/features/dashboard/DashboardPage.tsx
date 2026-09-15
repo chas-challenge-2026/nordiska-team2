@@ -12,7 +12,7 @@ import { savingsGoal } from "./data/savingsGoal";
 import FaqOverview from "./components/Faq";
 import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
-import { useAccounts, useCurrentCustomerName } from "../../hooks/useAccounts"; // RIKTIG DATA
+import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 
 // import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
@@ -23,7 +23,7 @@ import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 export default function DashboardPage() {
      const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
     //  const accounts = mockAccounts; // TILLFÄLLIGT
-    const userName = useCurrentCustomerName(); //TILLFÄLLIGT från useAccounts.ts
+    // const userName = useCurrentCustomerName(); //TILLFÄLLIGT från useAccounts.ts
 
     if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
     if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
@@ -36,7 +36,7 @@ export default function DashboardPage() {
                             min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
                 <header>
                     <h1 className="text-xl sm:text-title">
-                        Välkommen tillbaka, {userName}!
+                        Välkommen tillbaka!
                     </h1>
                     <p className="text-muted text-small">
                         Inloggad via BankID
