@@ -1,36 +1,41 @@
 #!/usr/bin/env bash
-#
-# Resets the local Postgres container and re-applies all migrations from
-# scratch. Run this after pulling changes that touched Migrations/, or
-# whenever your local database and the migration files seem out of sync
-# (e.g. "relation already exists" errors on dotnet ef database update).
-#
-# WARNING: this deletes all local data in the nordiska database AND
-# deletes and regenerates the migration files themselves. Never run
-# this against anything other than your own local dev environment.
-
 set -e
 
+# Resolve script directory to allow running from anywhere
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
 echo ""
-echo -e "${YELLOW}This will PERMANENTLY DELETE all local data in the nordiska database${NC}"
-echo -e "${YELLOW}AND regenerate the Migrations folder from scratch.${NC}"
+echo -e "\033[1;33mThis will PERMANENTLY DELETE all local data in the nordiska database\033[0m"
+echo -e "\033[1;33m(Docker volume removed, then migrations reapplied from scratch).\033[0m"
 echo ""
 read -p "Type 'yes' to continue, anything else to cancel: " confirmation
 
 if [ "$confirmation" != "yes" ]; then
-    echo -e "${CYAN}Cancelled. No changes made.${NC}"
+    echo -e "\033[0;36mCancelled. No changes made.\033[0m"
     exit 0
 fi
 
+# --- Read DB_PASSWORD from infra/.env safely ---
+ENV_PATH="$SCRIPT_DIR/../../../infra/.env"
+if [ ! -f "$ENV_PATH" ]; then
+    echo -e "\033[0;31mERROR: Could not find .env at $ENV_PATH\033[0m"
+    exit 1
+fi
+
+# Safely load variables from .env handling quotes and formatting
+set -a
+source "$ENV_PATH"
+set +a
+
+if [ -z "$DB_PASSWORD" ]; then
+    echo -e "\033[0;31mERROR: DB_PASSWORD not found or empty in $ENV_PATH\033[0m"
+    exit 1
+fi
+
+LOCAL_CONNECTION_STRING="Host=localhost;Port=5433;Database=nordiska;Username=nordiska;Password=$DB_PASSWORD"
+
 echo "Deleting existing migrations..."
-cd "$SCRIPT_DIR/.."
+cd "$SCRIPT_DIR/../../../backend/NordiskaPortal.Api"
 rm -rf Migrations
 
 echo "Generating a fresh InitialCreate migration..."
@@ -40,17 +45,20 @@ echo "Stopping and removing the local database volume..."
 cd "$SCRIPT_DIR/../../../infra"
 docker compose down -v
 
-echo "Rebuilding the app image..."
+echo "Rebuilding the local database volume..."
 docker compose build --no-cache app
 
-echo "Starting a fresh database container..."
+echo "Starting fresh containers..."
 docker compose up -d
 
 echo "Waiting for Postgres to be ready..."
 sleep 5
 
 echo "Applying migrations..."
-cd "$SCRIPT_DIR/../../../backend/NordiskaPortal.Api"
-dotnet ef database update
+cd "$SCRIPT_DIR/.."
+export ConnectionStrings__DefaultConnection="$LOCAL_CONNECTION_STRING"
+dotnet ef database update --connection "$LOCAL_CONNECTION_STRING"
 
-echo -e "${GREEN}Done. Run 'dotnet run' to start the API.${NC}"
+echo ""
+echo -e "\033[0;32mDone. The application is running via Docker at http://localhost:8080/scalar/v1\033[0m"
+echo -e "\033[0;32mNo further steps needed - do not run 'dotnet run' separately.\033[0m"
