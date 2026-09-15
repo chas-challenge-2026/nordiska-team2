@@ -57,9 +57,6 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
 
-    // No response at all -- network failure, CORS block, backend down.
-    // Not a status code case at all, so handle it first and bail out
-    // before touching anything status-specific below.
     if (!error.response) {
       console.error("Network error (no response received):", error.message);
       return Promise.reject(error);
@@ -67,10 +64,6 @@ apiClient.interceptors.response.use(
 
     switch (status) {
       case 401: {
-        // A 401 from an auth endpoint itself is NOT "my token expired" --
-        // login's 401 means wrong credentials, refresh's own 401 means
-        // no valid session. Neither should trigger another refresh
-        // attempt (this is what caused the repeated-refresh-calls bug).
         if (isAuthEndpoint || originalRequest._retry) {
           console.error("401 from auth endpoint or already retried:", originalRequest?.url);
           return Promise.reject(error);
@@ -91,9 +84,6 @@ apiClient.interceptors.response.use(
       }
 
       case 403: {
-        // Authenticated, but not allowed -- e.g. trying to access an
-        // account that isn't the caller's. Refreshing won't help here;
-        // a new token for the same customer would fail the same way.
         console.error("403 Forbidden:", originalRequest?.url);
         return Promise.reject(error);
       }
@@ -104,11 +94,7 @@ apiClient.interceptors.response.use(
       }
 
       case 429: {
-        // Rate limited -- specifically on SensitiveEndpoints (login,
-        // deposit, withdraw). Retrying immediately would just get
-        // rate-limited again; this needs a real backoff/user message,
-        // not automatic retry logic.
-        console.error("429 Too Many Requests -- rate limited:", originalRequest?.url);
+        console.error("429 Too Many Requests:", originalRequest?.url);
         return Promise.reject(error);
       }
 
