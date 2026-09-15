@@ -21,7 +21,6 @@ services:
       POSTGRES_PASSWORD: nordiska123
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
     expose:
       - "5432"
     healthcheck:
@@ -32,13 +31,18 @@ services:
 
   app:
     build:
-      context: ../backend/NordiskaPortal
+      context: ../backend/NordiskaPortal.Api
       dockerfile: Dockerfile
     expose:
       - "8080"
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
+      - PdfOutput__Directory=/app/output
+      - PdfTemp__Directory=/app/temp
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=nordiska;Username=nordiska;Password=${DB_PASSWORD}
+      - Jwt__Key=${JWT_KEY}
+      - Cors__AllowedOrigins__0=${CORS_ORIGIN}
     depends_on:
       db:
         condition: service_healthy

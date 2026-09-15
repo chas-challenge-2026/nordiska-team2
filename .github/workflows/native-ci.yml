@@ -1,0 +1,63 @@
+name: Native CI
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  pull_request:
+    branches: [ main, dev ]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+
+defaults:
+  run:
+    working-directory: native
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - name: Install devenv
+        run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
+      - name: Format Check
+        run: devenv shell -- just fmt-check
+
+  lint:
+    name: Clang-Tidy Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - name: Install devenv
+        run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
+      - name: Clang-Tidy Lint
+        run: devenv shell -- just lint
+
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - name: Install devenv
+        run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
+      - name: Build & Test
+        run: devenv shell -- just test

@@ -1,0 +1,32 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Local environment/secrets — never commit real connection strings or credentials
+appsettings.Development.json
+appsettings.Local.json
+*.env
+.env
+
+# Test results
+[Tt]est[Rr]esult*/
+coverage.*
+
+# EF Core migrations bundle (if you ever generate one)
+efbundle

@@ -1,0 +1,50 @@
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  clang-analyzer-*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  readability-identifier-naming,
+  readability-misleading-indentation,
+  readability-inconsistent-declaration-parameter-name,
+  readability-braces-around-statements,
+  readability-non-const-parameter,
+  readability-function-size,
+  cppcoreguidelines-pro-type-const-cast,
+  cppcoreguidelines-pro-type-reinterpret-cast,
+CheckOptions:
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.StaticConstVariableCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.MacroCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: 1
+  - key: readability-function-size.LineThreshold
+    value: 300
+  - key: readability-non-const-parameter.IgnoreAllCaps
+    value: 1
+WarningsAsErrors: 'readability-identifier-naming,readability-braces-around-statements,bugprone-*,clang-analyzer-*'
+FormatStyle: file
+HeaderFilterRegex: '.*'
