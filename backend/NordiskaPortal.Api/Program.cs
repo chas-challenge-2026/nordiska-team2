@@ -27,6 +27,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<PdfGeneratorService>();
 builder.Services.AddScoped<TaxReportService>();
+builder.Services.AddSingleton<IBankIdService, BankIdService>();
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
