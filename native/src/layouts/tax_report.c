@@ -1,6 +1,7 @@
 #include "tax_report.h"
 
 #include "logging/log.h"
+#include "utils/utils.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -77,13 +78,6 @@ static void format_sek(double amount, char* buf, size_t buf_len) {
 /**
  * @brief Converts a UTF-8 string to single-byte WinAnsiEncoding (CP1252) in
  * place, dropping/questioning-marking anything outside the Latin-1 range.
- *
- * libHaru's base-14 fonts draw raw bytes against whatever encoding they were
- * loaded with; they don't understand multi-byte UTF-8. Report text (names,
- * addresses, Swedish transaction descriptions) comes out of cJSON as UTF-8,
- * so it needs this conversion before HPDF_Page_TextOut(). Latin-1 Supplement
- * codepoints (U+0080-U+00FF), which cover å/ä/ö and friends, map 1:1 onto
- * WinAnsiEncoding byte values.
  */
 static void utf8_to_winansi(const char* utf8, char* out, size_t out_cap) {
     size_t out_len = 0;
@@ -95,8 +89,6 @@ static void utf8_to_winansi(const char* utf8, char* out, size_t out_cap) {
             unsigned int codepoint =
                 ((unsigned int)(*p & 0x1F) << 6) | (p[1] & 0x3F);
             if (codepoint <= 0xFF) {
-                // memcpy avoids an implementation-defined narrowing cast
-                // from an out-of-range int into a signed char.
                 unsigned char byte = (unsigned char)codepoint;
                 memcpy(&out[out_len], &byte, 1);
             } else {
@@ -164,7 +156,7 @@ static void draw_rule(RenderCtx* ctx) {
     HPDF_Page_Stroke(ctx->page);
 }
 
-/** @brief Draws a bold section heading followed by a rule, e.g. "Customer". */
+/** @brief Draws a bold section heading followed by a rule. */
 static int draw_section_title(RenderCtx* ctx, const char* title) {
     if (ensure_space(ctx, LINE_HEIGHT_SECTION_GAP + LINE_HEIGHT_BODY) != 0) {
         return -1;
@@ -176,13 +168,6 @@ static int draw_section_title(RenderCtx* ctx, const char* title) {
     return 0;
 }
 
-/**
- * @brief Renders a two-column "label: value" block, one row per array entry.
- *
- * This is the generic building block behind the Customer/Account/Summary
- * sections: adding, removing, or reordering a field in the report is a
- * one-line change to the KeyValueRow array passed in by the caller.
- */
 static int draw_key_value_rows(RenderCtx* ctx, const KeyValueRow* rows,
                                size_t row_count) {
     const float LABEL_X = MARGIN_LEFT;
@@ -293,7 +278,6 @@ static int draw_summary_section(RenderCtx* ctx, const cJSON* summary) {
     return result;
 }
 
-/** @brief Draws the transaction table's bold column headings and a rule. */
 static int draw_transactions_header(RenderCtx* ctx) {
     if (ensure_space(ctx, TABLE_ROW_HEIGHT * 2) != 0) {
         return -1;
@@ -333,11 +317,6 @@ static void draw_transaction_row(RenderCtx* ctx, const cJSON* tx) {
     ctx->y -= TABLE_ROW_HEIGHT;
 }
 
-/**
- * @brief Renders the transactions table, adding pages (and repeating the
- * column headings) as needed. The row count is entirely driven by however
- * many entries are in `transactions` - no fixed limit.
- */
 static int draw_transactions_section(RenderCtx*   ctx,
                                      const cJSON* transactions) {
     if (draw_section_title(ctx, "Transactions") != 0) {
@@ -362,15 +341,14 @@ static int draw_transactions_section(RenderCtx*   ctx,
     return 0;
 }
 
-int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
+// Internal layout function (kept static)
+static int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
     if (!root) {
         LOG_ERROR("tax_report_layout called with no JSON data");
         return -1;
     }
 
-    RenderCtx ctx = {.pdf = pdf};
-    // WinAnsiEncoding (~CP1252) is required for å/ä/ö and other Latin-1
-    // characters to render; paired with utf8_to_winansi() above.
+    RenderCtx ctx    = {.pdf = pdf};
     ctx.font_regular = HPDF_GetFont(pdf, "Helvetica", "WinAnsiEncoding");
     ctx.font_bold    = HPDF_GetFont(pdf, "Helvetica-Bold", "WinAnsiEncoding");
     if (!ctx.font_regular || !ctx.font_bold) {
@@ -400,4 +378,39 @@ int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
     }
 
     return 0;
+}
+
+// Internal ID extraction function (kept static)
+static void tax_report_extract_id(const cJSON* root, char* out,
+                                  size_t out_cap) {
+    const cJSON* account  = cJSON_GetObjectItemCaseSensitive(root, "account");
+    const cJSON* customer = cJSON_GetObjectItemCaseSensitive(root, "customer");
+    const cJSON* metadata = cJSON_GetObjectItemCaseSensitive(root, "metadata");
+
+    const cJSON* acc_num =
+        cJSON_GetObjectItemCaseSensitive(account, "account_number");
+    const cJSON* cust_id =
+        cJSON_GetObjectItemCaseSensitive(customer, "customer_id");
+    const cJSON* rep_id =
+        cJSON_GetObjectItemCaseSensitive(metadata, "report_id");
+
+    const char* candidate = NULL;
+    if (cJSON_IsString(acc_num) && acc_num->valuestring[0]) {
+        candidate = acc_num->valuestring;
+    } else if (cJSON_IsString(cust_id) && cust_id->valuestring[0]) {
+        candidate = cust_id->valuestring;
+    } else if (cJSON_IsString(rep_id) && rep_id->valuestring[0]) {
+        candidate = rep_id->valuestring;
+    }
+
+    if (candidate) {
+        sanitize_filename_component(candidate, out, out_cap);
+    }
+}
+
+// Public configuration getter function
+const PdfLayoutConfig* tax_report_get_config(void) {
+    static const PdfLayoutConfig CONFIG = {
+        .layout_fn = tax_report_layout, .extract_id_fn = tax_report_extract_id};
+    return &CONFIG;
 }

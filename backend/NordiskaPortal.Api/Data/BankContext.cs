@@ -87,7 +87,7 @@ public class BankContext : DbContext
                 Id = 1,
                 AccountId = 1,
                 Type = TransactionType.Deposit,
-                Description = "Insättning",
+                Description = "Lön",
                 Amount = 125000.00m,
                 TransactionDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
@@ -98,7 +98,7 @@ public class BankContext : DbContext
                 Id = 2,
                 AccountId = 2,
                 Type = TransactionType.Deposit,
-                Description = "Insättning",
+                Description = "Swish",
                 Amount = 45000.00m,
                 TransactionDate = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc),
                 PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)),
@@ -109,10 +109,54 @@ public class BankContext : DbContext
                 Id = 3,
                 AccountId = 3,
                 Type = TransactionType.Deposit,
-                Description = "Insättning",
+                Description = "Lön",
                 Amount = 89500.00m,
                 TransactionDate = new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc),
                 PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                Status = TransactionStatus.Posted
+            },
+            new Transaction
+            {
+                Id = 4,
+                AccountId = 1,
+                Type = TransactionType.Deposit,
+                Description = "Swish",
+                Amount = 89500.00m,
+                TransactionDate = new DateTime(2025, 3, 3, 0, 0, 0, DateTimeKind.Utc),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                Status = TransactionStatus.Posted
+            },
+            new Transaction
+            {
+                Id = 5,
+                AccountId = 1,
+                Type = TransactionType.Deposit,
+                Description = "Lön",
+                Amount = 40500.00m,
+                TransactionDate = new DateTime(2025, 4, 4, 0, 0, 0, DateTimeKind.Utc),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                Status = TransactionStatus.Posted
+            },
+            new Transaction
+            {
+                Id = 6,
+                AccountId = 1,
+                Type = TransactionType.Withdrawal,
+                Description = "Semester",
+                Amount = 20000.00m,
+                TransactionDate = new DateTime(2025, 5, 5, 0, 0, 0, DateTimeKind.Utc),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                Status = TransactionStatus.Posted
+            },
+            new Transaction
+            {
+                Id = 7,
+                AccountId = 1,
+                Type = TransactionType.Deposit,
+                Description = "Lön",
+                Amount = 50000.00m,
+                TransactionDate = new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc)),
                 Status = TransactionStatus.Posted
             }
         );

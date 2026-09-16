@@ -27,6 +27,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<PdfGeneratorService>();
 builder.Services.AddScoped<TaxReportService>();
+builder.Services.AddScoped<TaxReportBackfillService>();
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
@@ -108,6 +109,15 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BankContext>();
+    db.Database.Migrate();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<TaxReportBackfillService>();
+    await seeder.SeedAsync();
+}
+
 app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.
 
 // Configure the HTTP request pipeline.
@@ -129,3 +139,6 @@ app.MapHealthChecks("/health"); // Health check endpoint
 app.MapControllers().RequireRateLimiting("sliding");
 
 app.Run();
+
+//For Tests
+public partial class Program { }

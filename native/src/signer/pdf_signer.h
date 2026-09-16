@@ -4,18 +4,24 @@
 extern "C" {
 #endif
 
+// Opaque signer context holding the loaded key/cert
+typedef struct PdfSigner PdfSigner;
+
 /**
- * @brief Digitally signs an existing PDF file using a PKCS#12 / PFX
- * certificate.
- *
- * @param input_pdf_path Path to the unsigned PDF file.
- * @param output_signed_path Path where the signed PDF file will be written.
- * @param pfx_path Path to the .pfx/.p12 signing certificate file.
- * @param password Password for the .pfx certificate.
- * @return int Returns 0 on success, or a non-zero error code on failure.
+ * @brief Initializes a signer context by loading and unlocking a PFX file.
  */
-int pdf_signer_sign(const char* input_pdf_path, const char* output_signed_path,
-                    const char* pfx_path, const char* password);
+PdfSigner* pdf_signer_create(const char* pfx_path, const char* password);
+
+/**
+ * @brief Cryptographically signs an existing PDF file using the loaded context.
+ */
+int pdf_signer_sign(PdfSigner* signer, const char* in_path,
+                    const char* out_path);
+
+/**
+ * @brief Frees the signer context and its underlying OpenSSL keys/certs.
+ */
+void pdf_signer_free(PdfSigner* signer);
 
 #ifdef __cplusplus
 }
