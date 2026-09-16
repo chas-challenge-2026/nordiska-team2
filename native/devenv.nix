@@ -29,6 +29,8 @@
       enable = true;
       types_or = ["c" "c++"];
       files = "^native/";
+      package =
+        pkgs.llvmPackages.clang-tools;
     };
 
     lint = {
