@@ -32,7 +32,7 @@ namespace NordiskaPortal.Api.Models
 
         [Required]
         [MaxLength(20)]
-        // "Deposit" or "Withdrawal"
+        // "Deposit", "Withdrawal, Interest, Tax"
         public TransactionType Type { get; set; }
 
         // Description which can be typed in any language, eg: Årsränta 2026
