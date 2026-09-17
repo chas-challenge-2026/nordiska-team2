@@ -22,6 +22,7 @@ else()
 endif()
 
 find_package(OpenSSL REQUIRED)
+find_package(podofo CONFIG REQUIRED)
 
 find_path(HPDF_INCLUDE_DIR hpdf.h REQUIRED)
 find_library(HPDF_LIBRARY
