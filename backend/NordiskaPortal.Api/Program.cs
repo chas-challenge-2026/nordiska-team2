@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Scalar.AspNetCore;
 using FluentValidation;
+using Serilog;
 
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Filters;
@@ -14,6 +15,10 @@ using NordiskaPortal.Api.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 builder.Services.AddControllers(options => 
@@ -119,6 +124,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.
+
+// Serilogger (tags every log line written anywhere during a request)
+app.Use(async (context, next) =>
+{
+    using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.TraceIdentifier))
+    {
+        await next();
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -34,10 +34,7 @@ namespace NordiskaPortal.Api.Middleware
             */
             var correlationId = httpContext.TraceIdentifier;
 
-            _logger.LogError(
-                exception,
-                "Unhandled exception. CorrelationId: {CorrelationId}",
-                correlationId);
+            _logger.LogError(exception, "Unhandled exception");
 
             httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             httpContext.Response.Headers["X-Correlation-Id"] = correlationId;
