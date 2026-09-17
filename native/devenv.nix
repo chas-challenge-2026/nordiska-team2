@@ -11,6 +11,7 @@
 
     #C libs
     libharu
+    podofo
     openssl
     cjson
     pkgsStatic.cjson
@@ -29,14 +30,13 @@
       enable = true;
       types_or = ["c" "c++"];
       files = "^native/";
-      package =
-        pkgs.llvmPackages.clang-tools;
+      package = pkgs.llvmPackages.clang-tools;
     };
 
     lint = {
       enable = true;
       name = "clang-tidy static analysis";
-      entry = "sh -c 'cd native && devenv shell -- just lint'";
+      entry = "just --justfile native/justfile --working-directory native lint";
       pass_filenames = false;
       stages = ["pre-push"];
     };
@@ -44,7 +44,7 @@
     test = {
       enable = true;
       name = "run unit tests";
-      entry = "sh -c 'cd native && devenv shell -- just test'";
+      entry = "just --justfile native/justfile --working-directory native test";
       pass_filenames = false;
       stages = ["pre-push"];
     };

@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.25)
-project(pdf_signer VERSION 0.1.0 LANGUAGES C)
+project(pdf_engine VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -18,6 +22,7 @@ else()
 endif()
 
 find_package(OpenSSL REQUIRED)
+find_package(podofo CONFIG REQUIRED)
 
 find_path(HPDF_INCLUDE_DIR hpdf.h REQUIRED)
 find_library(HPDF_LIBRARY

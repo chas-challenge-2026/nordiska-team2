@@ -30,6 +30,7 @@ if(WIN32)
         PRIVATE
             hpdf
             OpenSSL::Crypto
+            podofo::podofo
             cjson
             ZLIB::ZLIB
     )
@@ -38,6 +39,7 @@ else()
         PRIVATE
             hpdf
             OpenSSL::Crypto
+            podofo::podofo
             ${CJSON_LIBRARIES}
     )
 endif()
