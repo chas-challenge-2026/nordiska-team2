@@ -11,6 +11,7 @@
 
     #C libs
     libharu
+    podofo
     openssl
     cjson
     pkgsStatic.cjson
