@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dependencies via vcpkg
         run: |
-          vcpkg install openssl:x64-windows-static-md cjson:x64-windows-static-md libharu:x64-windows-static-md
+          vcpkg install openssl:x64-windows-static-md cjson:x64-windows-static-md libharu:x64-windows-static-md podofo:x64-windows-static-md
 
       # Loads cl.exe/link.exe and the Windows SDK into PATH/env for this job,
       # so we can use the Ninja generator instead of pinning a specific
