@@ -1,7 +1,7 @@
 add_library(pdf_engine SHARED
     generator/pdf_generator.c
     generator/pdf_generator.h
-    signer/pdf_signer.c
+    signer/pdf_signer.cpp
     signer/pdf_signer.h
     layouts/tax_report.c
     layouts/tax_report.h
