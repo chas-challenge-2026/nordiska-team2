@@ -176,9 +176,9 @@ int main(int argc, char** argv) {
     }
 
     printf("Generating mock tax report(s) into %s/...\n", OUT_DIR);
-    int result =
-        pdf_engine_generate_and_sign(MOCK_JSON_PATH, PDF_REPORT_TYPE_TAX_REPORT,
-                                     OUT_DIR, NULL, NULL, print_progress, NULL);
+    int result = pdf_engine_generate_and_sign(
+        MOCK_JSON_PATH, PDF_REPORT_TYPE_TAX_REPORT, OUT_DIR, "test_cert.pfx",
+        "secret123", print_progress, NULL);
     // input is temporary
     remove(MOCK_JSON_PATH);
 
