@@ -15,3 +15,8 @@ add_test(NAME test_pdf_engine COMMAND test_pdf_engine)
 add_executable(test_json_streamer test_json_streamer.c)
 target_link_libraries(test_json_streamer PRIVATE pdf_engine unity)
 add_test(NAME test_json_streamer COMMAND test_json_streamer)
+
+# PDF Signer unit & simple integration tests
+add_executable(test_pdf_signer test_pdf_signer.cpp)
+target_link_libraries(test_pdf_signer PRIVATE pdf_engine unity podofo)
+add_test(NAME test_pdf_signer COMMAND test_pdf_signer)
