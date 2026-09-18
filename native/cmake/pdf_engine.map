@@ -1,0 +1,19 @@
+/*
+ * Linker version script for libpdf_engine.so.
+ *
+ * With third-party libraries statically linked in, the .so would otherwise
+ * export every OpenSSL, libharu and podofo symbol globally. That is actively
+ * dangerous inside a .NET process: .NET dlopen()s the system OpenSSL for its
+ * own crypto, and whichever copy of a symbol was loaded first wins for
+ * everyone. The resulting crashes look like they come from code you did not
+ * write.
+ *
+ * This restricts the dynamic symbol table to our own API surface. Everything
+ * else becomes local.
+ */
+{
+    global:
+        pdf_engine_*;
+    local:
+        *;
+};
