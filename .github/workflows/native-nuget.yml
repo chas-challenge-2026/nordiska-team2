@@ -1,0 +1,283 @@
+name: Native NuGet
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native-nuget.yml'
+  pull_request:
+    # Every PR against dev or main gets its own prerelease automatically, so
+    # .NET colleagues can pin and integration-test the exact proposed change
+    # *before* it merges — no manual dispatch, nobody has to remember a step.
+    branches: [main, dev]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native-nuget.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: native-nuget-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  VCPKG_COMMIT: '301856f5f2824f788a3ffa6332293861cccd23b4'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Version: main -> exactly what native/VERSION says (bump it by hand when you
+  # release). Anything else -> an auto-incrementing prerelease, so every push to
+  # dev produces a new, installable, strictly-ordered package.
+  # ---------------------------------------------------------------------------
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.calc.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: calc
+        shell: bash
+        run: |
+          BASE=$(tr -d '[:space:]' < native/VERSION)
+          # github.ref_name is "123/merge" on a pull_request event, not the
+          # branch name — head_ref is the real source-branch name and is
+          # only set for pull_request events, so this covers both triggers.
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+
+          if [ "$BRANCH" = "main" ]; then
+            VERSION="$BASE"
+          elif [ "$BRANCH" = "dev" ]; then
+            # run_number is monotonic across the whole workflow, so
+            # 0.1.0-dev.41 < 0.1.0-dev.42 < 0.1.0 under SemVer 2 ordering.
+            VERSION="$BASE-dev.${{ github.run_number }}"
+          else
+            # Everything else: a manual dispatch on a feature branch, or now
+            # (via the pull_request trigger above) an automatic build for a
+            # PR opened against dev/main. Either way it's a one-off test
+            # build, tagged with the branch so it can't be mistaken for a
+            # real dev build even though run_number is shared across all
+            # triggers of this workflow. SemVer prerelease identifiers only
+            # allow [0-9A-Za-z-], so sanitize e.g. "feat/pdf_signer" ->
+            # "feat-pdf-signer".
+            SAFE_BRANCH=$(echo "$BRANCH" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
+            VERSION="$BASE-$SAFE_BRANCH.${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Package version: $VERSION"
+
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: pdf_engine.dll (x64)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: native
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup vcpkg
+        id: vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          vcpkgJsonGlob: 'native/vcpkg.json'
+          # Dependencies are installed by CMake in manifest mode at configure
+          # time, so don't install them twice.
+          runVcpkgInstall: false
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        env:
+          VCPKG_ROOT_RESOLVED: ${{ steps.vcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}
+        run: >
+          cmake -S . -B build/release
+          -G Ninja
+          --no-warn-unused-cli
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT_RESOLVED/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          -DBUILD_TESTING=OFF
+          -DPDF_ENGINE_RESTRICT_SYMBOLS=ON
+
+      - name: Build
+        run: cmake --build build/release --target pdf_engine
+
+      - name: Stage
+        run: cmake --install build/release --prefix stage --component Unspecified
+
+      # Fails loudly now rather than at P/Invoke time in production.
+      - name: Verify exports
+        run: |
+          $dll = "stage/pdf_engine.dll"
+          if (-not (Test-Path $dll)) { throw "pdf_engine.dll was not produced" }
+          # dumpbin's output comes back as an array of lines; -notmatch against
+          # an array filters to non-matching *elements* rather than testing
+          # the whole thing, so it's almost always "truthy" regardless of
+          # whether the symbol is present. Join to one string first so the
+          # match is a real yes/no.
+          $exportText = (& dumpbin /exports $dll) -join "`n"
+          if ($exportText -notmatch 'pdf_engine_generate_and_sign') {
+            Write-Host $exportText
+            throw "pdf_engine_generate_and_sign is not exported"
+          }
+          Write-Host "OK: $((Get-Item $dll).Length) bytes"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: native-win-x64
+          path: native/stage/pdf_engine.dll
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  build-linux:
+    name: libpdf_engine.so (x64)
+    # Pinned to 22.04 on purpose: it sets the glibc floor (2.35) for the
+    # shipped .so. Building on a newer image would make the library refuse to
+    # load on older distros. If this runner label is ever retired, switch to
+    # `runs-on: ubuntu-latest` + `container: ubuntu:22.04` and apt-get the
+    # toolchain in a first step.
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: native
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      # Build prerequisites for the vcpkg ports (openssl, podofo and its
+      # freetype/fontconfig/libxml2 tree all use autotools somewhere).
+      - name: Install build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential ninja-build cmake pkg-config \
+            autoconf automake autoconf-archive libtool gperf bison flex nasm \
+            python3 python3-jinja2 python3-setuptools \
+            zip unzip curl git patchelf
+
+      - name: Setup vcpkg
+        id: vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          vcpkgJsonGlob: 'native/vcpkg.json'
+          runVcpkgInstall: false
+
+      - name: Configure
+        env:
+          VCPKG_ROOT_RESOLVED: ${{ steps.vcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}
+        run: >
+          cmake -S . -B build/release
+          -G Ninja
+          --no-warn-unused-cli
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT_RESOLVED/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_OVERLAY_TRIPLETS=cmake/triplets
+          -DVCPKG_TARGET_TRIPLET=x64-linux-pic
+          -DBUILD_TESTING=OFF
+          -DPDF_ENGINE_RESTRICT_SYMBOLS=ON
+
+      - name: Build
+        run: cmake --build build/release --target pdf_engine
+
+      - name: Stage
+        run: cmake --install build/release --prefix stage --component Unspecified
+
+      # The three things that actually break in production, checked here:
+      # leftover shared deps, a too-new glibc, and leaked OpenSSL symbols.
+      - name: Verify self-containment
+        run: |
+          SO=stage/libpdf_engine.so
+          test -f "$SO" || { echo "libpdf_engine.so was not produced"; exit 1; }
+
+          echo "--- DT_NEEDED ---"
+          readelf -d "$SO" | grep NEEDED || true
+
+          ALLOWED='libc\.so|libm\.so|libdl\.so|libpthread\.so|librt\.so|ld-linux'
+          UNEXPECTED=$(readelf -d "$SO" | grep NEEDED \
+            | sed -E 's/.*\[(.*)\]/\1/' | grep -Ev "$ALLOWED" || true)
+          if [ -n "$UNEXPECTED" ]; then
+            echo "ERROR: not self-contained, still needs:"; echo "$UNEXPECTED"
+            exit 1
+          fi
+
+          echo "--- Max glibc version required ---"
+          MAXGLIBC=$(objdump -T "$SO" | grep -o 'GLIBC_[0-9.]*' \
+            | sort -V -u | tail -1)
+          echo "$MAXGLIBC"
+
+          echo "--- Exported symbols ---"
+          nm -D --defined-only "$SO" | awk '{print $3}' | grep -v '^_' || true
+          if nm -D --defined-only "$SO" | grep -q ' SSL_\| EVP_CIPHER_CTX_new'; then
+            echo "ERROR: OpenSSL symbols leaked into the dynamic symbol table"
+            exit 1
+          fi
+          nm -D --defined-only "$SO" | grep -q pdf_engine_generate_and_sign \
+            || { echo "ERROR: public API not exported"; exit 1; }
+
+          echo "OK: $(stat -c%s "$SO") bytes"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: native-linux-x64
+          path: native/stage/libpdf_engine.so
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  pack-and-push:
+    needs: [version, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: native-win-x64
+          path: native/packaging/staging/win-x64
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: native-linux-x64
+          path: native/packaging/staging/linux-x64
+
+      - name: Pack
+        run: >
+          dotnet pack packaging/PdfEngine.Native.csproj
+          -c Release
+          -p:Version=${{ needs.version.outputs.version }}
+          -p:RepositoryUrl=${{ github.server_url }}/${{ github.repository }}
+          -p:RepositoryCommit=${{ github.sha }}
+          -o artifacts
+
+      - name: Show package contents
+        run: unzip -l artifacts/*.nupkg
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: nupkg-${{ needs.version.outputs.version }}
+          path: native/artifacts/*.nupkg
+          if-no-files-found: error
+
+      - name: Push to GitHub Packages
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+          --api-key ${{ secrets.GITHUB_TOKEN }}
+          --skip-duplicate
