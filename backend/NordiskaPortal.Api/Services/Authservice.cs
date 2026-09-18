@@ -61,6 +61,13 @@ namespace NordiskaPortal.Api.Services
             }
         }
 
+        // Public entry point for id-confirmation other than password login (BankID mock)
+        public async Task<AuthResult> IssueTokensForCustomerAsync(int customerId, string email)
+        {
+            return await IssueTokensAsync(customerId, email);
+        }
+
+        // Private entry point for id-confirmation (Password)
         private async Task<AuthResult> IssueTokensAsync(int customerId, string email)
         {
             var accessToken = GenerateAccessToken(customerId, email);
@@ -118,5 +125,7 @@ namespace NordiskaPortal.Api.Services
             var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
             return Convert.ToBase64String(bytes);
         }
+
+
     }
 }
