@@ -8,6 +8,7 @@
     valgrind
     conan
     pkg-config
+    zlib
 
     #C libs
     libharu
@@ -36,7 +37,7 @@
     lint = {
       enable = true;
       name = "clang-tidy static analysis";
-      entry = "just --justfile native/justfile --working-directory native lint";
+      entry = "bash -c 'cd native && devenv shell -- just lint'";
       pass_filenames = false;
       stages = ["pre-push"];
     };
@@ -44,7 +45,7 @@
     test = {
       enable = true;
       name = "run unit tests";
-      entry = "just --justfile native/justfile --working-directory native test";
+      entry = "bash -c 'cd native && devenv shell -- just test'";
       pass_filenames = false;
       stages = ["pre-push"];
     };

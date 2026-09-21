@@ -22,11 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v7
         with:
-          extra-conf: |
-            experimental-features = nix-command flakes
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('native/devenv.nix', 'native/devenv.lock', 'native/devenv.yml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 3G
       - name: Install devenv
         run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
       - name: Format Check
@@ -37,11 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v7
         with:
-          extra-conf: |
-            experimental-features = nix-command flakes
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('native/devenv.nix', 'native/devenv.lock', 'native/devenv.yml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 3G
       - name: Install devenv
         run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
       - name: Clang-Tidy Lint
@@ -52,11 +56,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v7
         with:
-          extra-conf: |
-            experimental-features = nix-command flakes
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('native/devenv.nix', 'native/devenv.lock', 'native/devenv.yml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 3G
       - name: Install devenv
         run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
       - name: Build & Test
