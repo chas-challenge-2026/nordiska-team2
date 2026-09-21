@@ -6,8 +6,6 @@ import taxesWhite from "../../../assets/svg/taxes-white.svg";
 import taxesDark from "../../../assets/svg/taxes-dark.svg";
 import faqWhite from "../../../assets/svg/faq-white.svg";
 import faqDark from "../../../assets/svg/faq-dark.svg";
-import logoutWhite from "../../../assets/svg/logout-white.svg"
-import logoutDark from "../../../assets/svg/logout-dark.svg";
 import settingsWhite from "../../../assets/svg/settings-white.svg"
 import settingsDark from "../../../assets/svg/settings-dark.svg"
 

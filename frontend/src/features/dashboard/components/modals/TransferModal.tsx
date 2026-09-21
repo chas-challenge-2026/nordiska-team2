@@ -20,10 +20,10 @@ export default function TransferModal({
     onClose,
 }: TransferProps) {
     const { data: accounts } = useAccounts(); // RIKTIG DATA
-    // const accounts = mockAccounts; // TILLFÄLLIGT
+
     const { showAlert } = useAlert();
     const accountOptions: OptionType[] = accounts?.map((account) => ({
-        value: String(account.id), label: account.name })) ?? []
+        value: String(account.id), label: account.accountNumber })) ?? []
 
     const [fromAccount, setFromAccount] = useState<OptionType | null>(null);
     const [toAccount, setToAccount] = useState<OptionType | null>(null);

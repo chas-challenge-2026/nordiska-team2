@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Transaction } from "../../../types/transaction";
+import ListItem from "../../../components/ui/ListItem";
 
 type RecentTransactionProps = {
     transactions: Transaction[];
@@ -37,34 +38,29 @@ export default function RecentTransactions({ transactions }: RecentTransactionPr
 
                 <ul className="divide-y divide-border-light">
                     {latestTransactions.map((transaction) => (
-                        <li
+                        <ListItem
                             key={transaction.id}
-                            className="grid grid-cols-1 gap-1 px-3 py-2
-                                        sm:grid-cols-[minmax(0,1fr)_auto]
-                                        sm:items-center sm:gap-4 sm:px-4">
-                            <div className="min-w-0">
-                                <p className="truncate text-small sm:text-medium">{transaction.description}</p>
-                                <p className="text-xsmall text-muted">
-                                    {transaction.account}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center justify-between 
-                                            gap-3 sm:flex-col sm:items-end">
-                                <p className={transaction.amount >= 0
+                            title={transaction.description}
+                            subtitle={transaction.account}
+                            right={
+                                <div className="flex items-center justify-between 
+                                                gap-3 sm:flex-col sm:items-end">
+                                    <p className={transaction.amount >= 0
                                                 ? "font-semibold text-success text-medium whitespace-nowrap"
                                                 : "font-semibold text-foreground text-medium"}>
                                                     {transaction.amount > 0 
                                                         ? "+"
                                                         : ""}
                                                     {amountFormatter.format(transaction.amount)}
-                                </p> 
-                                <p className="whitespace-nowrap text-xsmall text-muted">
+                                    </p> 
+                                    <p className="whitespace-nowrap text-xsmall text-muted">
                                     {dateFormatter.format(new Date(transaction.date))}
                                 </p>
                             </div>
-                        </li>
+                            }
+                        />
                     ))}
+                
                 </ul>
                 
                 <footer className="border-t border-border-light text-center">
