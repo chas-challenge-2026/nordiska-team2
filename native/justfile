@@ -10,29 +10,34 @@ configure-asan:
 build: configure
     cmake --build --preset default
 
-# Parameterized run command: `just run pdf_gen_cli`
-run name="pdf_tax_reporter" *args="": build
-    ./build/default/src/{{ name }} {{ args }}
+# Parameterized run command for examples/tools
+run example name *args="": build
+    @if [ -f "build/default/examples/{{ name }}" ]; then \
+        ./build/default/examples/{{ name }} {{ args }}; \
+    else \
+        echo "Error: Binary '{{ name }}' not found in examples/"; exit 1; \
+    fi
 
 test: build
     cmake --build --preset default
     ctest --test-dir build/default --output-on-failure
 
-# Build fully bundled, self-contained .so for standalone deployment
-bundle:
-    cmake -B build/bundled -G Ninja \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
-        -DOPENSSL_USE_STATIC_LIBS=ON \
-        -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_STATIC_LIB" \
-        -DOPENSSL_INCLUDE_DIR="$OPENSSL_STATIC_INC"
-    cmake --build build/bundled
-    @echo "\n--- Dynamic Dependency Check (ldd) ---"
-    @ldd build/bundled/src/libpdf_engine.so
+# Configure CMake with benchmarks enabled
+configure-bench:
+    cmake --preset default -DBUILD_BENCHMARKS=ON
 
-valgrind target="pdf_gen_cli": build
-    cmake --build --preset default --target {{ target }}
-    valgrind --leak-check=full --error-exitcode=1 ./build/default/src/{{ target }}
+bench: generate-cert
+    cmake --preset default -DBUILD_BENCHMARKS=ON
+    cmake --build --preset default --target bench_pdf_batch
+    ./build/default/benches/bench_pdf_batch
+
+valgrind *ARGS:
+    cmake --preset default
+    cmake --build --preset default
+    bash -c 'ARGS=({{ARGS}}); TARGET="pdf_stress_test"; VALGRIND_ARGS=(); if [ ${#ARGS[@]} -gt 0 ] && [[ "${ARGS[0]}" != -* ]]; then TARGET="${ARGS[0]}"; VALGRIND_ARGS=("${ARGS[@]:1}"); else VALGRIND_ARGS=("${ARGS[@]}"); fi; cmake --build --preset default --target "$TARGET"; valgrind --leak-check=full --error-exitcode=1 "${VALGRIND_ARGS[@]}" ./build/default/examples/"$TARGET"'
+
+valgrind-all:
+    just valgrind --show-reachable=yes --track-origins=yes --leak-check=full --show-leak-kinds=all
 
 docs: build
     cmake --build --preset default --target docs
@@ -55,6 +60,7 @@ clean:
     rm -rf build/
 
 generate-cert:
+    mkdir -p data
     openssl req -x509 -newkey rsa:2048 -keyout /tmp/key.pem -out /tmp/cert.pem -days 1 -nodes -subj "/CN=Test" 2>/dev/null
-    openssl pkcs12 -export -out test_cert.pfx -inkey /tmp/key.pem -in /tmp/cert.pem -passout pass:secret123 2>/dev/null
+    openssl pkcs12 -export -out data/test_cert.pfx -inkey /tmp/key.pem -in /tmp/cert.pem -passout pass:secret123 2>/dev/null
     rm /tmp/key.pem /tmp/cert.pem
