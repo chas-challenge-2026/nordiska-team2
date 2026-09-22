@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A native-assets-only package. It contains no managed code: its whole job is
+    to drop libpdf_engine.so / pdf_engine.dll into the right place so that
+    [DllImport("pdf_engine")] resolves with zero configuration on the consumer
+    side, on both Linux and Windows.
+
+    Pack with:
+      dotnet pack packaging/PdfEngine.Native.csproj -c Release \
+        -p:Version=0.1.0-dev.42 -o artifacts
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <!-- CHANGE ME: match your GitHub org / internal naming convention. -->
+    <PackageId>Nordiska.PdfEngine.Native</PackageId>
+    <Authors>Nordiska Team 2</Authors>
+    <Description>Native pdf_engine library (PDF generation + signing) for win-x64 and linux-x64. All third-party dependencies are statically linked; no system packages required.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- No managed assembly in the package, and no .cs files to compile. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- NU5128: "no lib/ or ref/ assembly for the declared TFM". Expected for
+         a native-only package; the _._ placeholder below keeps NuGet's
+         compatibility check happy. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Globs, so adding a second native file later needs no edit here. -->
+    <None Include="staging/win-x64/*.dll"
+          Pack="true" PackagePath="runtimes/win-x64/native/" />
+    <None Include="staging/linux-x64/*.so"
+          Pack="true" PackagePath="runtimes/linux-x64/native/" />
+
+    <None Include="_._" Pack="true" PackagePath="lib/netstandard2.0/" />
+  </ItemGroup>
+
+</Project>
