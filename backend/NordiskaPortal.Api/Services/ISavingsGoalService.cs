@@ -6,6 +6,9 @@ namespace NordiskaPortal.Api.Services
     {
         Task<List<SavingsGoalDto>> GetGoalsAsync(int customerId);
 
+        // Returns null if the goal doesn't exist OR belongs to someone else.
+        Task<SavingsGoalDto?> GetGoalAsync(int customerId, int goalId);
+
         // Returns null if AccountId was given but the customer doesn't own it.
         Task<SavingsGoalDto?> CreateGoalAsync(int customerId, CreateSavingsGoalRequest request);
 

@@ -25,6 +25,16 @@ namespace NordiskaPortal.Api.Controllers
             return Ok(goals);
         }
 
+        [HttpGet("{goalId:int}")]
+        public async Task<IActionResult> GetGoal(int goalId)
+        {
+            var goal = await _savingsGoalService.GetGoalAsync(User.GetCustomerId(), goalId);
+            if (goal == null)
+                return NotFound(new { error = "Sparmålet kunde inte hittas." });
+
+            return Ok(goal);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateSavingsGoalRequest request)
         {
@@ -32,7 +42,7 @@ namespace NordiskaPortal.Api.Controllers
             if (goal == null)
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
-            return CreatedAtAction(nameof(GetMyGoals), goal);
+            return CreatedAtAction(nameof(GetGoal), new { goalId = goal.Id }, goal);
         }
 
         [HttpDelete("{goalId:int}")]

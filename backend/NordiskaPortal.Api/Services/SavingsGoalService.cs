@@ -25,13 +25,24 @@ namespace NordiskaPortal.Api.Services
                 .OrderBy(g => g.CreatedAt)
                 .ToListAsync();
 
-            // Sequential on purpose: DbContext can't run concurrent operations.
-            // (the same as the reverted AccountService parallelization)
+            // Sequential on purpose: DbContext can't run concurrent
+            // operations (the same lesson as the reverted AccountService
+            // parallelization).
             var result = new List<SavingsGoalDto>();
             foreach (var goal in goals)
                 result.Add(await ToDtoAsync(goal));
 
             return result;
+        }
+
+        public async Task<SavingsGoalDto?> GetGoalAsync(int customerId, int goalId)
+        {
+            // Filters on BOTH id and owner in one query, so another
+            // customer's goal looks identical to a nonexistent one.
+            var goal = await _db.SavingsGoals
+                .FirstOrDefaultAsync(g => g.Id == goalId && g.CustomerId == customerId);
+
+            return goal == null ? null : await ToDtoAsync(goal);
         }
 
         public async Task<SavingsGoalDto?> CreateGoalAsync(int customerId, CreateSavingsGoalRequest request)
