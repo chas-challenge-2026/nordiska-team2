@@ -8,6 +8,7 @@ import Card from "../../components/cards/Card";
 import ListItem from "../../components/ui/ListItem";
 import Button from "../../components/ui/Button";
 import InputField from "../../components/ui/Input";
+import TransactionsChart from "./TransactionChart";
 
 interface LedgerEntry {
   date: string;
@@ -157,10 +158,9 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
        {/* ============ HÖGER SIDA ============ */}
       <div>
         <Card 
-            title="Graf"
-            headerVariant="secondary"
+            headerVariant="noHeader"
             >
-              GRAF
+              <TransactionsChart history={history ?? []} />
         </Card>
       </div>
     </div>

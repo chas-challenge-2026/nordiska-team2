@@ -1,15 +1,16 @@
 import { useId, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-type CardHeaderVariant = "primary" | "secondary";
+type CardHeaderVariant = "primary" | "secondary" | "noHeader" ;
 
 const headerVariantClasses: Record<CardHeaderVariant, string> = {
     primary: "bg-brand text-white",
     secondary: "bg-white text-foreground",
+    noHeader: "border-none"
 };
 
 type CardProps = {
-    title: string;
+    title?: string;
     subtitle?: string;
     children: ReactNode;
     className?: string;

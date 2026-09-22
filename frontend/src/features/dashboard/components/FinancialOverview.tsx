@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Card from "../../../components/cards/Card";
 import type { FinancialOverviewData } from "../data/financialOverview";
 import type { Account } from "../../../types/account"
+import BalanceChart from "./BalanceCharts";
 
 type FinancialOverviewProps = {
     accounts: Account[];
@@ -48,6 +49,9 @@ export default function FinancialOverview({
                             <p className="text-balance font-bold text-brand text-small">
                                 −{currencyFormatter.format(financial.expenses)}
                             </p>
+                        </li>
+                        <li>
+                            <BalanceChart accounts={accounts} />
                         </li>
                 </ul>
                 <footer className="border-t border-border-light text-center">
