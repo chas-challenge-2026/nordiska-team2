@@ -28,11 +28,36 @@ env:
   VCPKG_COMMIT: '301856f5f2824f788a3ffa6332293861cccd23b4'
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # Version: main -> exactly what native/VERSION says (bump it by hand when you
-  # release). Anything else -> an auto-incrementing prerelease, so every push to
-  # dev produces a new, installable, strictly-ordered package.
-  # ---------------------------------------------------------------------------
+  # Fails the PR if native/** changed but native/VERSION wasn't bumped to go
+  # with it. Without this, forgetting the bump means the push to main still
+  # "succeeds" but --skip-duplicate silently no-ops the actual publish —
+  # nobody gets the fix, and nothing tells you that happened.
+  #
+  # This only fails the check; it doesn't block the merge by itself. Add it
+  # as a required status check under Settings -> Branches -> main to make it
+  # a real gate.
+  guard-version-bump:
+    name: Require a VERSION bump for main
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check native/VERSION was bumped
+        shell: bash
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          CODE_CHANGED=$(git diff --name-only "$BASE_SHA" HEAD -- native/ | grep -v '^native/VERSION$' || true)
+          VERSION_CHANGED=$(git diff --name-only "$BASE_SHA" HEAD -- native/VERSION || true)
+
+          if [ -n "$CODE_CHANGED" ] && [ -z "$VERSION_CHANGED" ]; then
+            echo "::error::native/** changed but native/VERSION was not bumped. Merging this as-is will silently skip publishing to main's feed (--skip-duplicate) since the version already exists — bump native/VERSION before merging."
+            exit 1
+          fi
+          echo "OK: native/VERSION was bumped, or native/** has no changes."
+
   version:
     runs-on: ubuntu-latest
     outputs:
