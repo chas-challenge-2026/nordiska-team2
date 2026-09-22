@@ -7,10 +7,13 @@ on:
       - 'native/**'
       - '.github/workflows/native-nuget.yml'
   pull_request:
-    # Every PR against dev or main gets its own prerelease automatically, so
-    # .NET colleagues can pin and integration-test the exact proposed change
-    # *before* it merges — no manual dispatch, nobody has to remember a step.
-    branches: [main, dev]
+    # Only main: this is scoped to the cheap version-bump guard below, not
+    # the full build/pack/publish pipeline. A PR into dev proves nothing
+    # that a real push to dev won't prove a few minutes later anyway, and
+    # doubling every build for that is wasted CI minutes on a shared org
+    # quota. Use workflow_dispatch on the rare occasion a branch's actual
+    # package needs testing before merge.
+    branches: [main]
     paths:
       - 'native/**'
       - '.github/workflows/native-nuget.yml'
@@ -59,6 +62,10 @@ jobs:
           echo "OK: native/VERSION was bumped, or native/** has no changes."
 
   version:
+    # Skip on pull_request entirely: the guard above is the only check a PR
+    # needs. The full build/pack/publish pipeline only runs for a real push
+    # (merge to dev/main) or an explicit manual dispatch.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.calc.outputs.version }}
@@ -98,6 +105,7 @@ jobs:
   # ---------------------------------------------------------------------------
   build-windows:
     name: pdf_engine.dll (x64)
+    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     defaults:
       run:
@@ -115,6 +123,29 @@ jobs:
           # Dependencies are installed by CMake in manifest mode at configure
           # time, so don't install them twice.
           runVcpkgInstall: false
+
+      # lukka/run-vcpkg@v11 defaults to vcpkg's "x-gha" binary cache
+      # provider, which vcpkg itself removed in April 2025 — so without
+      # this, every run silently rebuilds every dependency from source.
+      # This swaps it for a plain filesystem cache directory that
+      # actions/cache persists between runs instead.
+      - name: Point vcpkg at a filesystem binary cache
+        run: echo "VCPKG_BINARY_SOURCES=clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite" >> $env:GITHUB_ENV
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.vcpkg-cache
+          # vcpkg's cache is content-addressed per port (keyed by each
+          # port's own ABI hash), so restoring a slightly-stale cache is
+          # still safe — vcpkg just rebuilds whatever doesn't match. The
+          # vcpkg.json hash + pinned commit here just give a genuine
+          # dependency bump a clean new cache lineage instead of an
+          # ever-growing one.
+          key: vcpkg-windows-x64-static-md-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+          restore-keys: |
+            vcpkg-windows-x64-static-md-${{ hashFiles('native/vcpkg.json') }}-
+            vcpkg-windows-x64-static-md-
 
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -166,6 +197,7 @@ jobs:
   # ---------------------------------------------------------------------------
   build-linux:
     name: libpdf_engine.so (x64)
+    if: github.event_name != 'pull_request'
     # Pinned to 22.04 on purpose: it sets the glibc floor (2.35) for the
     # shipped .so. Building on a newer image would make the library refuse to
     # load on older distros. If this runner label is ever retired, switch to
@@ -197,6 +229,22 @@ jobs:
           vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
           vcpkgJsonGlob: 'native/vcpkg.json'
           runVcpkgInstall: false
+
+      # See the matching step in build-windows: run-vcpkg's default cache
+      # provider (x-gha) was removed from vcpkg upstream in April 2025, so
+      # this filesystem cache + actions/cache is what actually persists
+      # built dependencies between runs.
+      - name: Point vcpkg at a filesystem binary cache
+        run: echo "VCPKG_BINARY_SOURCES=clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.vcpkg-cache
+          key: vcpkg-linux-x64-pic-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+          restore-keys: |
+            vcpkg-linux-x64-pic-${{ hashFiles('native/vcpkg.json') }}-
+            vcpkg-linux-x64-pic-
 
       - name: Configure
         env:
