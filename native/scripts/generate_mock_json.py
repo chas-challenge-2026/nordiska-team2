@@ -3,12 +3,16 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_mock_data(count: int, output_path: str):
+def generate_mock_data(count: int, output_path: str, force: bool = False):
+    # Skip execution if file already exists and --force is not set
+    if os.path.exists(output_path) and not force:
+        print(f"Skipping: '{output_path}' already exists. Use --force to regenerate.")
+        return
+
     first_names = ["Anna", "Johan", "Maria", "Karl", "Elin", "Erik", "Sara", "Lars", "Karin", "Per"]
     last_names = ["Andersson", "Johansson", "Karlsson", "Nilsson", "Eriksson", "Larsson", "Olsson", "Persson"]
     streets = ["Storgatan", "Kungsgatan", "Drottninggatan", "Sveavägen", "Vasagatan"]
     
-    # Ensure directory exists if output_path includes subdirectories
     output_dir = os.path.dirname(output_path)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -88,6 +92,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate mock tax report JSON data.")
     parser.add_argument("count", type=int, help="Number of users/items to generate")
     parser.add_argument("path", type=str, help="File path where the JSON should be saved")
+    parser.add_argument("-f", "--force", action="store_true", help="Force overwrite if file exists")
     
     args = parser.parse_args()
-    generate_mock_data(args.count, args.path)
+    generate_mock_data(args.count, args.path, args.force)

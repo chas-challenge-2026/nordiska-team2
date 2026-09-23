@@ -26,7 +26,7 @@ int main() {
     std::filesystem::create_directories(root_dir + "/" + OUT_DIR);
 
     if (!std::filesystem::exists(json_path)) {
-        std::cerr << "Error: Failed to generate 1k mock JSON dataset.\n";
+        std::cerr << "Error: Failed to find 1k mock JSON dataset.\n";
         return 1;
     }
 
