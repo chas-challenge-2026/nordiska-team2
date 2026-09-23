@@ -15,6 +15,7 @@ public class BankContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<TaxReport> TaxReports { get; set; }
+    public DbSet<SavingsGoal> SavingsGoals { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
