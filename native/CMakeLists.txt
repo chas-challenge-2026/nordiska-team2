@@ -11,18 +11,51 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Required to link static third-party archives into a shared library.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 option(BUILD_TESTING "Build unit/integration tests" ON)
 
-if(WIN32)
-    find_package(cJSON CONFIG REQUIRED)
-    find_package(ZLIB REQUIRED)
-else()
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(CJSON REQUIRED libcjson)
+option(BUILD_BENCHMARKS "Build performance benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+    add_subdirectory(benches)
 endif()
 
+option(PDF_ENGINE_RESTRICT_SYMBOLS
+    "Hide all symbols except the public pdf_engine_* API (release/distribution builds only)"
+    OFF)
+
+if(PDF_ENGINE_RESTRICT_SYMBOLS)
+    set(CMAKE_C_VISIBILITY_PRESET hidden)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+endif()
+
+# ---------------------------------------------------------------------------
+# Dependencies
+#
+# Two supported environments:
+#   * vcpkg manifest mode (CI, static) -> everything found via CONFIG packages
+#   * devenv / Nix (local dev, shared) -> cJSON comes from pkg-config
+# The same CMakeLists handles both by preferring CONFIG and falling back.
+# ---------------------------------------------------------------------------
+
 find_package(OpenSSL REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(podofo CONFIG REQUIRED)
+
+find_package(cJSON CONFIG QUIET)
+if(cJSON_FOUND)
+    if(TARGET cjson::cjson)
+        set(PDF_ENGINE_CJSON cjson::cjson)
+    else()
+        set(PDF_ENGINE_CJSON cjson)
+    endif()
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CJSON REQUIRED IMPORTED_TARGET libcjson)
+    set(PDF_ENGINE_CJSON PkgConfig::CJSON)
+endif()
 
 find_path(HPDF_INCLUDE_DIR hpdf.h REQUIRED)
 find_library(HPDF_LIBRARY
