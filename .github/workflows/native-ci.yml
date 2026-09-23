@@ -67,3 +67,29 @@ jobs:
         run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
       - name: Build & Test
         run: devenv shell -- just test
+  benchmark:
+      name: Run Benchmarks
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: DeterminateSystems/determinate-nix-action@v3
+        - name: Cache Nix store
+          uses: nix-community/cache-nix-action@v7
+          with:
+            primary-key: nix-${{ runner.os }}-${{ hashFiles('native/devenv.nix', 'native/devenv.lock', 'native/devenv.yml') }}
+            restore-prefixes-first-match: nix-${{ runner.os }}-
+            gc-max-store-size-linux: 3G
+        - name: Install devenv
+          run: nix profile install github:NixOS/nixpkgs/nixos-26.05#devenv
+        - name: Run Benchmark & Report
+          run: |
+            OUTPUT=$(devenv shell -- just bench)
+            echo "$OUTPUT"
+            # Extract timing line from output
+            ELAPSED=$(echo "$OUTPUT" | grep "BENCH_ELAPSED_SEC=" | cut -d'=' -f2 || echo "N/A")
+            # Write Markdown summary to GitHub Actions UI
+            echo "### Benchmark Results" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Target** | `bench_pdf_batch` (1k PDFs) |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Execution Time** | \`${ELAPSED}s\` |" >> $GITHUB_STEP_SUMMARY
