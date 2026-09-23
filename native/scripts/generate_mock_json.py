@@ -1,21 +1,23 @@
+import argparse
 import json
 import os
 from datetime import datetime, timedelta
 
-def generate_mock_data():
+def generate_mock_data(count: int, output_path: str):
     first_names = ["Anna", "Johan", "Maria", "Karl", "Elin", "Erik", "Sara", "Lars", "Karin", "Per"]
     last_names = ["Andersson", "Johansson", "Karlsson", "Nilsson", "Eriksson", "Larsson", "Olsson", "Persson"]
     streets = ["Storgatan", "Kungsgatan", "Drottninggatan", "Sveavägen", "Vasagatan"]
     
-    output_dir = "data"
-    os.makedirs(output_dir, exist_ok=True)
-    file_path = os.path.join(output_dir, "mock_tax_report_1k.json")
+    # Ensure directory exists if output_path includes subdirectories
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     
-    print("Generating 1,000 user profiles with 50 transactions each...")
+    print(f"Generating {count:,} user profile(s) with 50 transactions each...")
     
     all_reports = []
     
-    for i in range(1, 1001):
+    for i in range(1, count + 1):
         name = f"{first_names[i % len(first_names)]} {last_names[(i // 3) % len(last_names)]}"
         personal_id = f"198{i % 10}{(i * 7) % 10}0{i % 2 + 1}{(i * 3) % 28 + 1:02d}{i % 9000 + 1000:04d}"
         customer_id = str(1000 + i)
@@ -76,10 +78,16 @@ def generate_mock_data():
         }
         all_reports.append(report)
         
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(all_reports, f, ensure_ascii=False)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(all_reports, f, ensure_ascii=False, indent=2)
         
-    print(f"Successfully generated {file_path} ({os.path.getsize(file_path) / (1024*1024):.2f} MB)")
+    file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
+    print(f"Successfully generated {output_path} ({file_size_mb:.2f} MB)")
 
 if __name__ == "__main__":
-    generate_mock_data()
+    parser = argparse.ArgumentParser(description="Generate mock tax report JSON data.")
+    parser.add_argument("count", type=int, help="Number of users/items to generate")
+    parser.add_argument("path", type=str, help="File path where the JSON should be saved")
+    
+    args = parser.parse_args()
+    generate_mock_data(args.count, args.path)

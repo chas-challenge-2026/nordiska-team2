@@ -23,14 +23,8 @@ int main() {
     std::filesystem::create_directories(root_dir + "/" + OUT_DIR);
 
     if (!std::filesystem::exists(json_path)) {
-        printf("1k mock JSON missing. Generating via Python script...\n");
-        std::string py_cmd =
-            "python3 " + root_dir + "/scripts/generate_1k_mock.py";
-        if (std::system(py_cmd.c_str()) != 0) {
-            fprintf(stderr,
-                    "Error: Failed to generate 1k mock JSON dataset.\n");
-            return 1;
-        }
+        fprintf(stderr, "Error: Failed to generate 1k mock JSON dataset.\n");
+        return -1;
     }
 
     ankerl::nanobench::Bench().warmup(0).epochs(1).minEpochIterations(1).run(

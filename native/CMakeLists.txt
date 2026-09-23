@@ -21,6 +21,11 @@ if(BUILD_BENCHMARKS)
     add_subdirectory(benches)
 endif()
 
+option(BUILD_EXAMPLES "Build library examples and tools" ON)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
 option(PDF_ENGINE_RESTRICT_SYMBOLS
     "Hide all symbols except the public pdf_engine_* API (release/distribution builds only)"
     OFF)
