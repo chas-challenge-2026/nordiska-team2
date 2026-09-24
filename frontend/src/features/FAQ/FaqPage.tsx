@@ -3,9 +3,7 @@ import { Search, CreditCard, ArrowLeftRight, TrendingUp, FileText } from "lucide
 import { mockFaqEntries, mockCategories } from "./mockData";
 import type { FaqEntry } from "../../types/faq";
 import type { LucideIcon } from "lucide-react";
-import { FaqQuestionCard } from "./FaqQuestionCard.tsx";
-
-
+import { FaqQuestionCard } from "./FaqQuestionCard";
 
 const categoryIcons: Record<string, LucideIcon> = {
   "credit-card": CreditCard,
@@ -20,58 +18,42 @@ export function FaqPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
 
-  
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
 
-    
     setIsLoading(true);
     setError(null);
-
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-
     try {
-        const respons = await fetch(`/api/faq/search?q=${encodeURIComponent(query.trim())}`,
-    { signal: controller.signal }
-    );
+      const respons = await fetch(
+        `/api/faq/search?q=${encodeURIComponent(query.trim())}`,
+        { signal: controller.signal }
+      );
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        if (!respons.ok) {
-            throw new Error(`Sökningen misslyckades (${respons.status})`);
-        }
+      if (!respons.ok) {
+        throw new Error(`Sökningen misslyckades (${respons.status})`);
+      }
 
-        const data = await respons.json();
-        setResults(data);
-        setHasSearched(true);
+      const data = await respons.json();
+      setResults(data);
+      setHasSearched(true);
     } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") {
-            setError("Sökningen tog för långt tid. Försök igen!");
-        } else {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Sökningen tog för långt tid. Försök igen!");
+      } else {
         setError("Sökningen lyckades inte, försök igen!");
-        }
+      }
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-    }
-
-
-//     const normalized = query.trim().toLowerCase();
-//     const matches = mockFaqEntries.filter(
-//       (entry) =>
-//         entry.keywords.some((k) => k.toLowerCase().includes(normalized)) ||
-//         entry.question.toLowerCase().includes(normalized)
-//     );
-
-//     setResults(matches);
-//     setHasSearched(true);
-//   }
+  }
 
   return (
     <div>
@@ -90,19 +72,14 @@ export function FaqPage() {
       </p>
 
       {isLoading && (
-        <p className="text-sm text-gray-500 mb-4">Söker....</p>
+        <p className="text-sm text-gray-500 mb-4">Söker...</p>
       )}
 
       {error && (
-        <p className="text-sm text-red-600 mb-4">{error}
-        
-        
-        
-        
-        </p>
+        <p className="text-sm text-red-600 mb-4">{error}</p>
       )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {mockCategories.map((cat) => {
           const Icon = categoryIcons[cat.icon];
           return (
@@ -118,17 +95,39 @@ export function FaqPage() {
         })}
       </div>
 
-      <h2 className="text-lg font-semibold mb-4">Vanliga frågor just nu</h2>
-      {mockFaqEntries.slice(0, 3).map((entry, index) => (
-        <FaqQuestionCard
-          key={entry.id}
-          entry={entry}
-          defaultOpen={index === 0}
-        />
-      ))}
+      {hasSearched && !isLoading && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-4">Sökresultat</h2>
 
-        
-      
+          {results.length > 0 ? (
+            results.map((entry, index) => (
+              <FaqQuestionCard key={entry.id} entry={entry} defaultOpen={index === 0} />
+            ))
+          ) : (
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <p className="text-gray-600 mb-3">
+                Vi hittade inget svar på just din fråga.
+              </p>
+              <p className="text-sm text-gray-500">
+                Kontakta kundtjänst så hjälper vi dig vidare.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!hasSearched && (
+        <>
+          <h2 className="text-lg font-semibold mb-4">Vanliga frågor just nu</h2>
+          {mockFaqEntries.slice(0, 3).map((entry, index) => (
+            <FaqQuestionCard
+              key={entry.id}
+              entry={entry}
+              defaultOpen={index === 0}
+            />
+          ))}
+        </>
+      )}
     </div>
   );
 }
