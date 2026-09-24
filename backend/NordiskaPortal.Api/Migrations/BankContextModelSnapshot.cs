@@ -87,6 +87,71 @@ namespace NordiskaPortal.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string[]>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FaqEntries");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Answer = "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).",
+                            Category = "Ränta",
+                            Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" },
+                            Question = "När betalas räntan ut?"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
+                            Category = "Transaktioner",
+                            Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" },
+                            Question = "Hur gör jag ett uttag?"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
+                            Category = "Rapporter",
+                            Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" },
+                            Question = "Var hittar jag min årsrapport?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Answer = "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.",
+                            Category = "Konto",
+                            Keywords = new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" },
+                            Question = "Hur öppnar jag ett nytt sparkonto?"
+                        });
+                });
+
             modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -180,6 +245,43 @@ namespace NordiskaPortal.Api.Migrations
                             CustomerId = 2,
                             InterestRate = 0.0350m
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsGoal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("TargetAmount")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("SavingsGoals");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.TaxReport", b =>
@@ -353,6 +455,23 @@ namespace NordiskaPortal.Api.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsGoal", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.SavingsAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.HasOne("NordiskaPortal.Api.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Customer");
                 });

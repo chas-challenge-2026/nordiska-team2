@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = PdfEngine.Native
+build_property.ProjectDir = E:\Documents\Chas_academy\HT2026\ChasChallenge\App\native\packaging\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 

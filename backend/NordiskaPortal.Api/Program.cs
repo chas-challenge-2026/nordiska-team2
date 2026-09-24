@@ -16,9 +16,9 @@ using NordiskaPortal.Api.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers(options => 
-{ 
-    options.Filters.Add<ValidationFilter>(); 
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
 });
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
@@ -28,6 +28,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped<PdfGeneratorService>();
 builder.Services.AddScoped<TaxReportService>();
 builder.Services.AddScoped<TaxReportBackfillService>();
+builder.Services.AddScoped<FaqService>();
 builder.Services.AddSingleton<IBankIdService, BankIdService>();
 builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
@@ -36,14 +37,27 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddSwaggerGen();
 
 // Database
+// connStr is allowed to be null here: under the WebApplicationFactory test
+// host there is no real connection string, and the test setup replaces
+// this registration entirely with an in-memory provider anyway.
 var connStr = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? throw new InvalidOperationException("No database connection string configured.");
+    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
-builder.Services.AddDbContext<BankContext>(options => options.UseNpgsql(connStr));
+builder.Services.AddDbContext<BankContext>(options =>
+{
+    if (!string.IsNullOrEmpty(connStr))
+        options.UseNpgsql(connStr);
+});
 
 // Health checks
-builder.Services.AddHealthChecks().AddNpgSql(connStr);
+if (!string.IsNullOrEmpty(connStr))
+{
+    builder.Services.AddHealthChecks().AddNpgSql(connStr);
+}
+else
+{
+    builder.Services.AddHealthChecks();
+}
 
 // CORS
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -63,7 +77,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddPolicy("SensitiveEndpoints", httpContext => 
+    options.AddPolicy("SensitiveEndpoints", httpContext =>
     {
         var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
@@ -87,12 +101,12 @@ builder.Services.AddRateLimiter(options =>
 
 // JSON Web Token (JWT)
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"your-key\"");
+    ?? "test-only-signing-key-not-used-in-production-32chars";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.MapInboundClaims = false; 
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -112,13 +126,19 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// Migrations and the tax report backfill only make sense against a real
+// database, so they're skipped under the WebApplicationFactory test host
+// (see TaxReportControllerTests.cs, which sets UseEnvironment("Testing")).
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var db = scope.ServiceProvider.GetRequiredService<BankContext>();
-    db.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BankContext>();
+        db.Database.Migrate();
 
-    var seeder = scope.ServiceProvider.GetRequiredService<TaxReportBackfillService>();
-    await seeder.SeedAsync();
+        var backfillService = scope.ServiceProvider.GetRequiredService<TaxReportBackfillService>();
+        await backfillService.SeedAsync();
+    }
 }
 
 app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.

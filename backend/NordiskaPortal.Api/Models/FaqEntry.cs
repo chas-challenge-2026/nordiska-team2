@@ -1,6 +1,3 @@
-// STAND IN VERSION.
-// TODO: IMPLEMENTED IVANS VERSION.
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
