@@ -18,23 +18,60 @@ export function FaqPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FaqEntry[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
 
-  // TODO(API): byt ut mot fetch("/api/faq/search?q=...")
-  function handleSubmit(e: React.FormEvent) {
+  
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
 
-    const normalized = query.trim().toLowerCase();
-    const matches = mockFaqEntries.filter(
-      (entry) =>
-        entry.keywords.some((k) => k.toLowerCase().includes(normalized)) ||
-        entry.question.toLowerCase().includes(normalized)
+    
+    setIsLoading(true);
+    setError(null);
+
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+
+    try {
+        const respons = await fetch(`/api/faq/search?q=${encodeURIComponent(query.trim())}`,
+    { signal: controller.signal }
     );
 
-    setResults(matches);
-    setHasSearched(true);
-  }
+    clearTimeout(timeoutId);
+
+        if (!respons.ok) {
+            throw new Error(`Sökningen misslyckades (${respons.status})`);
+        }
+
+        const data = await respons.json();
+        setResults(data);
+        setHasSearched(true);
+    } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+            setError("Sökningen tog för långt tid. Försök igen!");
+        } else {
+        setError("Sökningen lyckades inte, försök igen!");
+        }
+    } finally {
+        setIsLoading(false);
+    }
+    }
+
+
+//     const normalized = query.trim().toLowerCase();
+//     const matches = mockFaqEntries.filter(
+//       (entry) =>
+//         entry.keywords.some((k) => k.toLowerCase().includes(normalized)) ||
+//         entry.question.toLowerCase().includes(normalized)
+//     );
+
+//     setResults(matches);
+//     setHasSearched(true);
+//   }
 
   return (
     <div>
@@ -51,6 +88,19 @@ export function FaqPage() {
       <p className="text-sm text-gray-500 mb-8">
         Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>
+
+      {isLoading && (
+        <p className="text-sm text-gray-500 mb-4">Söker....</p>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-600 mb-4">{error}
+        
+        
+        
+        
+        </p>
+      )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {mockCategories.map((cat) => {
