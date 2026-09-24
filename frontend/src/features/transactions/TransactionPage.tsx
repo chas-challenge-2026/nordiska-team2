@@ -9,6 +9,7 @@ import ListItem from "../../components/ui/ListItem";
 import Button from "../../components/ui/Button";
 import InputField from "../../components/ui/Input";
 import TransactionsChart from "./TransactionChart";
+import CreateSavingsGoalsModal from "../dashboard/components/modals/CreateSavingsGoalsModal";
 
 interface LedgerEntry {
   date: string;
@@ -20,6 +21,7 @@ export default function TransactionPage() {
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -87,8 +89,19 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
   
   return (
     <>
-      <h1 className="text-xl sm:text-title mb-5">Transaktioner</h1>
-
+      <h1 className="text-xl sm:text-title mb-5">Kontohantering</h1>
+        <div className="mb-5">
+          {/* <Button 
+            label="Öppna ett konto"
+            variant="secondary"
+            onClick={() => setIsGoalModalOpen(true)}
+          /> */}
+          <Button 
+            label="Hantera sparmål"
+            variant="secondary"
+            onClick={() => setIsGoalModalOpen(true)}
+          />
+        </div>
 
     <div className="grid grid-cols-1 justify-items-stretch 
                             md:grid-cols-1 xl:grid-cols-2 gap-3 mb-6">
@@ -163,6 +176,7 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
               <TransactionsChart history={history ?? []} />
         </Card>
       </div>
+
     </div>
 
 
@@ -184,6 +198,7 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
               </ul>
             )}
       </Card>
+      <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
     </>
   );
 }

@@ -9,7 +9,7 @@ import type { QuickAction } from "../../../types/quickActions";
 export const quickActions: QuickAction[] = [
     {
         id: "transfer",
-        label: "Överföring",
+        label: "Insättning/Uttag",
         icon: transferIcon,
         size: "small",
     },
