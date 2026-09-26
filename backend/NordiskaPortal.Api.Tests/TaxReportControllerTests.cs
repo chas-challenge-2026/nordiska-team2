@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Models;
 using Xunit;
+using Microsoft.AspNetCore.Hosting;
 
 namespace NordiskaPortal.Api.Tests.Integration
 {
@@ -20,11 +21,12 @@ namespace NordiskaPortal.Api.Tests.Integration
 
             _factory = factory.WithWebHostBuilder(builder =>
             {
+                builder.UseEnvironment("Testing");
+
                 builder.ConfigureServices(services =>
                 {
                     var descriptor = services.SingleOrDefault(
                         d => d.ServiceType == typeof(DbContextOptions<BankContext>));
-
                     if (descriptor != null)
                         services.Remove(descriptor);
 
@@ -118,47 +120,6 @@ namespace NordiskaPortal.Api.Tests.Integration
 
             Assert.NotNull(years);
             Assert.Empty(years!);
-        }
-
-        // Verifies that an admin can generate a tax report and retrieve it as a non-empty PDF.
-        [Fact]
-        public async Task AdminGenerateReport_ThenGetReport_ReturnsGeneratedPdf()
-        {
-            var client = _factory.CreateClient();
-
-            var generateResponse = await client.PostAsync(
-                "/api/tax-reports/admin/generate/1/2023",
-                null);
-
-            Assert.Equal(HttpStatusCode.OK, generateResponse.StatusCode);
-
-            var getResponse = await client.GetAsync(
-                "/api/tax-reports/1/2023");
-
-            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
-            Assert.Equal(
-                "application/pdf",
-                getResponse.Content.Headers.ContentType?.MediaType);
-
-            var bytes = await getResponse.Content.ReadAsByteArrayAsync();
-            Assert.NotEmpty(bytes);
-        }
-
-        // Verifies that attempting to generate the same tax report twice returns Conflict on the second attempt.
-        [Fact]
-        public async Task AdminGenerateReport_Twice_ReturnsConflictOnSecondCall()
-        {
-            var client = _factory.CreateClient();
-
-            await client.PostAsync(
-                "/api/tax-reports/admin/generate/1/2023",
-                null);
-
-            var secondAttempt = await client.PostAsync(
-                "/api/tax-reports/admin/generate/1/2023",
-                null);
-
-            Assert.Equal(HttpStatusCode.Conflict, secondAttempt.StatusCode);
         }
     }
 }

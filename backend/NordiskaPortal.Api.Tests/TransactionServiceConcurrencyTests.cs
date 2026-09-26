@@ -28,6 +28,11 @@ namespace NordiskaPortal.Api.Tests
             var service1 = new TransactionService(db1);
             var service2 = new TransactionService(db2);
 
+            // Read the real starting balance instead of assuming a fixed seed value,
+            // since this test runs against a persistent Postgres database whose
+            // state can carry over between runs and between other tests.
+            var startingBalance = await service1.GetBalanceAsync(accountId);
+
             // Act: fire both withdrawals genuinely concurrently. Task.WhenAll starts both before awaiting either
             // so both begin their balance read before either has committed.
             // The exact scenario the Serializable isolation exists to protect against.
@@ -55,7 +60,7 @@ namespace NordiskaPortal.Api.Tests
             var verifyService = new TransactionService(verifyDb);
             var finalBalance = await verifyService.GetBalanceAsync(accountId);
 
-            Assert.Equal(125000m - withdrawAmount, finalBalance);
+            Assert.Equal(startingBalance - withdrawAmount, finalBalance);
         }
 
         [Fact]

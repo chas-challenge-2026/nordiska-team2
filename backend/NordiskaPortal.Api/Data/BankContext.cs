@@ -15,7 +15,9 @@ public class BankContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<TaxReport> TaxReports { get; set; }
+    public DbSet<FaqEntry> FaqEntries { get; set; }
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +161,41 @@ public class BankContext : DbContext
                 TransactionDate = new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc),
                 PostingDate = Transaction.CalculatePostingDate(new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc)),
                 Status = TransactionStatus.Posted
+            }
+        );
+
+        modelBuilder.Entity<FaqEntry>().HasData(
+            new FaqEntry
+            {
+                Id = 1,
+                Question = "När betalas räntan ut?",
+                Answer = "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).",
+                Category = "Ränta",
+                Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }
+            },
+            new FaqEntry
+            {
+                Id = 2,
+                Question = "Hur gör jag ett uttag?",
+                Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
+                Category = "Transaktioner",
+                Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" }
+            },
+            new FaqEntry
+            {
+                Id = 3,
+                Question = "Var hittar jag min årsrapport?",
+                Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
+                Category = "Rapporter",
+                Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" }
+            },
+            new FaqEntry
+            {
+                Id = 4,
+                Question = "Hur öppnar jag ett nytt sparkonto?",
+                Answer = "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.",
+                Category = "Konto",
+                Keywords = new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" }
             }
         );
     }
