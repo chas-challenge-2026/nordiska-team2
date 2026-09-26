@@ -33,6 +33,22 @@ namespace NordiskaPortal.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FaqEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Question = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Answer = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Keywords = table.Column<string[]>(type: "text[]", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FaqEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -76,6 +92,35 @@ namespace NordiskaPortal.Api.Migrations
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SavingsGoals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: true),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    TargetAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavingsGoals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavingsGoals_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SavingsGoals_SavingsAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "SavingsAccounts",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -136,6 +181,17 @@ namespace NordiskaPortal.Api.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "FaqEntries",
+                columns: new[] { "Id", "Answer", "Category", "Keywords", "Question" },
+                values: new object[,]
+                {
+                    { 1, "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).", "Ränta", new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }, "När betalas räntan ut?" },
+                    { 2, "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.", "Transaktioner", new[] { "uttag", "ta ut", "pengar", "överföring" }, "Hur gör jag ett uttag?" },
+                    { 3, "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.", "Rapporter", new[] { "årsrapport", "rapport", "skatt", "deklaration" }, "Var hittar jag min årsrapport?" },
+                    { 4, "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.", "Konto", new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" }, "Hur öppnar jag ett nytt sparkonto?" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "SavingsAccounts",
                 columns: new[] { "Id", "AccountNumber", "AccountType", "CreatedAt", "CustomerId", "InterestRate" },
                 values: new object[,]
@@ -176,6 +232,16 @@ namespace NordiskaPortal.Api.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SavingsGoals_AccountId",
+                table: "SavingsGoals",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsGoals_CustomerId",
+                table: "SavingsGoals",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TaxReports_AccountId_Year",
                 table: "TaxReports",
                 columns: new[] { "AccountId", "Year" },
@@ -191,7 +257,13 @@ namespace NordiskaPortal.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "FaqEntries");
+
+            migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "SavingsGoals");
 
             migrationBuilder.DropTable(
                 name: "TaxReports");
