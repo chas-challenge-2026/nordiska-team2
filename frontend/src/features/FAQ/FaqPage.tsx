@@ -4,6 +4,7 @@ import { mockFaqEntries, mockCategories } from "./mockData";
 import type { FaqEntry } from "../../types/faq";
 import type { LucideIcon } from "lucide-react";
 import { FaqQuestionCard } from "./FaqQuestionCard";
+import { apiClient } from "../../client";
 
 const categoryIcons: Record<string, LucideIcon> = {
   "credit-card": CreditCard,
@@ -30,19 +31,13 @@ export function FaqPage() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const respons = await fetch(
-        `/api/faq/search?q=${encodeURIComponent(query.trim())}`,
-        { signal: controller.signal }
-      );
+      const response = await apiClient.get<FaqEntry[]>("/faq/search", {
+        params: { q: query.trim() },
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
-
-      if (!respons.ok) {
-        throw new Error(`Sökningen misslyckades (${respons.status})`);
-      }
-
-      const data = await respons.json();
-      setResults(data);
+      setResults(response.data);
       setHasSearched(true);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {

@@ -1,6 +1,8 @@
-// TODO(API): Denna fil ska tas bort helt när #82 (GET /api/faq/search) är klar.
-// Ersätt importer av mockCategories/mockFaqEntries med riktiga anrop.
-
+// TODO(API): sökningen (tidigare mockFaqEntries-filtrering) är ersatt av
+// #82 (GET /api/faq/search) — klart.
+// mockCategories och mockFaqEntries.slice(0,3) i FaqPage används fortfarande
+// för kategori-korten och "Vanliga frågor just nu" — väntar på att Ivan
+// bygger GET /api/faq/categories. Ta bort denna fil helt när den är klar.
 import type { FaqEntry, FaqCategory } from "../../types/faq";
 
 export const mockCategories: FaqCategory[] = [
