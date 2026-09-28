@@ -3,6 +3,7 @@ import type { SavingsGoalsData } from "../data/savingsGoalsData";
 
 type SavingOverviewProps = {
     goals: SavingsGoalsData[];
+    isLoading: boolean;
 };
 
 const currencyFormatter = new Intl.NumberFormat("sv-SE", {
@@ -12,7 +13,18 @@ const currencyFormatter = new Intl.NumberFormat("sv-SE", {
 
 export default function SavingsGoal({
     goals,
+    isLoading
 }: SavingOverviewProps){
+    if(isLoading) {
+        return(
+            <Card title="Sparmål" headerVariant="secondary">
+                <p className="text-small text-muted">
+                    Laddar sparmål.
+                </p>
+            </Card>
+        )
+    }
+    
     const goal = goals[0]
     if(!goal) return null;
 

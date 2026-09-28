@@ -5,7 +5,6 @@ import QuickActions from "./components/QuickActions";
 import { quickActions } from "./data/quickActions";
 
 import FinancialOverview from "./components/FinancialOverview"
-import { financialOverview } from "./data/financialOverview";
 import SavingsGoal from "./components/SavingsGoals";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import FaqOverview from "./components/Faq";
@@ -19,10 +18,10 @@ import { useCustomer } from "../../hooks/useCustomer";
 
 export default function DashboardPage() {
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
-    const { data: transactions } = useRecentTransactions(accounts);
+    const { data: transactions, isLoading: transactionsLoading } = useRecentTransactions(accounts);
     const { data: customer } = useCustomer();
     const firstName = customer?.name.split(" ") [0]
-    const { data: goals } = useSavingsGoals();
+    const { data: goals, isLoading: goalsLoading } = useSavingsGoals();
 
     if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
     if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
@@ -44,7 +43,8 @@ export default function DashboardPage() {
 
                 <AccountOverview accounts={accounts}/>
                 <QuickActions actions={quickActions}/>
-                <RecentTransactions transactions={transactions} />
+                <RecentTransactions transactions={transactions ?? []} 
+                                    isLoading={transactionsLoading} />
                 
                 <Footer />
             </section>
@@ -54,11 +54,10 @@ export default function DashboardPage() {
                         <SearchBar />
                         <FinancialOverview 
                             accounts={accounts}
-                            financial={financialOverview}
                             />
 
                         <SavingsGoal 
-                            goals={goals ?? []} />
+                            goals={goals ?? []} isLoading={goalsLoading}/>
                         <FaqOverview />
 
             </aside>

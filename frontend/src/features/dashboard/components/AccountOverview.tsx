@@ -6,6 +6,11 @@ type AccountOverviewProps = {
 }
 
 export default function AccountOverview({ accounts }: AccountOverviewProps) {
+    if (accounts.length === 0) {
+        return (
+            <p className="text-samll text-muted"> Du har inga konton än.</p>
+        )
+    }
     return (
             <div className="grid grid-cols-1 justify-items-stretch 
                             md:grid-cols-2 xl:grid-cols-3 gap-3
@@ -17,7 +22,7 @@ export default function AccountOverview({ accounts }: AccountOverviewProps) {
                                         accountNumber={account.accountNumber}
                                         balance={account.balance}
                                         interest={account.interest}
-                                        to={account.to}
+                                        to="/transactions"
                                     />
                                 ))}         
             </div>

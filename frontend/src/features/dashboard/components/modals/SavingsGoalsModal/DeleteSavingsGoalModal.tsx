@@ -1,9 +1,9 @@
 import { useState } from "react";
-import Button from "../../../../components/ui/Button";
-import Modal from "../../../../components/ui/Modal";
-import SelectOptions from "../../../../components/ui/Select";
-import type { OptionType } from "../../../../components/ui/Select";
-import { useSavingsGoals, useDeleteSavingsGoals } from "../../../../hooks/useSavingsGoals";
+import Button from "../../../../../components/ui/Button";
+import Modal from "../../../../../components/ui/Modal";
+import SelectOptions from "../../../../../components/ui/Select";
+import type { OptionType } from "../../../../../components/ui/Select";
+import { useSavingsGoals, useDeleteSavingsGoals } from "../../../../../hooks/useSavingsGoals";
 
 type DeleteSavingsGoalModalProps = {
     isOpen: boolean;
@@ -20,13 +20,16 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
     })) ?? [];
 
     const [selectedGoal, setSelectedGoal] = useState<OptionType | null>(null)
-    
+    const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);       
+
     function resetAndClose() {
-        setSelectedGoal(null)
-        onClose()
+        setSelectedGoal(null);
+        setHasAttemptedSubmit(false);
+        onClose();
     }
 
     function handleDelete() {
+        setHasAttemptedSubmit(true);
         if (!selectedGoal) return;
         deleteMutation.mutate(Number(selectedGoal.value), {
             onSuccess: resetAndClose,
@@ -54,12 +57,15 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
                     {deleteMutation.isError && (
                         <p className="text-xsmall text-cancel">Kunde inte ta bort sparmålet.</p>
                     )}
+                    {hasAttemptedSubmit && !selectedGoal && (
+                        <p className="text-xsmall text-cancel">Du måste välja ett sparmål</p>
+                    )}
             </div>
             <div className="flex justify-end">
                     <Button label="Avbryt" variant="cancel" onClick={resetAndClose} />
                     <Button
                         label={deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
-                        variant="cancel"
+                        variant="primary"
                         onClick={handleDelete}
                         disabled={!selectedGoal || deleteMutation.isPending}
                     />

@@ -9,8 +9,8 @@ import ListItem from "../../components/ui/ListItem";
 import Button from "../../components/ui/Button";
 import InputField from "../../components/ui/Input";
 import TransactionsChart from "./TransactionChart";
-import CreateSavingsGoalsModal from "../dashboard/components/modals/CreateSavingsGoalsModal";
-import DeleteSavingsGoalModal from "../dashboard/components/modals/DeleteSavingsGoalModal";
+import CreateSavingsGoalsModal from "../dashboard/components/modals/SavingsGoalsModal/CreateSavingsGoalsModal";
+import DeleteSavingsGoalModal from "../dashboard/components/modals/SavingsGoalsModal/DeleteSavingsGoalModal";
 
 
 interface LedgerEntry {
