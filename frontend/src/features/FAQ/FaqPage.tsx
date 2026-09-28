@@ -31,9 +31,10 @@ export function FaqPage() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await apiClient.get<FaqEntry[]>("/faq/search", {
+      const response = await apiClient.post<FaqEntry[]>("/faq/search", { // Ändrat från GET till POST request då backend byggt endpointen så
         params: { q: query.trim() },
         signal: controller.signal,
+
       });
 
       clearTimeout(timeoutId);
