@@ -9,10 +9,12 @@ namespace NordiskaPortal.Api.Services
     public class TransactionService : ITransactionService
     {
         private readonly BankContext _db;
+        private readonly IAuditService _audit; 
 
-        public TransactionService(BankContext db)
+        public TransactionService(BankContext db, IAuditService audit)
         {
             _db = db;
+            _audit = audit;
         }
 
         private static decimal GetSignedAmount(Transaction transaction) 
@@ -70,6 +72,7 @@ namespace NordiskaPortal.Api.Services
             };
 
             _db.Transactions.Add(transaction);
+            _audit.Record(AuditActions.Deposit, account.CustomerId, account.AccountNumber);
             await _db.SaveChangesAsync();
 
             var entry = new LedgerEntryDto(transaction.TransactionDate, "Insättning", transaction.Amount);
@@ -131,6 +134,7 @@ namespace NordiskaPortal.Api.Services
                 };
 
                 _db.Transactions.Add(withdrawal);
+                _audit.Record(AuditActions.Withdrawal, account.CustomerId, account.AccountNumber);
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
