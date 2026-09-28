@@ -27,7 +27,7 @@ generate-mock: generate-cert
     python3 scripts/generate_mock_json.py 1000 data/mock_tax_report_1k.json
     python3 scripts/generate_mock_json.py 5 data/mock_tax_report_5.json
 
-run name="generate_pdfs_example" *args="": build generate-mock
+run name="generate_tax_reports_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -47,7 +47,7 @@ bench: generate-mock
     ./build/default/benches/bench_pdf_batch
 
 # Builds with ASan preset and executes target binary
-asan name="generate_pdfs_example" *args="": build-asan generate-mock
+asan name="generate_tax_reports_example" *args="": build-asan generate-mock
     @if [ -f "build/asan/examples/{{ name }}" ]; then \
         ASAN_OPTIONS={{ quote(ASAN_OPTIONS) }} ./build/asan/examples/{{ name }} {{ args }}; \
     else \
@@ -55,7 +55,7 @@ asan name="generate_pdfs_example" *args="": build-asan generate-mock
     fi
 
 # Runs GDB debugger on the default debug binary
-gdb name="generate_pdfs_example" *args="": build generate-mock
+gdb name="generate_tax_reports_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         gdb {{ GDB_FLAGS }} --args ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -63,7 +63,7 @@ gdb name="generate_pdfs_example" *args="": build generate-mock
     fi
 
 # Runs valgrind on the target binary
-valgrind name="generate_pdfs_example" *args="": build generate-mock
+valgrind name="generate_tax_reports_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         valgrind --leak-check=full --error-exitcode=1 {{ VALGRIND_FLAGS }} ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -71,7 +71,7 @@ valgrind name="generate_pdfs_example" *args="": build generate-mock
     fi
 
 # Runs valgrind with comprehensive memory checking
-valgrind-all name="generate_pdfs_example" *args="": build
+valgrind-all name="generate_tax_reports_example" *args="": build
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         valgrind --leak-check=full --show-leak-kinds=all --show-reachable=yes --track-origins=yes --error-exitcode=1 {{ VALGRIND_FLAGS }} ./build/default/examples/{{ name }} {{ args }}; \
     else \
