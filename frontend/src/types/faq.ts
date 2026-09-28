@@ -1,14 +1,20 @@
 export type FaqEntry = {
-    id: string;
+    id: number;
     question: string;
     answer: string;
     category: string;
-    keywords: string[];
+
 };
 
 export type FaqCategory = {
     id: string;
     label: string;
-    icon: string;
     questionCount: number;
 };
+
+export type FaqSearchResult = {
+    matched: boolean;
+    question: string | null;
+    answer: string;
+    category: string | null;
+}
