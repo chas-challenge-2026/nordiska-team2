@@ -17,7 +17,17 @@ build: configure
 build-asan: configure-asan
     cmake --build --preset asan
 
-run name="generate_pdfs_example" *args="": build
+generate-cert:
+    mkdir -p data
+    openssl req -x509 -newkey rsa:2048 -keyout /tmp/key.pem -out /tmp/cert.pem -days 1 -nodes -subj "/CN=Test" 2>/dev/null
+    openssl pkcs12 -export -out data/test_cert.pfx -inkey /tmp/key.pem -in /tmp/cert.pem -passout pass:secret123 2>/dev/null
+    rm /tmp/key.pem /tmp/cert.pem
+
+generate-mock: generate-cert
+    python3 scripts/generate_mock_json.py 1000 data/mock_tax_report_1k.json
+    python3 scripts/generate_mock_json.py 5 data/mock_tax_report_5.json
+
+run name="generate_pdfs_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -25,20 +35,19 @@ run name="generate_pdfs_example" *args="": build
     fi
 
 test: build
-    cmake --build --preset default
     ctest --test-dir build/default --output-on-failure
 
 # Configure CMake with benchmarks enabled
 configure-bench:
     cmake --preset default -DBUILD_BENCHMARKS=ON
 
-bench: generate-cert
+bench: generate-mock
     cmake --preset default -DBUILD_BENCHMARKS=ON
     cmake --build --preset default --target bench_pdf_batch
     ./build/default/benches/bench_pdf_batch
 
 # Builds with ASan preset and executes target binary
-asan name="generate_pdfs_example" *args="": build-asan
+asan name="generate_pdfs_example" *args="": build-asan generate-mock
     @if [ -f "build/asan/examples/{{ name }}" ]; then \
         ASAN_OPTIONS={{ quote(ASAN_OPTIONS) }} ./build/asan/examples/{{ name }} {{ args }}; \
     else \
@@ -46,7 +55,7 @@ asan name="generate_pdfs_example" *args="": build-asan
     fi
 
 # Runs GDB debugger on the default debug binary
-gdb name="generate_pdfs_example" *args="": build
+gdb name="generate_pdfs_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         gdb {{ GDB_FLAGS }} --args ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -54,7 +63,7 @@ gdb name="generate_pdfs_example" *args="": build
     fi
 
 # Runs valgrind on the target binary
-valgrind name="generate_pdfs_example" *args="": build
+valgrind name="generate_pdfs_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         valgrind --leak-check=full --error-exitcode=1 {{ VALGRIND_FLAGS }} ./build/default/examples/{{ name }} {{ args }}; \
     else \
@@ -83,14 +92,10 @@ fmt-check:
 
 # Run static analysis (requires compile_commands.json from CMake)
 lint: configure
-    clang-tidy -p build/default $(find src -name '*.c')
     ln -sf build/default/compile_commands.json .
+    clang-tidy -p build/default $(find src -name '*.c')
 
 clean:
     rm -rf build/
+    rm -rf data/
 
-generate-cert:
-    mkdir -p data
-    openssl req -x509 -newkey rsa:2048 -keyout /tmp/key.pem -out /tmp/cert.pem -days 1 -nodes -subj "/CN=Test" 2>/dev/null
-    openssl pkcs12 -export -out data/test_cert.pfx -inkey /tmp/key.pem -in /tmp/cert.pem -passout pass:secret123 2>/dev/null
-    rm /tmp/key.pem /tmp/cert.pem
