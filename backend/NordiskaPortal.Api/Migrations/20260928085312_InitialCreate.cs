@@ -41,7 +41,8 @@ namespace NordiskaPortal.Api.Migrations
                     Question = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Answer = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Keywords = table.Column<string[]>(type: "text[]", nullable: false)
+                    Keywords = table.Column<string[]>(type: "text[]", nullable: false),
+                    IsPopular = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -182,13 +183,19 @@ namespace NordiskaPortal.Api.Migrations
 
             migrationBuilder.InsertData(
                 table: "FaqEntries",
-                columns: new[] { "Id", "Answer", "Category", "Keywords", "Question" },
+                columns: new[] { "Id", "Answer", "Category", "IsPopular", "Keywords", "Question" },
                 values: new object[,]
                 {
-                    { 1, "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).", "Ränta", new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }, "När betalas räntan ut?" },
-                    { 2, "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.", "Transaktioner", new[] { "uttag", "ta ut", "pengar", "överföring" }, "Hur gör jag ett uttag?" },
-                    { 3, "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.", "Rapporter", new[] { "årsrapport", "rapport", "skatt", "deklaration" }, "Var hittar jag min årsrapport?" },
-                    { 4, "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.", "Konto", new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" }, "Hur öppnar jag ett nytt sparkonto?" }
+                    { 1, "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).", "Ränta", true, new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }, "När betalas räntan ut?" },
+                    { 2, "Räntan varierar mellan konton. Din aktuella ränta visas på varje konto under 'Mina konton'.", "Ränta", false, new[] { "ränta", "procent", "räntesats", "aktuell" }, "Hur mycket ränta får jag på mitt sparkonto?" },
+                    { 3, "Räntan är rörlig och kan ändras över tid. Ändringar meddelas i appen.", "Ränta", false, new[] { "ränta", "fast", "rörlig", "ändras" }, "Är räntan fast eller rörlig?" },
+                    { 4, "Räntan beräknas på ditt saldo och sätts in på kontot vid årets slut.", "Ränta", false, new[] { "ränta", "beräknas", "beräkning", "saldo" }, "Hur beräknas räntan?" },
+                    { 5, "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.", "Insättning & Uttag", true, new[] { "uttag", "ta ut", "pengar", "överföring" }, "Hur gör jag ett uttag?" },
+                    { 6, "Du sätter in pengar via appen under 'Mina konton' genom att välja kontot och 'Insättning'.", "Insättning & Uttag", false, new[] { "insättning", "sätta in", "pengar", "konto" }, "Hur sätter jag in pengar på mitt konto?" },
+                    { 7, "Insättningar bokförs normalt inom två bankdagar.", "Insättning & Uttag", false, new[] { "insättning", "tid", "bokförs", "bankdagar" }, "Hur lång tid tar en insättning?" },
+                    { 8, "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.", "Skatt & Rapporter", true, new[] { "årsrapport", "rapport", "skatt", "deklaration" }, "Var hittar jag min årsrapport?" },
+                    { 9, "Ränta på sparkonto beskattas som kapitalinkomst med 30 procent.", "Skatt & Rapporter", false, new[] { "skatt", "kapitalskatt", "ränta", "procent" }, "Hur mycket skatt betalar jag på min ränta?" },
+                    { 10, "Du loggar in med din e-postadress och ditt lösenord, eller med BankID.", "Konto & Inlogg", true, new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" }, "Hur loggar jag in?" }
                 });
 
             migrationBuilder.InsertData(
@@ -209,9 +216,9 @@ namespace NordiskaPortal.Api.Migrations
                     { 1, 1, 125000.00m, "Lön", new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
                     { 2, 2, 45000.00m, "Swish", new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
                     { 3, 3, 89500.00m, "Lön", new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
-                    { 4, 1, 89500.00m, "Swish", new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
-                    { 5, 1, 40500.00m, "Lön", new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
-                    { 6, 1, 20000.00m, "Semester", new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc), "Withdrawal" },
+                    { 4, 1, 89500.00m, "Swish", new DateTime(2025, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 5, 1, 40500.00m, "Lön", new DateTime(2025, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 6, 1, 20000.00m, "Semester", new DateTime(2025, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc), "Withdrawal" },
                     { 7, 1, 50000.00m, "Lön", new DateTime(2023, 1, 17, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2023, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" }
                 });
 

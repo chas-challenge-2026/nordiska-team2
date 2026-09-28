@@ -20,5 +20,7 @@ namespace NordiskaPortal.Api.Models
         public string Category { get; set; } = string.Empty;
 
         public string[] Keywords { get; set; } = Array.Empty<string>();
+
+        public bool IsPopular { get; set; }
     }
 }
