@@ -24,51 +24,50 @@ namespace NordiskaPortal.Api.Tests.Services
                 new FaqEntry
                 {
                     Id = 1,
-                    Question = "When is interest paid out?",
-                    Answer = "Interest is added to the account at year end.",
-                    Category = "Interest",
-                    Keywords = new[] { "interest", "payout", "when", "paid", "annual" }
+                    Question = "När betalas räntan ut?",
+                    Answer = "Räntan sätts in vid årets slut.",
+                    Category = "Ränta",
+                    Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }
                 },
                 new FaqEntry
                 {
                     Id = 2,
-                    Question = "How do I make a withdrawal?",
-                    Answer = "Withdrawals are made via the app under 'My accounts'.",
-                    Category = "Transactions",
-                    Keywords = new[] { "withdrawal", "withdraw", "money", "transfer" }
+                    Question = "Hur gör jag ett uttag?",
+                    Answer = "Uttag görs via appen.",
+                    Category = "Insättning & Uttag",
+                    Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" }
                 },
                 new FaqEntry
                 {
                     Id = 3,
-                    Question = "Where do I find my annual report?",
-                    Answer = "Your annual report is available under 'My reports'.",
-                    Category = "Reports",
-                    Keywords = new[] { "annualreport", "report", "tax", "declaration" }
+                    Question = "Var hittar jag min årsrapport?",
+                    Answer = "Under 'Mina rapporter'.",
+                    Category = "Skatt & Rapporter",
+                    Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" }
                 },
                 new FaqEntry
                 {
                     Id = 4,
-                    Question = "How do I open a new savings account?",
-                    Answer = "Apply for a new savings account directly in the app under 'New account'.",
-                    Category = "Account",
-                    Keywords = new[] { "open", "new", "savings", "account", "apply" }
+                    Question = "Hur öppnar jag ett nytt sparkonto?",
+                    Answer = "Ansök i appen under 'Nytt konto'.",
+                    Category = "Konto & Inlogg",
+                    Keywords = new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" }
                 },
                 new FaqEntry
                 {
                     Id = 5,
-                    Question = "How do I make a deposit?",
-                    Answer = "Deposits are made via the app under 'My accounts'.",
-                    Category = "Transactions",
-                    Keywords = new[] { "deposit", "deposits", "money", "transfer" }
+                    Question = "Hur sätter jag in pengar på mitt konto?",
+                    Answer = "Välj kontot och 'Insättning' i appen.",
+                    Category = "Insättning & Uttag",
+                    Keywords = new[] { "insättning", "sätta in", "pengar", "konto" }
                 }
             );
 
             await db.SaveChangesAsync();
         }
 
-        // Verifies that a single keyword shared by only one entry matches that
-        // entry, rather than being rejected for not covering most of its
-        // keyword list.
+        // Verifies that a single keyword shared by only one entry matches
+        // that entry.
         [Fact]
         public async Task SearchAsync_SingleStrongKeyword_MatchesCorrectEntry()
         {
@@ -80,38 +79,58 @@ namespace NordiskaPortal.Api.Tests.Services
             var service = new FaqService(db);
 
             var result = await service.SearchAsync(
-                new FaqSearchRequest("annualreport"));
+                new FaqSearchRequest("årsrapport"));
 
             Assert.True(result.Matched);
             Assert.Equal(
-                "Where do I find my annual report?",
+                "Var hittar jag min årsrapport?",
                 result.Question);
         }
 
-        // Verifies that when a query's words overlap with more than one
-        // entry's keywords, the highest-scoring entry is returned rather
-        // than whichever entry was seeded first.
+        // Verifies that a full question is matched to the right entry.
         [Fact]
-        public async Task SearchAsync_MultiWordQuery_MatchesBestEntry_NotFirst()
+        public async Task SearchAsync_FullQuestion_MatchesCorrectEntry()
         {
             using var db = CreateContext(
-                nameof(SearchAsync_MultiWordQuery_MatchesBestEntry_NotFirst));
+                nameof(SearchAsync_FullQuestion_MatchesCorrectEntry));
 
             await SeedFaqAsync(db);
 
             var service = new FaqService(db);
 
             var result = await service.SearchAsync(
-                new FaqSearchRequest("when is my interest paid"));
+                new FaqSearchRequest("När betalas räntan ut?"));
 
             Assert.True(result.Matched);
             Assert.Equal(
-                "When is interest paid out?",
+                "När betalas räntan ut?",
                 result.Question);
         }
 
-        // Verifies that a query with no keyword overlap against any entry
-        // falls back to the no-answer response instead of guessing.
+        // Verifies that when several entries overlap with the query, the
+        // best-scoring one wins rather than the first one in the table.
+        // Entry 2 shares "pengar" but entry 5 covers all three query words.
+        [Fact]
+        public async Task SearchAsync_PicksBestScoringEntry_NotFirst()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_PicksBestScoringEntry_NotFirst));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("sätta in pengar"));
+
+            Assert.True(result.Matched);
+            Assert.Equal(
+                "Hur sätter jag in pengar på mitt konto?",
+                result.Question);
+        }
+
+        // Verifies that a query with no keyword overlap falls back to the
+        // no-answer response instead of guessing.
         [Fact]
         public async Task SearchAsync_NoKeywordOverlap_ReturnsNoAnswer()
         {
@@ -123,14 +142,14 @@ namespace NordiskaPortal.Api.Tests.Services
             var service = new FaqService(db);
 
             var result = await service.SearchAsync(
-                new FaqSearchRequest("what is the weather today"));
+                new FaqSearchRequest("vad är vädret idag"));
 
             Assert.False(result.Matched);
             Assert.Null(result.Question);
         }
 
-        // Verifies that an empty or whitespace-only query short-circuits to
-        // the no-answer response without scoring any entries.
+        // Verifies that an empty query short-circuits to the no-answer
+        // response.
         [Fact]
         public async Task SearchAsync_EmptyQuery_ReturnsNoAnswer()
         {
@@ -147,53 +166,7 @@ namespace NordiskaPortal.Api.Tests.Services
             Assert.False(result.Matched);
         }
 
-        // Verifies that the stemming step collapses a plural query word onto
-        // the singular form stored in an entry's keyword list. Kept as a
-        // single-word query so the match isn't diluted by unrelated filler
-        // words competing for the same confidence threshold.
-        [Fact]
-        public async Task SearchAsync_StemmingCollapsesPluralAndSingular()
-        {
-            using var db = CreateContext(
-                nameof(SearchAsync_StemmingCollapsesPluralAndSingular));
-
-            await SeedFaqAsync(db);
-
-            var service = new FaqService(db);
-
-            // "withdrawals" (plural) should still match the "withdrawal" keyword.
-            var result = await service.SearchAsync(
-                new FaqSearchRequest("withdrawals"));
-
-            Assert.True(result.Matched);
-            Assert.Equal(
-                "How do I make a withdrawal?",
-                result.Question);
-        }
-
-        // Verifies that two entries sharing an overlapping keyword ("money",
-        // "transfer") are still told apart correctly when the query is
-        // specific to just one of them.
-        [Fact]
-        public async Task SearchAsync_DistinguishesBetweenSimilarEntries()
-        {
-            using var db = CreateContext(
-                nameof(SearchAsync_DistinguishesBetweenSimilarEntries));
-
-            await SeedFaqAsync(db);
-
-            var service = new FaqService(db);
-
-            var result = await service.SearchAsync(
-                new FaqSearchRequest("deposit"));
-
-            Assert.True(result.Matched);
-            Assert.Equal(
-                "How do I make a deposit?",
-                result.Question);
-        }
-
-        // Verifies that searching against an empty FaqEntry table returns the
+        // Verifies that searching an empty FaqEntry table returns the
         // no-answer response instead of throwing.
         [Fact]
         public async Task SearchAsync_NoEntriesInDatabase_ReturnsNoAnswer()
@@ -204,9 +177,182 @@ namespace NordiskaPortal.Api.Tests.Services
             var service = new FaqService(db);
 
             var result = await service.SearchAsync(
-                new FaqSearchRequest("interest"));
+                new FaqSearchRequest("ränta"));
 
             Assert.False(result.Matched);
+        }
+
+        // Verifies that the definite form "räntan" matches the keyword
+        // "ränta".
+        [Fact]
+        public async Task SearchAsync_SwedishDefiniteForm_MatchesBaseKeyword()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_SwedishDefiniteForm_MatchesBaseKeyword));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("räntan"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Ränta", result.Category);
+        }
+
+        // Verifies that the definite plural "räntorna" matches the
+        // keyword "ränta".
+        [Fact]
+        public async Task SearchAsync_SwedishDefinitePlural_MatchesBaseKeyword()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_SwedishDefinitePlural_MatchesBaseKeyword));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("räntorna"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Ränta", result.Category);
+        }
+
+        // Verifies that "uttaget" (definite) matches the keyword "uttag".
+        [Fact]
+        public async Task SearchAsync_UttagetMatchesUttag()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_UttagetMatchesUttag));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("uttaget"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Hur gör jag ett uttag?", result.Question);
+        }
+
+        // Verifies that "insättningen" matches the keyword "insättning"
+        // and lands on the deposit entry, not the interest entry.
+        [Fact]
+        public async Task SearchAsync_InsattningenMatchesInsattning()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_InsattningenMatchesInsattning));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("insättningen"));
+
+            Assert.True(result.Matched);
+            Assert.Equal(
+                "Hur sätter jag in pengar på mitt konto?",
+                result.Question);
+        }
+
+        // Verifies that different verb forms converge: "betalar" should
+        // match the keyword "betalas".
+        [Fact]
+        public async Task SearchAsync_VerbFormsConverge()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_VerbFormsConverge));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("betalar"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Ränta", result.Category);
+        }
+
+        // Verifies that filler words do not dilute the score, so a chatty
+        // question still matches on its one meaningful word.
+        [Fact]
+        public async Task SearchAsync_FillerWordsDoNotDiluteScore()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_FillerWordsDoNotDiluteScore));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("hur gör jag ett uttag"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Hur gör jag ett uttag?", result.Question);
+        }
+
+        // Verifies that letter case and punctuation are ignored.
+        [Fact]
+        public async Task SearchAsync_IgnoresCaseAndPunctuation()
+        {
+            using var db = CreateContext(
+                nameof(SearchAsync_IgnoresCaseAndPunctuation));
+
+            await SeedFaqAsync(db);
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("ÅRSRAPPORT!!!"));
+
+            Assert.True(result.Matched);
+            Assert.Equal(
+                "Var hittar jag min årsrapport?",
+                result.Question);
+        }
+
+        // Verifies, against the real seed data, that a login question
+        // lands in the one-entry login category.
+        [Fact]
+        public async Task SeedData_LoginQuestion_MatchesLoginEntry()
+        {
+            using var db = CreateContext(
+                nameof(SeedData_LoginQuestion_MatchesLoginEntry));
+
+            db.Database.EnsureCreated();
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("hur loggar jag in"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Konto & Inlogg", result.Category);
+        }
+
+        // Verifies, against the real seed data, that the annual report
+        // question lands in the tax and reports category.
+        [Fact]
+        public async Task SeedData_AnnualReportQuestion_MatchesReportEntry()
+        {
+            using var db = CreateContext(
+                nameof(SeedData_AnnualReportQuestion_MatchesReportEntry));
+
+            db.Database.EnsureCreated();
+
+            var service = new FaqService(db);
+
+            var result = await service.SearchAsync(
+                new FaqSearchRequest("var hittar jag min årsrapport"));
+
+            Assert.True(result.Matched);
+            Assert.Equal("Skatt & Rapporter", result.Category);
         }
     }
 }
