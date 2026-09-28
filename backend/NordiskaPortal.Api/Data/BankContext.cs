@@ -126,7 +126,7 @@ public class BankContext : DbContext
                 Description = "Swish",
                 Amount = 89500.00m,
                 TransactionDate = new DateTime(2025, 3, 3, 0, 0, 0, DateTimeKind.Utc),
-                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2025, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
                 Status = TransactionStatus.Posted
             },
             new Transaction
@@ -137,7 +137,7 @@ public class BankContext : DbContext
                 Description = "Lön",
                 Amount = 40500.00m,
                 TransactionDate = new DateTime(2025, 4, 4, 0, 0, 0, DateTimeKind.Utc),
-                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2025, 4, 4, 0, 0, 0, DateTimeKind.Utc)),
                 Status = TransactionStatus.Posted
             },
             new Transaction
@@ -148,7 +148,7 @@ public class BankContext : DbContext
                 Description = "Semester",
                 Amount = 20000.00m,
                 TransactionDate = new DateTime(2025, 5, 5, 0, 0, 0, DateTimeKind.Utc),
-                PostingDate = Transaction.CalculatePostingDate(new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)),
+                PostingDate = Transaction.CalculatePostingDate(new DateTime(2025, 5, 5, 0, 0, 0, DateTimeKind.Utc)),
                 Status = TransactionStatus.Posted
             },
             new Transaction
@@ -165,37 +165,102 @@ public class BankContext : DbContext
         );
 
         modelBuilder.Entity<FaqEntry>().HasData(
+            // ===== Ränta: 4 entries (ids 1-4) =====
             new FaqEntry
             {
                 Id = 1,
                 Question = "När betalas räntan ut?",
                 Answer = "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).",
                 Category = "Ränta",
-                Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }
+                Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" },
+                IsPopular = true
             },
             new FaqEntry
             {
                 Id = 2,
-                Question = "Hur gör jag ett uttag?",
-                Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
-                Category = "Transaktioner",
-                Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" }
+                Question = "Hur mycket ränta får jag på mitt sparkonto?",
+                Answer = "Räntan varierar mellan konton. Din aktuella ränta visas på varje konto under 'Mina konton'.",
+                Category = "Ränta",
+                Keywords = new[] { "ränta", "procent", "räntesats", "aktuell" },
+                IsPopular = false
             },
             new FaqEntry
             {
                 Id = 3,
-                Question = "Var hittar jag min årsrapport?",
-                Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
-                Category = "Rapporter",
-                Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" }
+                Question = "Är räntan fast eller rörlig?",
+                Answer = "Räntan är rörlig och kan ändras över tid. Ändringar meddelas i appen.",
+                Category = "Ränta",
+                Keywords = new[] { "ränta", "fast", "rörlig", "ändras" },
+                IsPopular = false
             },
             new FaqEntry
             {
                 Id = 4,
-                Question = "Hur öppnar jag ett nytt sparkonto?",
-                Answer = "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.",
-                Category = "Konto",
-                Keywords = new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" }
+                Question = "Hur beräknas räntan?",
+                Answer = "Räntan beräknas på ditt saldo och sätts in på kontot vid årets slut.",
+                Category = "Ränta",
+                Keywords = new[] { "ränta", "beräknas", "beräkning", "saldo" },
+                IsPopular = false
+            },
+
+            // ===== Insättning & Uttag: 3 entries (ids 5-7) =====
+            new FaqEntry
+            {
+                Id = 5,
+                Question = "Hur gör jag ett uttag?",
+                Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
+                Category = "Insättning & Uttag",
+                Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" },
+                IsPopular = true
+            },
+            new FaqEntry
+            {
+                Id = 6,
+                Question = "Hur sätter jag in pengar på mitt konto?",
+                Answer = "Du sätter in pengar via appen under 'Mina konton' genom att välja kontot och 'Insättning'.",
+                Category = "Insättning & Uttag",
+                Keywords = new[] { "insättning", "sätta in", "pengar", "konto" },
+                IsPopular = false
+            },
+            new FaqEntry
+            {
+                Id = 7,
+                Question = "Hur lång tid tar en insättning?",
+                Answer = "Insättningar bokförs normalt inom två bankdagar.",
+                Category = "Insättning & Uttag",
+                Keywords = new[] { "insättning", "tid", "bokförs", "bankdagar" },
+                IsPopular = false
+            },
+
+            // ===== Skatt & Rapporter: 2 entries (ids 8-9) =====
+            new FaqEntry
+            {
+                Id = 8,
+                Question = "Var hittar jag min årsrapport?",
+                Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
+                Category = "Skatt & Rapporter",
+                Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" },
+                IsPopular = true
+            },
+            new FaqEntry
+            {
+                Id = 9,
+                Question = "Hur mycket skatt betalar jag på min ränta?",
+                Answer = "Ränta på sparkonto beskattas som kapitalinkomst med 30 procent.",
+                Category = "Skatt & Rapporter",
+                Keywords = new[] { "skatt", "kapitalskatt", "ränta", "procent" },
+                IsPopular = false
+            },
+
+            // ===== Konto & Inlogg: 1 entry (id 10) =====
+            new FaqEntry
+            {
+                Id = 10,
+                Question = "Hur loggar jag in?",
+                Answer = "Du loggar in med din e-postadress och ditt lösenord, eller med BankID.",
+                Category = "Konto & Inlogg",
+                Keywords = new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" },
+                IsPopular = true
             }
         );
     }

@@ -104,6 +104,9 @@ namespace NordiskaPortal.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("boolean");
+
                     b.Property<string[]>("Keywords")
                         .IsRequired()
                         .HasColumnType("text[]");
@@ -123,32 +126,90 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 1,
                             Answer = "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).",
                             Category = "Ränta",
+                            IsPopular = true,
                             Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" },
                             Question = "När betalas räntan ut?"
                         },
                         new
                         {
                             Id = 2,
+                            Answer = "Räntan varierar mellan konton. Din aktuella ränta visas på varje konto under 'Mina konton'.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "procent", "räntesats", "aktuell" },
+                            Question = "Hur mycket ränta får jag på mitt sparkonto?"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Answer = "Räntan är rörlig och kan ändras över tid. Ändringar meddelas i appen.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "fast", "rörlig", "ändras" },
+                            Question = "Är räntan fast eller rörlig?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Answer = "Räntan beräknas på ditt saldo och sätts in på kontot vid årets slut.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "beräknas", "beräkning", "saldo" },
+                            Question = "Hur beräknas räntan?"
+                        },
+                        new
+                        {
+                            Id = 5,
                             Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
-                            Category = "Transaktioner",
+                            Category = "Insättning & Uttag",
+                            IsPopular = true,
                             Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" },
                             Question = "Hur gör jag ett uttag?"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 6,
+                            Answer = "Du sätter in pengar via appen under 'Mina konton' genom att välja kontot och 'Insättning'.",
+                            Category = "Insättning & Uttag",
+                            IsPopular = false,
+                            Keywords = new[] { "insättning", "sätta in", "pengar", "konto" },
+                            Question = "Hur sätter jag in pengar på mitt konto?"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Answer = "Insättningar bokförs normalt inom två bankdagar.",
+                            Category = "Insättning & Uttag",
+                            IsPopular = false,
+                            Keywords = new[] { "insättning", "tid", "bokförs", "bankdagar" },
+                            Question = "Hur lång tid tar en insättning?"
+                        },
+                        new
+                        {
+                            Id = 8,
                             Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
-                            Category = "Rapporter",
+                            Category = "Skatt & Rapporter",
+                            IsPopular = true,
                             Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" },
                             Question = "Var hittar jag min årsrapport?"
                         },
                         new
                         {
-                            Id = 4,
-                            Answer = "Kontakta kundservice eller ansök direkt i appen under 'Nytt konto' för att öppna ett nytt sparkonto.",
-                            Category = "Konto",
-                            Keywords = new[] { "öppna", "nytt", "sparkonto", "konto", "ansök" },
-                            Question = "Hur öppnar jag ett nytt sparkonto?"
+                            Id = 9,
+                            Answer = "Ränta på sparkonto beskattas som kapitalinkomst med 30 procent.",
+                            Category = "Skatt & Rapporter",
+                            IsPopular = false,
+                            Keywords = new[] { "skatt", "kapitalskatt", "ränta", "procent" },
+                            Question = "Hur mycket skatt betalar jag på min ränta?"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Answer = "Du loggar in med din e-postadress och ditt lösenord, eller med BankID.",
+                            Category = "Konto & Inlogg",
+                            IsPopular = true,
+                            Keywords = new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" },
+                            Question = "Hur loggar jag in?"
                         });
                 });
 
@@ -397,7 +458,7 @@ namespace NordiskaPortal.Api.Migrations
                             AccountId = 1,
                             Amount = 89500.00m,
                             Description = "Swish",
-                            PostingDate = new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PostingDate = new DateTime(2025, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
@@ -408,7 +469,7 @@ namespace NordiskaPortal.Api.Migrations
                             AccountId = 1,
                             Amount = 40500.00m,
                             Description = "Lön",
-                            PostingDate = new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PostingDate = new DateTime(2025, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2025, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
@@ -419,7 +480,7 @@ namespace NordiskaPortal.Api.Migrations
                             AccountId = 1,
                             Amount = 20000.00m,
                             Description = "Semester",
-                            PostingDate = new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PostingDate = new DateTime(2025, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2025, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Withdrawal"
