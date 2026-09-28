@@ -27,6 +27,13 @@
 
   languages.c.enable = true;
 
+  languages.python = {
+    enable = true;
+    package = pkgs.python3.withPackages (ps: [
+      ps.pillow
+    ]);
+  };
+
   git-hooks.hooks = {
     clang-format = {
       enable = true;
