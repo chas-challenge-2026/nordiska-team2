@@ -17,6 +17,7 @@ public class BankContext : DbContext
     public DbSet<TaxReport> TaxReports { get; set; }
     public DbSet<FaqEntry> FaqEntries { get; set; }
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
+    public DbSet<AuditEntry> AuditEntries { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -263,5 +264,8 @@ public class BankContext : DbContext
                 IsPopular = true
             }
         );
+
+        // Audit Entry
+        modelBuilder.Entity<AuditEntry>().HasIndex(a => new { a.CustomerId, a.Timestamp });
     }
 }
