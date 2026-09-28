@@ -5,7 +5,7 @@ import AuthenticatedLayout from '../layout/AuthenticatedLayout';
 import DashboardPage from '../../features/dashboard/DashboardPage';
 import TransactionPage from '../../features/transactions/TransactionPage';
 import TaxReportsPage from '../../features/Taxreports/TaxReportsPage';
-import FaqPage from '../../features/FAQ/FaqPage';
+import { FaqPage } from '../../features/FAQ/FaqPage';
 import ProtectedRoute from './ProtectedRoute';
 import SettingsPage from '../../features/settings/SettingsPage';
 

@@ -6,6 +6,7 @@
     llvmPackages.clang-tools
     llvmPackages.bintools
     valgrind
+    gdb
     conan
     pkg-config
     zlib
