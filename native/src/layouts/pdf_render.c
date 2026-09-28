@@ -30,17 +30,29 @@ void format_sek(double amount, char* buf, size_t buf_len) {
 /** UTF-8 -> single-byte WinAnsi (CP1252); anything beyond Latin-1 becomes '?'.
  */
 static void utf8_to_winansi(const char* utf8, char* out, size_t out_cap) {
-    size_t out_len = 0;
-    for (const unsigned char* p = (const unsigned char*)utf8;
-         *p != '\0' && out_len + 1 < out_cap; p++) {
-        if (*p < 0x80) {
-            out[out_len++] = (char)*p;
-        } else if ((*p & 0xE0) == 0xC0 && (p[1] & 0xC0) == 0x80) {
-            unsigned int cp = ((unsigned int)(*p & 0x1F) << 6) | (p[1] & 0x3F);
-            out[out_len++]  = (cp <= 0xFF) ? (char)(unsigned char)cp : '?';
-            p++;
+    const unsigned char* src     = (const unsigned char*)utf8;
+    const size_t         SRC_LEN = strlen(utf8);
+    size_t               i       = 0;
+    size_t               out_len = 0;
+
+    while (i < SRC_LEN && out_len + 1 < out_cap) {
+        const unsigned char C = src[i];
+        if (C < 0x80) {
+            out[out_len++] = (char)C;
+            i++;
+        } else if ((C & 0xE0) == 0xC0 && i + 1 < SRC_LEN &&
+                   (src[i + 1] & 0xC0) == 0x80) {
+            const unsigned int CP =
+                ((unsigned int)(C & 0x1F) << 6) | (src[i + 1] & 0x3F);
+            if (CP <= 0xFF) {
+                out[out_len++] = (char)(unsigned char)CP;
+            } else {
+                out[out_len++] = '?';
+            }
+            i += 2;
         } else {
             out[out_len++] = '?';
+            i++;
         }
     }
     out[out_len] = '\0';
