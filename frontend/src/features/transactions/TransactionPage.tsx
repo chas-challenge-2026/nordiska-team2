@@ -10,6 +10,8 @@ import Button from "../../components/ui/Button";
 import InputField from "../../components/ui/Input";
 import TransactionsChart from "./TransactionChart";
 import CreateSavingsGoalsModal from "../dashboard/components/modals/CreateSavingsGoalsModal";
+import DeleteSavingsGoalModal from "../dashboard/components/modals/DeleteSavingsGoalModal";
+
 
 interface LedgerEntry {
   date: string;
@@ -22,6 +24,9 @@ export default function TransactionPage() {
   const [amount, setAmount] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
+
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -86,21 +91,48 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
   if (!accounts || accounts.length === 0) return <p>Inga konton hittades.</p>;
 
   const dateFormatter = new Intl.DateTimeFormat("sv-SE", { dateStyle: "short" })
-  
+
   return (
     <>
       <h1 className="text-xl sm:text-title mb-5">Kontohantering</h1>
-        <div className="mb-5">
+        <div className="relative inline-block mb-5">
           {/* <Button 
-            label="Öppna ett konto"
-            variant="secondary"
+            label="Hantera Konton"
+            variant="dropDown"
             onClick={() => setIsGoalModalOpen(true)}
           /> */}
           <Button 
             label="Hantera sparmål"
-            variant="secondary"
-            onClick={() => setIsGoalModalOpen(true)}
-          />
+            variant="dropDown"
+            onClick={() => setIsMenuOpen((open) => !open)}
+          ><span>▼</span> </Button>
+          {isMenuOpen && (
+            <ul className="absolute z-10 w-1/4 ml-2 p-2
+                            rounded-default border-border bg-card 
+                            shadow-sm text-small"
+            >
+              <li>
+                <button className="w-full text-left p-2 hover:bg-background"
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          setIsGoalModalOpen(true)
+                        }}
+                >
+                  Skapa sparmål
+                </button>
+              </li>
+              <li>
+                <button className="w-full text-left p-2 hover:bg-background"
+                        onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsDeleteGoalModalOpen(true);
+                        }}
+                >
+                    Ta bort sparmål
+                </button>
+              </li>
+            </ul>
+          )}
         </div>
 
     <div className="grid grid-cols-1 justify-items-stretch 
@@ -199,6 +231,8 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
             )}
       </Card>
       <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
+      <DeleteSavingsGoalModal isOpen={isDeleteGoalModalOpen} onClose={() => setIsDeleteGoalModalOpen(false)} />
+
     </>
   );
 }

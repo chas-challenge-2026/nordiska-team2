@@ -1,8 +1,5 @@
 import Card from "../../../components/cards/Card";
 import type { SavingsGoalsData } from "../data/savingsGoalsData";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "../../../client";
-import Button from "../../../components/ui/Button";
 
 type SavingOverviewProps = {
     goals: SavingsGoalsData[];
@@ -16,13 +13,6 @@ const currencyFormatter = new Intl.NumberFormat("sv-SE", {
 export default function SavingsGoal({
     goals,
 }: SavingOverviewProps){
-    const queryClient = useQueryClient()
-    const deleteMutation = useMutation({
-        mutationFn: (goalId: number) => apiClient.delete(`/savings-goals/${goalId}`),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["savings-goals"] })
-        },
-    })
     const goal = goals[0]
     if(!goal) return null;
 
@@ -38,15 +28,6 @@ export default function SavingsGoal({
                     <p className="text-small text-muted">
                         {currencyFormatter.format(currentAmount)}
                     </p>
-                    <Button 
-                        label={deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
-                        variant="cancel"
-                        onClick={() => deleteMutation.mutate(goal.id)}
-                        disabled={deleteMutation.isPending} />
-
-                    {deleteMutation.isError && (
-                    <p className="text-xsmall text-cancel">Kunde inte ta bort sparmålet.</p>
-                        )}
                     </div>
                 <div
                     role="progressbar"
