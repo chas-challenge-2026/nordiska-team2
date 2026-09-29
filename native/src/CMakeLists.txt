@@ -20,6 +20,11 @@ add_library(pdf_engine SHARED
     pdf_engine/pdf_engine.c
 )
 
+if(PDF_ENGINE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED)
+    set_target_properties(pdf_engine PROPERTIES C_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
+
 target_include_directories(pdf_engine
     PUBLIC
         ${CMAKE_SOURCE_DIR}/include

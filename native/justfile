@@ -82,18 +82,29 @@ docs: build
     cmake --build --preset default --target docs
     xdg-open build/default/docs/html/index.html
 
-# Automatically format all C source and header files
+# Directories (relative to native/) to exclude from formatting — e.g. vendored code.
+# Leave empty to format everything git tracks.
+fmt_exclude := ""
+
+_fmt_pathspec:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pathspec=('*.c' '*.h')
+    for dir in {{fmt_exclude}}; do
+        pathspec+=(":(exclude)${dir}/*")
+    done
+    git ls-files -z -- "${pathspec[@]}"
+
 fmt:
-    clang-format -i $(find src include tests -name '*.c' -o -name '*.h')
+    just _fmt_pathspec | xargs -0 -r clang-format -i
 
-# Check formatting without modifying files (exits 1 on error for CI)
 fmt-check:
-    clang-format --dry-run --Werror $(find src include tests -name '*.c' -o -name '*.h')
+    just _fmt_pathspec | xargs -0 -r clang-format --dry-run --Werror
 
-# Run static analysis (requires compile_commands.json from CMake)
-lint: configure
-    ln -sf build/default/compile_commands.json .
-    clang-tidy -p build/default $(find src -name '*.c')
+# Run static analysis
+lint:
+    cmake --preset default -DPDF_ENGINE_CLANG_TIDY=ON
+    cmake --build --preset default --clean-first --target pdf_engine
 
 clean:
     rm -rf build/

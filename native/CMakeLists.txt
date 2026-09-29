@@ -14,6 +14,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Required to link static third-party archives into a shared library.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+option(PDF_ENGINE_CLANG_TIDY "Run clang-tidy during compilation of pdf_engine" OFF)
+
 option(BUILD_TESTING "Build unit/integration tests" ON)
 
 option(BUILD_BENCHMARKS "Build performance benchmarks" OFF)
