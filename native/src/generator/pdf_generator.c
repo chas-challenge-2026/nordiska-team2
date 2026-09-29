@@ -23,6 +23,11 @@ int pdf_generator_generate(const char* json_str, const char* output_path,
         return PDF_ERROR_OUT_OF_MEMORY;
     }
 
+    if (HPDF_SetCompressionMode(pdf, HPDF_COMP_ALL) != HPDF_OK) {
+        LOG_ERROR("Could not enable PDF compression; continuing uncompressed");
+        HPDF_ResetError(pdf);
+    }
+
     cJSON* root = NULL;
     if (json_str != NULL && json_str[0] != '\0') {
         root = cJSON_Parse(json_str);

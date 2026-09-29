@@ -15,6 +15,7 @@
 
 #include "generator/pdf_generator.h"
 #include "json_streamer/json_streamer.h"
+#include "layouts/bank_statement.h"
 #include "layouts/pdf_layout.h"
 #include "layouts/tax_report.h"
 #include "logging/log.h"
@@ -40,6 +41,8 @@ static const PdfLayoutConfig* resolve_layout_config(PdfReportType report_type) {
     switch (report_type) {
     case PDF_REPORT_TYPE_TAX_REPORT:
         return tax_report_get_config();
+    case PDF_REPORT_TYPE_BANK_STATEMENT:
+        return bank_statement_get_config();
     default:
         return NULL;
     }
