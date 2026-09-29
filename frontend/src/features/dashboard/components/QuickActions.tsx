@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Button from "../../../components/ui/Button";
 import type { QuickAction } from "../../../types/quickActions";
-import TransferModal from "./modals/TransferModal";
+import TransactionModal from "./modals/TransactionModal";
+// import TransferModal from "./modals/TransferModal";
 // import PayBillsModal from "./modals/PayBillsModal";
 // import LoanApplicationModal from "./modals/LoanApplicationModal";
 // import AiBuddyModal from "./modals/AiBuddyModal";
@@ -11,7 +12,7 @@ type QuickActionsProps = {
 };
 
 const modalById: Record<string, React.ComponentType<{ isOpen: boolean; onClose: () => void }>> = {
-    transfer: TransferModal,
+    transfer: TransactionModal,
     // payments: PayBillsModal,
     // loanApplication: LoanApplicationModal,
     // aiBuddy: AiBuddyModal,

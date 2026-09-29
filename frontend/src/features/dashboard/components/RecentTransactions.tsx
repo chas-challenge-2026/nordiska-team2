@@ -4,6 +4,7 @@ import ListItem from "../../../components/ui/ListItem";
 
 type RecentTransactionProps = {
     transactions: Transaction[];
+    isLoading: boolean;
 };
 
 const amountFormatter = new Intl.NumberFormat("sv-SE", {
@@ -15,7 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat("sv-SE",{
     dateStyle: "medium",
 });
 
-export default function RecentTransactions({ transactions }: RecentTransactionProps) {
+export default function RecentTransactions({ transactions, isLoading }: RecentTransactionProps) {
     const latestTransactions = [...transactions]
         .sort(
             (first, second) =>
@@ -35,6 +36,12 @@ export default function RecentTransactions({ transactions }: RecentTransactionPr
                             Senaste händelser
                     </h2>
                 </header>
+
+                {isLoading 
+                ? (
+                    <p className="p-3 text-small text-muted">Laddar händelser...</p>
+                ) : <p className="p-3 text-small text-muted">Inga händelser än.</p>
+                }
 
                 <ul className="divide-y divide-border-light">
                     {latestTransactions.map((transaction) => (

@@ -1,9 +1,9 @@
 import Card from "../../../components/cards/Card";
-import type { Account } from "../../../types/account"
+import type { SavingsGoalsData } from "../data/savingsGoalsData";
 
 type SavingOverviewProps = {
-    accounts: Account[];
-    goal: number;
+    goals: SavingsGoalsData[];
+    isLoading: boolean;
 };
 
 const currencyFormatter = new Intl.NumberFormat("sv-SE", {
@@ -12,37 +12,43 @@ const currencyFormatter = new Intl.NumberFormat("sv-SE", {
 });
 
 export default function SavingsGoal({
-    accounts,
-    goal,
+    goals,
+    isLoading
 }: SavingOverviewProps){
-    const savingsBalance = accounts
-    .filter((account) => account.type === "savings")
-    .reduce((total, account) => total + account.balance, 0)
+    if(isLoading) {
+        return(
+            <Card title="Sparmål" headerVariant="secondary">
+                <p className="text-small text-muted">
+                    Laddar sparmål.
+                </p>
+            </Card>
+        )
+    }
+    
+    const goal = goals[0]
+    if(!goal) return null;
 
-    const progress =
-    goal > 0
-        ? Math.min((savingsBalance / goal) * 100, 100)
-        : 0;
-
-    const remaining = Math.max(goal - savingsBalance, 0)
+    const progress = goal.progressPercent ?? 0;
+    const currentAmount = goal.currentAmount ?? 0;
+    const remaining = Math.max(goal.targetAmount - currentAmount, 0)
 
     return(
-        <Card title="Sparmål - Japan"
+        <Card title={`Sparmål - ${goal.name}`} 
                 headerVariant="secondary">
             <div className="flex flex-col gap-3">
                 <div>
                     <p className="text-small text-muted">
-                        {currencyFormatter.format(savingsBalance)}
+                        {currencyFormatter.format(currentAmount)}
                     </p>
-                </div>
+                    </div>
                 <div
                     role="progressbar"
-                    aria-label="Sparmål till Japan"
+                    aria-label={`Sparmål: ${goal.name}`}
                     aria-valuemin={0}
-                    aria-valuemax={goal}
-                    aria-valuenow={savingsBalance}
+                    aria-valuemax={goal.targetAmount}
+                    aria-valuenow={currentAmount}
                     className="h-3 overflow-hidden rounded-full bg-border-light">
-                        <div className="h-full rounded-full bg-success"
+                        <div className="h-full rounded-full bg-accent"
                             style={{ width: `${progress}%` }} />
                 </div>
                 <p className="text-small text-muted">
@@ -50,6 +56,7 @@ export default function SavingsGoal({
                         ? `${currencyFormatter.format(remaining)} kvar till målet`
                         : "Målet är uppnått!"}
                 </p>
+                
             </div>
         </Card>
     )

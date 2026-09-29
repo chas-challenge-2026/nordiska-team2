@@ -1,11 +1,12 @@
 import { type ReactNode } from "react";
-type buttonVariant = "primary" | "secondary" | "success" | "cancel";
+type buttonVariant = "primary" | "secondary" | "success" | "cancel" | "dropDown";
 
 const buttonVariantClasses: Record<buttonVariant, string> = {
     primary: "bg-white text-brand text-small hover:bg-border hover:border-brand",
     secondary: "bg-brand text-white text-small hover:opacity-90",
     success: "bg-success text-white text-small hover:opacity-90 hover:border-brand",
-    cancel: "bg-cancel text-white text-small hover:bg-opacity-90"
+    cancel: "bg-cancel text-white text-small hover:bg-opacity-90",
+    dropDown: "text-brand text-small bg-white flex w-1/4 items-center justify-between"
 }
 
 type ButtonProps = {

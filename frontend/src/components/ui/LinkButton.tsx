@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 
 type LinkButtonProps =  LinkProps & {
-    variant?: "primary" | "secondary"
-    size?: "xsmall" | "small" | "medium" | "large"
+    variant?: "primary" | "secondary",
+    size?: "xsmall" | "small" | "medium" | "large",
     icon?: ReactNode;
 }
 

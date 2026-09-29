@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
 import Card from "../../../components/cards/Card";
-import type { FinancialOverviewData } from "../data/financialOverview";
+import { useFinancialSummary } from "../../../hooks/useFinancialSummary";
 import type { Account } from "../../../types/account"
 import BalanceChart from "./BalanceCharts";
 
 type FinancialOverviewProps = {
     accounts: Account[];
-    financial: FinancialOverviewData;
 }
 
 const currencyFormatter = new Intl.NumberFormat("sv-SE", {
@@ -15,8 +14,8 @@ const currencyFormatter = new Intl.NumberFormat("sv-SE", {
 });
 
 export default function FinancialOverview({ 
-    accounts,
-    financial }: FinancialOverviewProps){
+    accounts }: FinancialOverviewProps) {
+        const { data: financial, isLoading: financialLoading, isError: financialError  } = useFinancialSummary();
         const totalBalance = accounts.reduce(
             (total, account) => total + account.balance,
             0,
@@ -38,16 +37,20 @@ export default function FinancialOverview({
                             <p className="text-small text-muted">
                                 Inkomster
                             </p>
-                            <p className="text-balance font-bold text-success text-small">
-                                {currencyFormatter.format(financial.income)}
-                            </p>
+                            {financialLoading 
+                                ? ( <p className="text-small text-muted">Laddar ...</p>
+                            ) : financialError 
+                                ? ( <p className="text-small text-muted">Kunde inte hämta</p>
+                            ) : ( <p className="text-balance font-bold text-success text-small">
+                                {currencyFormatter.format(financial?.income ?? 0)} 
+                            </p> )}
                         </li>
                         <li className="pb-2">
                             <p className="text-small text-muted">
                                 Utgifter
                             </p>
                             <p className="text-balance font-bold text-brand text-small">
-                                −{currencyFormatter.format(financial.expenses)}
+                                −{currencyFormatter.format(financial?.expenses ?? 0)}
                             </p>
                         </li>
                         <li>

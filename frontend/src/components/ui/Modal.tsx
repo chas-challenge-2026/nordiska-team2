@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { useEffect, useId, useRef } from "react";
-import Button from "./Button";
 
 
 type ModalSizeVariant = "small" | "medium" | "large";
@@ -56,12 +55,12 @@ export default function Modal({title,
                     <h2 id={titleId}
                         className="text-large">{title}</h2>
 
-                    <Button label="x"
+                    {/* <Button label="x"
                         onClick={onClose}
                         variant="cancel"
                         className="w-8 h-8
                                     flex justify-center items-center"
-                    />
+                    /> */}
                 </div>
             {children}
         </dialog>
