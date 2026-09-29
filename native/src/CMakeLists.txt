@@ -5,8 +5,6 @@ add_library(pdf_engine SHARED
     signer/pdf_signer.h
     layouts/tax_report.c
     layouts/tax_report.h
-    layouts/tax_report.c
-    layouts/tax_report.h
     layouts/bank_statement.c
     layouts/bank_statement.h
     layouts/pdf_render.c
