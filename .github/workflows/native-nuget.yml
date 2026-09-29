@@ -26,6 +26,7 @@ concurrency:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   VCPKG_COMMIT: '301856f5f2824f788a3ffa6332293861cccd23b4'
@@ -385,4 +386,17 @@ jobs:
           dotnet nuget push "artifacts/*.nupkg"
           --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
           --api-key ${{ secrets.GITHUB_TOKEN }}
+          --skip-duplicate
+
+      - name: Authenticate to NuGet.org (OIDC)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: "freeduck"
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           --skip-duplicate

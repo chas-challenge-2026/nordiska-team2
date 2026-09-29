@@ -20,6 +20,7 @@
     <Description>Native pdf_engine library (PDF generation + signing) for win-x64 and linux-x64. All third-party dependencies are statically linked; no system packages required.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 
     <!-- No managed assembly in the package, and no .cs files to compile. -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -34,6 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="PACKAGE_README.md" Pack="true" PackagePath="README.md" />
     <!-- Globs, so adding a second native file later needs no edit here. -->
     <None Include="staging/win-x64/*.dll"
           Pack="true" PackagePath="runtimes/win-x64/native/" />
