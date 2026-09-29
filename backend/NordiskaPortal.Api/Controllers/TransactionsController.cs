@@ -36,7 +36,7 @@ namespace NordiskaPortal.Api.Controllers
             if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.AccountId))
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
-            var result = await _transactionService.DepositAsync(request.AccountId, request.Amount);
+            var result = await _transactionService.DepositAsync(request.AccountId, request.Amount, request.Description);
             return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
         }
 
@@ -48,7 +48,7 @@ namespace NordiskaPortal.Api.Controllers
             if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.AccountId))
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
-            var result = await _transactionService.WithdrawAsync(request.AccountId, request.Amount);
+            var result = await _transactionService.WithdrawAsync(request.AccountId, request.Amount, request.Description);
             return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
         }
 
