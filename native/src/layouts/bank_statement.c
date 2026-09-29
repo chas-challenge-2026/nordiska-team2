@@ -6,6 +6,38 @@
 
 #include <stdio.h>
 
+/* Everything this layout draws, except account.interest_rate_pct, which is
+ * deliberately optional (current accounts have none) and is rendered as "-"
+ * when absent. See draw_account_section(). */
+static const PdfRequiredField REQUIRED_FIELDS[] = {
+    {"metadata", PDF_FIELD_OBJECT},
+    {"metadata.statement_id", PDF_FIELD_STRING},
+    {"metadata.period_start", PDF_FIELD_STRING},
+    {"metadata.period_end", PDF_FIELD_STRING},
+
+    {"customer", PDF_FIELD_OBJECT},
+    {"customer.full_name", PDF_FIELD_STRING},
+    {"customer.personal_id", PDF_FIELD_STRING},
+    {"customer.address", PDF_FIELD_STRING},
+
+    {"account", PDF_FIELD_OBJECT},
+    {"account.account_number", PDF_FIELD_STRING},
+    {"account.account_type", PDF_FIELD_STRING},
+
+    {"summary", PDF_FIELD_OBJECT},
+    {"summary.opening_balance_sek", PDF_FIELD_NUMBER},
+    {"summary.closing_balance_sek", PDF_FIELD_NUMBER},
+    {"summary.total_deposits_sek", PDF_FIELD_NUMBER},
+    {"summary.total_withdrawals_sek", PDF_FIELD_NUMBER},
+    {"summary.transaction_count", PDF_FIELD_NUMBER},
+
+    {"transactions", PDF_FIELD_ARRAY},
+    {"transactions[].date", PDF_FIELD_STRING},
+    {"transactions[].type", PDF_FIELD_STRING},
+    {"transactions[].amount_sek", PDF_FIELD_NUMBER},
+    {"transactions[].balance_after_sek", PDF_FIELD_NUMBER},
+};
+
 static int draw_title(RenderCtx* ctx, const cJSON* metadata) {
     char subtitle[192];
     snprintf(subtitle, sizeof(subtitle), "Statement %s | Period %s - %s",
@@ -41,8 +73,17 @@ static int draw_account_section(RenderCtx* ctx, const cJSON* account) {
              json_get_string(account, "account_number", "-"));
     snprintf(rows[1].value, sizeof(rows[1].value), "%s",
              json_get_string(account, "account_type", "-"));
-    snprintf(rows[2].value, sizeof(rows[2].value), "%.2f%%",
-             json_get_number(account, "interest_rate_pct", 0.0));
+
+    // Optional: show "-" when absent rather than a fabricated 0.00%.
+    const cJSON* rate =
+        cJSON_GetObjectItemCaseSensitive(account, "interest_rate_pct");
+    if (cJSON_IsNumber(rate)) {
+        snprintf(rows[2].value, sizeof(rows[2].value), "%.2f%%",
+                 rate->valuedouble);
+    } else {
+        snprintf(rows[2].value, sizeof(rows[2].value), "-");
+    }
+
     int result = render_key_value_rows(ctx, rows, 3);
     ctx->y -= 10.0f;
     return result;
@@ -102,6 +143,7 @@ static int bank_statement_layout(HPDF_Doc pdf, const cJSON* root) {
 
 // statement_id first: the same account has one statement per period, so
 // account_number alone would make files overwrite each other.
+// Both are required above, so validated reports always yield an id.
 static void bank_statement_extract_id(const cJSON* root, char* out,
                                       size_t out_cap) {
     const cJSON* metadata = cJSON_GetObjectItemCaseSensitive(root, "metadata");
@@ -124,8 +166,12 @@ static void bank_statement_extract_id(const cJSON* root, char* out,
 }
 
 const PdfLayoutConfig* bank_statement_get_config(void) {
-    static const PdfLayoutConfig CONFIG = {.layout_fn = bank_statement_layout,
-                                           .extract_id_fn =
-                                               bank_statement_extract_id};
+    static const PdfLayoutConfig CONFIG = {
+        .layout_fn       = bank_statement_layout,
+        .extract_id_fn   = bank_statement_extract_id,
+        .required_fields = REQUIRED_FIELDS,
+        .required_field_count =
+            sizeof(REQUIRED_FIELDS) / sizeof(REQUIRED_FIELDS[0]),
+    };
     return &CONFIG;
 }

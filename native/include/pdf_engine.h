@@ -22,8 +22,8 @@ typedef enum {
 
 /**
  * @brief Result codes returned by pdf_engine_generate_and_sign() itself
- * (whole-batch, fatal failures). Per-report outcomes are reported through
- * PdfEngineReportResult instead - see pdf_engine_generate_and_sign()'s docs.
+ * (whole-batch, fatal failures), and reported per report through
+ * PdfEngineReportResult::status.
  */
 typedef enum {
     PDF_ENGINE_SUCCESS = 0,
@@ -40,6 +40,12 @@ typedef enum {
         -6, /**< PDF layout/rendering failed (per-report) */
     PDF_ENGINE_ERROR_SIGNING_FAILED =
         -7, /**< A PFX was supplied but signing failed (per-report) */
+    PDF_ENGINE_ERROR_MISSING_FIELD =
+        -8, /**< Input data is incomplete or has a wrong-typed field
+             * (per-report). See PdfEngineReportResult::detail. */
+    PDF_ENGINE_ERROR_MALFORMED_REPORT =
+        -9, /**< A single report object isn't a valid JSON object
+             * (per-report). */
 } PdfEngineResult;
 
 /**
@@ -47,15 +53,21 @@ typedef enum {
  * PdfEngineProgressCb.
  */
 typedef struct {
-    /** Filename (without directory or ".pdf" extension) the report was, or
-     * would have been, written under - sanitized, so it may not exactly
-     * match the source JSON's identifier field. Valid only for the
-     * duration of the callback; copy it if you need it afterwards. */
+    /** Filename (without directory or ".pdf" extension) the report was
+     * written under - sanitized, so it may not exactly match the source
+     * JSON's identifier field. If the report had no usable identifier this
+     * is a positional name ("report_<index>") used for reporting only; no
+     * file is written in that case. Valid only for the duration of the
+     * callback; copy it if you need it afterwards. */
     const char* report_id;
     /** PDF_ENGINE_SUCCESS, or the PdfEngineResult explaining why this one
      * report failed. A per-report failure never aborts the rest of the
      * batch. */
     int status;
+    /** Human-readable reason for a failure, e.g. "missing or wrong type:
+     * account.account_number (expected string)". Empty string on success.
+     * Never NULL. Valid only for the duration of the callback. */
+    const char* detail;
 } PdfEngineReportResult;
 
 /**
@@ -75,16 +87,21 @@ typedef void (*PdfEngineProgressCb)(const PdfEngineReportResult* result,
  * so memory use stays O(1) in the number of reports, regardless of whether
  * the file holds one report or 10,000 - it's never loaded into memory whole.
  *
- * Each report is written to `out_dir/<id>.pdf`, where `<id>` is derived from
- * the report's account/customer identifier (sanitized to safe filename
- * characters; falls back to a positional name if no identifier is found).
- * `out_dir` is created if it doesn't already exist (a single directory
- * level - its parent must already exist).
+ * Each report is validated against its layout's required fields before
+ * anything is rendered. A report with a missing or wrong-typed required
+ * field, or with no usable identifier, is rejected: no PDF is produced for
+ * it and it is reported as PDF_ENGINE_ERROR_MISSING_FIELD (or
+ * PDF_ENGINE_ERROR_MALFORMED_REPORT) with a detail string naming the field.
  *
- * A single report failing to generate or sign does NOT stop the batch; every
- * other object in the array is still attempted. Pass `progress_cb` to find
- * out which reports, if any, failed and why - the return value alone only
- * tells you how many succeeded, not which ones.
+ * Each valid report is written to `out_dir/<id>.pdf`, where `<id>` is
+ * derived from the report's account/customer identifier (sanitized to safe
+ * filename characters). `out_dir` is created if it doesn't already exist (a
+ * single directory level - its parent must already exist).
+ *
+ * A single report failing validation, generation or signing does NOT stop
+ * the batch; every other object in the array is still attempted. Pass
+ * `progress_cb` to find out which reports, if any, failed and why - the
+ * return value alone only tells you how many succeeded, not which ones.
  *
  * @param[in] json_file_path Path to a JSON file containing a root-level
  * array of report objects.
