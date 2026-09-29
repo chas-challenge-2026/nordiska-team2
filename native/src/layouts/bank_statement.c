@@ -1,4 +1,4 @@
-#include "tax_report.h"
+#include "bank_statement.h"
 
 #include "layouts/pdf_render.h"
 #include "logging/log.h"
@@ -8,12 +8,11 @@
 
 static int draw_title(RenderCtx* ctx, const cJSON* metadata) {
     char subtitle[192];
-    snprintf(subtitle, sizeof(subtitle), "Report %s | Tax year %.0f | %s - %s",
-             json_get_string(metadata, "report_id", "-"),
-             json_get_number(metadata, "year", 0),
+    snprintf(subtitle, sizeof(subtitle), "Statement %s | Period %s - %s",
+             json_get_string(metadata, "statement_id", "-"),
              json_get_string(metadata, "period_start", "-"),
              json_get_string(metadata, "period_end", "-"));
-    return render_title_block(ctx, "Official Annual Tax Report", subtitle);
+    return render_title_block(ctx, "Account Statement", subtitle);
 }
 
 static int draw_customer_section(RenderCtx* ctx, const cJSON* customer) {
@@ -54,26 +53,27 @@ static int draw_summary_section(RenderCtx* ctx, const cJSON* summary) {
         return -1;
     }
     KeyValueRow rows[] = {
-        {"Starting balance", ""}, {"Ending balance", ""},
-        {"Total deposits", ""},   {"Total withdrawals", ""},
-        {"Interest earned", ""},  {"Tax withheld", ""},
+        {"Opening balance", ""}, {"Closing balance", ""},
+        {"Total deposits", ""},  {"Total withdrawals", ""},
+        {"Transactions", ""},
     };
     static const char* const KEYS[] = {
-        "starting_balance_sek",      "ending_balance_sek",
-        "total_deposits_sek",        "total_withdrawals_sek",
-        "total_interest_earned_sek", "total_tax_withheld_sek"};
-    for (size_t i = 0; i < 6; i++) {
+        "opening_balance_sek", "closing_balance_sek", "total_deposits_sek",
+        "total_withdrawals_sek"};
+    for (size_t i = 0; i < 4; i++) {
         format_sek(json_get_number(summary, KEYS[i], 0.0), rows[i].value,
                    sizeof(rows[i].value));
     }
-    int result = render_key_value_rows(ctx, rows, 6);
+    snprintf(rows[4].value, sizeof(rows[4].value), "%.0f",
+             json_get_number(summary, "transaction_count", 0.0));
+    int result = render_key_value_rows(ctx, rows, 5);
     ctx->y -= 10.0f;
     return result;
 }
 
-static int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
+static int bank_statement_layout(HPDF_Doc pdf, const cJSON* root) {
     if (!root) {
-        LOG_ERROR("tax_report_layout called with no JSON data");
+        LOG_ERROR("bank_statement_layout called with no JSON data");
         return -1;
     }
     RenderCtx ctx;
@@ -94,41 +94,38 @@ static int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
         draw_account_section(&ctx, account) != 0 ||
         draw_summary_section(&ctx, summary) != 0 ||
         render_transactions_section(&ctx, transactions) != 0) {
-        LOG_ERROR("Failed to lay out tax report");
+        LOG_ERROR("Failed to lay out bank statement");
         return -4;
     }
     return 0;
 }
 
-// tax_report_extract_id: unchanged from your version.
-static void tax_report_extract_id(const cJSON* root, char* out,
-                                  size_t out_cap) {
-    const cJSON* account  = cJSON_GetObjectItemCaseSensitive(root, "account");
-    const cJSON* customer = cJSON_GetObjectItemCaseSensitive(root, "customer");
+// statement_id first: the same account has one statement per period, so
+// account_number alone would make files overwrite each other.
+static void bank_statement_extract_id(const cJSON* root, char* out,
+                                      size_t out_cap) {
     const cJSON* metadata = cJSON_GetObjectItemCaseSensitive(root, "metadata");
+    const cJSON* account  = cJSON_GetObjectItemCaseSensitive(root, "account");
 
+    const cJSON* stmt_id =
+        cJSON_GetObjectItemCaseSensitive(metadata, "statement_id");
     const cJSON* acc_num =
         cJSON_GetObjectItemCaseSensitive(account, "account_number");
-    const cJSON* cust_id =
-        cJSON_GetObjectItemCaseSensitive(customer, "customer_id");
-    const cJSON* rep_id =
-        cJSON_GetObjectItemCaseSensitive(metadata, "report_id");
 
     const char* candidate = NULL;
-    if (cJSON_IsString(acc_num) && acc_num->valuestring[0]) {
+    if (cJSON_IsString(stmt_id) && stmt_id->valuestring[0]) {
+        candidate = stmt_id->valuestring;
+    } else if (cJSON_IsString(acc_num) && acc_num->valuestring[0]) {
         candidate = acc_num->valuestring;
-    } else if (cJSON_IsString(cust_id) && cust_id->valuestring[0]) {
-        candidate = cust_id->valuestring;
-    } else if (cJSON_IsString(rep_id) && rep_id->valuestring[0]) {
-        candidate = rep_id->valuestring;
     }
     if (candidate) {
         sanitize_filename_component(candidate, out, out_cap);
     }
 }
 
-const PdfLayoutConfig* tax_report_get_config(void) {
-    static const PdfLayoutConfig CONFIG = {
-        .layout_fn = tax_report_layout, .extract_id_fn = tax_report_extract_id};
+const PdfLayoutConfig* bank_statement_get_config(void) {
+    static const PdfLayoutConfig CONFIG = {.layout_fn = bank_statement_layout,
+                                           .extract_id_fn =
+                                               bank_statement_extract_id};
     return &CONFIG;
 }

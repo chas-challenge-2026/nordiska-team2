@@ -17,6 +17,7 @@ extern "C" {
  */
 typedef enum {
     PDF_REPORT_TYPE_TAX_REPORT = 0, /**< Official Annual Tax Report layout */
+    PDF_REPORT_TYPE_BANK_STATEMENT = 1, /**< Account statement (kontoutdrag) */
 } PdfReportType;
 
 /**
