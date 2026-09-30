@@ -34,6 +34,17 @@ just lint        # Run static analysis via clang-tidy
 ```
 see justfile for all targets
 
+# Native Package (NuGet)
+
+The native C/C++ modules are published as the NuGet package
+[Nordiska.PdfEngine.Native](https://www.nuget.org/packages/Nordiska.PdfEngine.Native)
+(Windows x64 and Linux x64). Stable versions are built from `main`,
+and development versions (`0.1.0-dev.N`) from `dev`.
+
+```bash
+dotnet add package Nordiska.PdfEngine.Native
+```
+
 # Project description
 
 This directory is reserved for v2 native modules.
