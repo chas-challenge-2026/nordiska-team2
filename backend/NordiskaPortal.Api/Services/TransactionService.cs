@@ -137,9 +137,7 @@ namespace NordiskaPortal.Api.Services
 
                 var currentBalance = await _db.Transactions
                     .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
-                    .SumAsync(t => (t.Type == TransactionType.Deposit || t.Type == TransactionType.Interest)
-                        ? t.Amount
-                        : -t.Amount); // Rule: GetSignedAmount must match
+                    .SumAsync(SignedAmountExpr);
 
                 if (currentBalance < amount)
                 {
@@ -195,9 +193,8 @@ namespace NordiskaPortal.Api.Services
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
                 Description: ResolveDescription(t.Description, t.Type),
-                Amount: t.Type == TransactionType.Deposit ? t.Amount : -t.Amount
+                Amount: GetSignedAmount(t)
             )).ToList();
-
         }
 
         // TRANSFER BETWEEN OWN ACCOUNTS
@@ -268,7 +265,9 @@ namespace NordiskaPortal.Api.Services
                 };
 
                 _db.Transactions.AddRange(outgoing, incoming);
-                _audit.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
+
+                // TODO: Implement audit log first
+                // _audit.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
 
                 // One save: both ledger rows and the audit row commit together.
                 // Money can never leave one account without arriving in the other.
