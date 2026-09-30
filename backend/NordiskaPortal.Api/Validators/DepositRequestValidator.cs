@@ -9,6 +9,7 @@ namespace NordiskaPortal.Api.Validators
         {
             RuleFor(x => x.AccountId).GreaterThan(0);
             RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Beloppet måste vara större än 0.");
+            RuleFor(x => x.Description).MaximumLength(100).WithMessage("Beskrivningen får vara högst 100 tecken.");
         }
     }
 }
