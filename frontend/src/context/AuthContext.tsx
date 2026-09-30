@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { setAuthToken, registerTokenChangeHandler } from '../client';
+import { apiClient, setAuthToken, registerTokenChangeHandler } from '../client';
 
 interface AuthContextType {
   accessToken: string | null;

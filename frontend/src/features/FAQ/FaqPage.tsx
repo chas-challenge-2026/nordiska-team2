@@ -1,23 +1,32 @@
 import { useState } from "react";
 import { Search, CreditCard, ArrowLeftRight, TrendingUp, FileText } from "lucide-react";
-import { mockFaqEntries, mockCategories } from "./mockData";
-import type { FaqEntry } from "../../types/faq";
 import type { LucideIcon } from "lucide-react";
+import { apiClient } from "../../client";
+import type { FaqSearchResult } from "../../types/faq";
+import { useFaqCategories, useFaqCategoryEntries, useFaqPopular } from "../../hooks/useFaq";
 import { FaqQuestionCard } from "./FaqQuestionCard";
+import { FaqCategoryModal } from "./FaqCategoryModal";
 
+// Behöver dubbelkolla Ivans Seed-data.
 const categoryIcons: Record<string, LucideIcon> = {
-  "credit-card": CreditCard,
-  "arrows": ArrowLeftRight,
-  "trending-up": TrendingUp,
-  "file": FileText,
+  account: CreditCard,
+  transactions: ArrowLeftRight,
+  interest: TrendingUp,
+  tax: FileText,
 };
 
 export function FaqPage() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<FaqEntry[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [result, setResult] = useState<FaqSearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+
+  const categories = useFaqCategories();
+  const popular = useFaqPopular();
+  const categoryEntries = useFaqCategoryEntries(selectedCategoryId);
+
+  const selectedCategory = categories.data?.find((c) => c.id === selectedCategoryId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,26 +39,17 @@ export function FaqPage() {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const respons = await fetch(
-        `/api/faq/search?q=${encodeURIComponent(query.trim())}`,
+      const response = await apiClient.post<FaqSearchResult>(
+        "/faq/search",
+        { query: query.trim() },
         { signal: controller.signal }
       );
 
       clearTimeout(timeoutId);
-
-      if (!respons.ok) {
-        throw new Error(`Sökningen misslyckades (${respons.status})`);
-      }
-
-      const data = await respons.json();
-      setResults(data);
-      setHasSearched(true);
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
-        setError("Sökningen tog för långt tid. Försök igen!");
-      } else {
-        setError("Sökningen lyckades inte, försök igen!");
-      }
+      setResult(response.data);
+    } catch {
+      clearTimeout(timeoutId);
+      setError("Sökningen lyckades inte, försök igen!");
     } finally {
       setIsLoading(false);
     }
@@ -71,63 +71,67 @@ export function FaqPage() {
         Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>
 
-      {isLoading && (
-        <p className="text-sm text-gray-500 mb-4">Söker...</p>
-      )}
+      {isLoading && <p className="text-sm text-gray-500 mb-4">Söker...</p>}
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      {error && (
-        <p className="text-sm text-red-600 mb-4">{error}</p>
+      {categories.isLoading && <p className="text-sm text-gray-500 mb-4">Laddar kategorier...</p>}
+      {categories.isError && (
+        <p className="text-sm text-red-600 mb-4">Kunde inte hämta kategorier.</p>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {mockCategories.map((cat) => {
-          const Icon = categoryIcons[cat.icon];
+        {categories.data?.map((cat) => {
+          const Icon = categoryIcons[cat.id] ?? FileText;
           return (
-            <div
+            <button
+              type="button"
               key={cat.id}
-              className="rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => setSelectedCategoryId(cat.id)}
+              className="text-left rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
-              {Icon && <Icon size={24} />}
+              <Icon size={24} />
               <p className="font-semibold mt-3">{cat.label}</p>
               <p className="text-sm text-gray-500">{cat.questionCount} frågor</p>
-            </div>
+            </button>
           );
         })}
       </div>
 
-      {hasSearched && !isLoading && (
+      {result && !isLoading && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Sökresultat</h2>
-
-          {results.length > 0 ? (
-            results.map((entry, index) => (
-              <FaqQuestionCard key={entry.id} entry={entry} defaultOpen={index === 0} />
-            ))
-          ) : (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <p className="text-gray-600 mb-3">
-                Vi hittade inget svar på just din fråga.
-              </p>
-              <p className="text-sm text-gray-500">
-                Kontakta kundtjänst så hjälper vi dig vidare.
-              </p>
-            </div>
-          )}
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            {result.matched && <p className="font-semibold mb-2">{result.question}</p>}
+            <p className="text-gray-600">{result.answer}</p>
+          </div>
         </div>
       )}
 
-      {!hasSearched && (
+      {!result && popular.data && popular.data.length > 0 && (
         <>
           <h2 className="text-lg font-semibold mb-4">Vanliga frågor just nu</h2>
-          {mockFaqEntries.slice(0, 3).map((entry, index) => (
-            <FaqQuestionCard
-              key={entry.id}
-              entry={entry}
-              defaultOpen={index === 0}
-            />
+          {popular.data.map((entry, index) => (
+            <FaqQuestionCard key={entry.id} entry={entry} defaultOpen={index === 0} />
           ))}
         </>
       )}
+
+      <FaqCategoryModal
+        isOpen={selectedCategoryId !== null}
+        onClose={() => setSelectedCategoryId(null)}
+        title={selectedCategory?.label ?? ""}
+      >
+        {categoryEntries.isLoading && <p className="text-gray-500">Laddar frågor...</p>}
+        {categoryEntries.isError && (
+          <p className="text-red-600">Kunde inte hämta frågorna.</p>
+        )}
+        {categoryEntries.data?.length === 0 && (
+          <p className="text-gray-500">Inga frågor i den här kategorin än.</p>
+        )}
+        {categoryEntries.data?.map((entry) => (
+          <FaqQuestionCard key={entry.id} entry={entry} />
+        ))}
+      </FaqCategoryModal>
     </div>
   );
 }
