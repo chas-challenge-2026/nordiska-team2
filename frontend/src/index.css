@@ -3,31 +3,31 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Colors */
   --color-background: #f5f5f5;
   --color-card: #ffffff;
   --color-foreground: #333333;
   --color-muted: #777777;
   --color-brand: #1a5276;
+  --color-brand-text: #1a5276;
+  --color-sidebar: #1a5276;
   --color-accent: #f5a623;
   --color-border: #dddddd;
   --color-border-light: #eeeeee;
   --color-success: #5cb85c;
   --color-success-border: #4cae4c;
   --color-cancel: #CB4F4F;
-  --color-brand: #1a5276;
-    
 
-  /* Border radius */
+  
   --radius-default: 4px;
 
-
+  /* Font family */
   --font-sans:
     "Helvetica Neue",
     Helvetica,
     Arial,
     sans-serif;
 
+  
   --text-body: 18px;
   --text-xsmall: 12px;
   --text-small: 14px;
@@ -58,7 +58,7 @@
     font-size: var(--text-body);
   }
 
-
+  
   .dark {
     --color-background: #121417;
     --color-card: #1e2228;
@@ -67,5 +67,17 @@
     --color-border: #333a42;
     --color-border-light: #2a2f36;
     --color-brand-text: #7fb3d5;
+    --color-sidebar: #171a1f;
+  }
+
+  .light {
+    --color-background: #f5f5f5;
+    --color-card: #ffffff;
+    --color-foreground: #333333;
+    --color-muted: #777777;
+    --color-border: #dddddd;
+    --color-border-light: #eeeeee;
+    --color-brand-text: #1a5276;
+    --color-sidebar: #1a5276;
   }
 }
