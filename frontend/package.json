@@ -24,7 +24,8 @@
     "react-select": "^5.10.2",
     "select": "^1.1.2",
     "tailwindcss": "^4.3.3",
-    "tanstack": "^2.0.3"
+    "tanstack": "^2.0.3",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
