@@ -112,7 +112,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, AuditServiceTests.For(db));
         var service = new AccountService(db, transactionService);
 
         var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -132,7 +132,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, TestAudit.For(db));
         var service = new AccountService(db, transactionService);
 
         // Augusti 2026 — ska bara inkludera transaktion #4 (99999 kr)
@@ -153,7 +153,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, TestAudit.For(db));
         var service = new AccountService(db, transactionService);
 
         var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -173,7 +173,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, TestAudit.For(db));
         var service = new AccountService(db, transactionService);
 
         var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -192,7 +192,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, TestAudit.For(db));
         var service = new AccountService(db, transactionService);
 
         // Juli 2026 — inga transaktioner alls
@@ -213,7 +213,7 @@ public class AccountServiceTests
         // Arrange
         using var db = CreateInMemoryDb();
         await SeedTestData(db);
-        var transactionService = new TransactionService(db);
+        var transactionService = new TransactionService(db, TestAudit.For(db));
         var service = new AccountService(db, transactionService);
 
         var from = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
