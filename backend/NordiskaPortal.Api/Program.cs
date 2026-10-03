@@ -33,6 +33,8 @@ builder.Services.AddSingleton<IBankIdService, BankIdService>();
 builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<FaqCategoryService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAuditService, AuditService>();
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
