@@ -20,7 +20,7 @@ namespace NordiskaPortal.Api.Tests
             // 125000 deposit via the real migration's HasData. Two withdrawals
             // of 70000 each are individually valid (70000 < 125000) but
             // together (140000) would overdraw the account.
-            const int accountId = 1;
+            var (_, accountId, _) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 125000m);
             const decimal withdrawAmount = 70000m;
 
             // Two separate DbContext instances and two separate TransactionService
@@ -73,7 +73,7 @@ namespace NordiskaPortal.Api.Tests
             // contrasting with the withdrawal test above where one is
             // expected to fail. Uses account 2 (also seeded, 45000 opening
             // balance) to stay independent of the withdrawal test's account.
-            const int accountId = 2;
+            var (_, accountId, _) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 45000m);
             const decimal depositAmount = 1000m;
 
             await using var db1 = _fixture.CreateContext();

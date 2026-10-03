@@ -16,53 +16,6 @@ namespace NordiskaPortal.Api.Tests
             _fixture = fixture;
         }
 
-        // Every test creates its OWN customer and accounts instead of using
-        // the seeded ones (Anna/Erik). The test classes share one database,
-        // and TransactionServiceConcurrencyTests asserts exact balances on
-        // seeded accounts 1 and 2 -- a transfer test touching those would
-        // make that test pass or fail depending on run order.
-        private async Task<(int CustomerId, int AccountA, int AccountB)> CreateCustomerWithAccountsAsync(
-            decimal openingBalanceOnA)
-        {
-            await using var db = _fixture.CreateContext();
-            var unique = Guid.NewGuid().ToString("N")[..8];
-
-            var customer = new Customer
-            {
-                Name = $"Test {unique}",
-                PersonalId = $"19{Random.Shared.Next(100000, 999999)}-{Random.Shared.Next(1000, 9999)}",
-                Address = "Testgatan 1",
-                Email = $"t{unique}@test.local",
-                PasswordHash = "not-used-in-these-tests",
-                CreatedAt = DateTime.UtcNow
-            };
-            db.Customers.Add(customer);
-            await db.SaveChangesAsync();
-
-            var accountA = NewAccount(customer.Id, $"TA-{unique}");
-            var accountB = NewAccount(customer.Id, $"TB-{unique}");
-            db.SavingsAccounts.AddRange(accountA, accountB);
-            await db.SaveChangesAsync();
-
-            if (openingBalanceOnA > 0)
-            {
-                var now = DateTime.UtcNow;
-                db.Transactions.Add(new Transaction
-                {
-                    AccountId = accountA.Id,
-                    Type = TransactionType.Deposit,
-                    Description = "Startsaldo",
-                    Amount = openingBalanceOnA,
-                    TransactionDate = now,
-                    PostingDate = Transaction.CalculatePostingDate(now),
-                    Status = TransactionStatus.Posted
-                });
-                await db.SaveChangesAsync();
-            }
-
-            return (customer.Id, accountA.Id, accountB.Id);
-        }
-
         private static SavingsAccount NewAccount(int customerId, string accountNumber) => new()
         {
             CustomerId = customerId,
@@ -75,7 +28,7 @@ namespace NordiskaPortal.Api.Tests
         private async Task<decimal> BalanceAsync(int accountId)
         {
             await using var db = _fixture.CreateContext();
-            return await new TransactionService(db).GetBalanceAsync(accountId);
+            return await new TransactionService(db, TestAudit.For(db)).GetBalanceAsync(accountId);
         }
 
         private async Task<int> TransactionCountAsync(int accountId)
@@ -87,10 +40,10 @@ namespace NordiskaPortal.Api.Tests
         [Fact]
         public async Task Transfer_MovesMoney_AndTotalIsConserved()
         {
-            var (_, a, b) = await CreateCustomerWithAccountsAsync(10000m);
+            var (_, a, b) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 10000m);
 
             await using var db = _fixture.CreateContext();
-            var result = await new TransactionService(db).TransferAsync(a, b, 3000m);
+            var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 3000m);
 
             Assert.True(result.Success, result.Error);
             Assert.Equal(7000m, await BalanceAsync(a));
@@ -106,16 +59,16 @@ namespace NordiskaPortal.Api.Tests
         {
             // Guards the bug found during manual testing: the history used
             // its own sign rule and showed incoming transfers as negative.
-            var (_, a, b) = await CreateCustomerWithAccountsAsync(10000m);
+            var (_, a, b) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 10000m);
 
             await using (var db = _fixture.CreateContext())
             {
-                var result = await new TransactionService(db).TransferAsync(a, b, 1000m);
+                var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 1000m);
                 Assert.True(result.Success, result.Error);
             }
 
             await using var readDb = _fixture.CreateContext();
-            var service = new TransactionService(readDb);
+            var service = new TransactionService(readDb, TestAudit.For(readDb));
 
             var outgoing = (await service.GetHistoryAsync(a)).First();
             var incoming = (await service.GetHistoryAsync(b)).First();
@@ -130,10 +83,10 @@ namespace NordiskaPortal.Api.Tests
             // Guards the other manual-testing bug: the withdrawal balance
             // check treated TransferIn as money going out, so B looked
             // empty (or negative) and this withdrawal was refused.
-            var (_, a, b) = await CreateCustomerWithAccountsAsync(10000m);
+            var (_, a, b) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 10000m);
 
             await using var db = _fixture.CreateContext();
-            var service = new TransactionService(db);
+            var service = new TransactionService(db, TestAudit.For(db));
 
             var transfer = await service.TransferAsync(a, b, 3000m);
             Assert.True(transfer.Success, transfer.Error);
@@ -150,11 +103,11 @@ namespace NordiskaPortal.Api.Tests
             // check on purpose. This proves the service enforces "own
             // accounts only" by itself -- the safety net if a future caller
             // forgets the controller check.
-            var (_, myAccount, _) = await CreateCustomerWithAccountsAsync(10000m);
-            var (_, theirAccount, _) = await CreateCustomerWithAccountsAsync(0m);
+            var (_, myAccount, _) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 10000m);
+            var (_, theirAccount, _) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 0m);
 
             await using var db = _fixture.CreateContext();
-            var result = await new TransactionService(db).TransferAsync(myAccount, theirAccount, 1000m);
+            var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(myAccount, theirAccount, 1000m);
 
             Assert.False(result.Success);
             Assert.Equal("Kontot kunde inte hittas.", result.Error);
@@ -165,12 +118,12 @@ namespace NordiskaPortal.Api.Tests
         [Fact]
         public async Task Transfer_WithInsufficientFunds_WritesNothing()
         {
-            var (_, a, b) = await CreateCustomerWithAccountsAsync(500m);
+            var (_, a, b) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 500m);
             var rowsOnABefore = await TransactionCountAsync(a);
             var rowsOnBBefore = await TransactionCountAsync(b);
 
             await using var db = _fixture.CreateContext();
-            var result = await new TransactionService(db).TransferAsync(a, b, 1000m);
+            var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 1000m);
 
             Assert.False(result.Success);
             Assert.Equal("Otillräckligt saldo.", result.Error);
@@ -186,15 +139,15 @@ namespace NordiskaPortal.Api.Tests
             // 10000 on A. Two transfers of 7000 are each valid alone but
             // together would overdraw A -- the same race the withdrawal
             // concurrency test covers, now for transfers.
-            var (_, a, b) = await CreateCustomerWithAccountsAsync(10000m);
+            var (_, a, b) = await TestData.CreateCustomerWithAccountsAsync(_fixture, 10000m);
 
             // Separate contexts = two independent requests, as in production.
             await using var db1 = _fixture.CreateContext();
             await using var db2 = _fixture.CreateContext();
 
             var results = await Task.WhenAll(
-                new TransactionService(db1).TransferAsync(a, b, 7000m),
-                new TransactionService(db2).TransferAsync(a, b, 7000m));
+                new TransactionService(db1, TestAudit.For(db1)).TransferAsync(a, b, 7000m),
+                new TransactionService(db2, TestAudit.For(db2)).TransferAsync(a, b, 7000m));
 
             Assert.Equal(1, results.Count(r => r.Success));
 
