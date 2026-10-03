@@ -16,5 +16,7 @@ namespace NordiskaPortal.Api.Models
         public const string SavingsGoalDeleted = "savings_goal_deleted";
         public const string TaxReportGenerated = "tax_report_generated";
         public const string NotificationSent = "notification_sent";
+        public const string Transfer = "transfer";
+        public const string UnauditedRequest = "unaudited_request";
     }
 }

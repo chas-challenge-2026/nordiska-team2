@@ -7,5 +7,8 @@ namespace NordiskaPortal.Api.Services
         void Record(string action, int? customerId, string? refId = null, string? actor = null);
 
         Task<List<DTOs.AuditEntryDto>> GetForCustomerAsync(int customerId, int limit = 50);
+
+        // How many entries this request has staged. Read by AuditSafetyNetMiddleware.
+        int RecordCount { get; }
     }
 }

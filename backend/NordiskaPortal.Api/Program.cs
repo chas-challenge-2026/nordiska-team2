@@ -161,6 +161,7 @@ app.UseCors("AllowFrontend");   // CORS
 app.UseRateLimiter();           // Rate Limiter
 app.UseAuthentication();        // Authentication, Keep above Authorization
 app.UseAuthorization();         // Authorization
+app.UseMiddleware<AuditSafetyNetMiddleware>();
 app.MapHealthChecks("/health"); // Health check endpoint
 app.MapControllers().RequireRateLimiting("sliding");
 

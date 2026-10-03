@@ -10,6 +10,8 @@ namespace NordiskaPortal.Api.Services
         private readonly BankContext _db;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        public int RecordCount { get; private set; }
+
         // BankContext is Scoped, and so is this service. 
         // Within one HTTP request, DI hands TransactionService and AuditService the same BankContext instance,
         // that shared instance is the whole mechanism behind "audit write in the same transaction".
@@ -21,6 +23,8 @@ namespace NordiskaPortal.Api.Services
 
         public void Record(string action, int? customerId, string? refId = null, string? actor = null)
         {
+            RecordCount++;
+
             // HttpContext is null outside a request (background jobs, tests). Every field below tolerates that.
             var http = _httpContextAccessor.HttpContext;
 
@@ -48,10 +52,13 @@ namespace NordiskaPortal.Api.Services
             return await _db.AuditEntries
                 .AsNoTracking()
                 .Where(a => a.CustomerId == customerId)
+                .Where(a => a.Action != AuditActions.UnauditedRequest) 
                 .OrderByDescending(a => a.Timestamp)
                 .Take(limit)
                 .Select(a => new AuditEntryDto(a.Action, a.RefId, a.Timestamp, a.IpAddress))
                 .ToListAsync();
         }
+
+        
     }
 }

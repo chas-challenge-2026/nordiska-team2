@@ -269,9 +269,7 @@ namespace NordiskaPortal.Api.Services
                 };
 
                 _db.Transactions.AddRange(outgoing, incoming);
-
-                // TODO: Implement audit log first
-                // _audit.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
+                _audit.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
 
                 // One save: both ledger rows and the audit row commit together.
                 // Money can never leave one account without arriving in the other.
