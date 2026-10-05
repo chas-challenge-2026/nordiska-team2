@@ -10,8 +10,8 @@ namespace NordiskaPortal.Api.Services
     public interface ITransactionService
     {
         Task<decimal> GetBalanceAsync(int accountId);
-        Task<TransactionResult> DepositAsync(int accountId, decimal amount);
-        Task<TransactionResult> WithdrawAsync(int accountId, decimal amount);
+        Task<TransactionResult> DepositAsync(int accountId, decimal amount, string? description = null);
+        Task<TransactionResult> WithdrawAsync(int accountId, decimal amount, string? description = null);
         Task<List<LedgerEntryDto>> GetHistoryAsync(int accountId);
     }
 }

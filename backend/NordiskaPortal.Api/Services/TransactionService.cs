@@ -32,6 +32,18 @@ namespace NordiskaPortal.Api.Services
             }
         }
 
+        // Default description if no default description is passed
+        private static string DefaultDescription(TransactionType type) => type switch
+        {
+            TransactionType.Deposit => "Insättning",
+            TransactionType.Withdrawal => "Uttag",
+            TransactionType.Interest => "Ränta",
+            TransactionType.Tax => "Skatt",
+            _ => "Transaktion"
+        };
+
+        private static string ResolveDescription(string? description, TransactionType type) => string.IsNullOrWhiteSpace(description) ? DefaultDescription(type) : description.Trim();
+
         public async Task<decimal> GetBalanceAsync(int accountId) 
         { 
             var transactions = await _db.Transactions
@@ -40,7 +52,7 @@ namespace NordiskaPortal.Api.Services
             return transactions.Sum(GetSignedAmount); 
         }
 
-        public async Task<TransactionResult> DepositAsync(int accountId, decimal amount)
+        public async Task<TransactionResult> DepositAsync(int accountId, decimal amount, string? description = null)
         {
             /*
                 A deposit is a pure insert so nothing is read then written back.
@@ -63,6 +75,7 @@ namespace NordiskaPortal.Api.Services
             {
                 AccountId = accountId,
                 Type = TransactionType.Deposit,
+                Description = ResolveDescription(description, TransactionType.Deposit),
                 Amount = amount,
                 TransactionDate = now,
                 PostingDate = Transaction.CalculatePostingDate(now),
@@ -72,11 +85,11 @@ namespace NordiskaPortal.Api.Services
             _db.Transactions.Add(transaction);
             await _db.SaveChangesAsync();
 
-            var entry = new LedgerEntryDto(transaction.TransactionDate, "Insättning", transaction.Amount);
+            var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount);
             return new TransactionResult(true, null, entry);
         }
 
-        public async Task<TransactionResult> WithdrawAsync(int accountId, decimal amount)
+        public async Task<TransactionResult> WithdrawAsync(int accountId, decimal amount, string? description = null)
         {
             if (amount <= 0)
             {
@@ -111,7 +124,9 @@ namespace NordiskaPortal.Api.Services
 
                 var currentBalance = await _db.Transactions
                     .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
-                    .SumAsync(t => t.Type == TransactionType.Deposit ? t.Amount : -t.Amount);
+                    .SumAsync(t => (t.Type == TransactionType.Deposit || t.Type == TransactionType.Interest)
+                        ? t.Amount
+                        : -t.Amount); // Rule: GetSignedAmount must match
 
                 if (currentBalance < amount)
                 {
@@ -124,6 +139,7 @@ namespace NordiskaPortal.Api.Services
                 {
                     AccountId = accountId,
                     Type = TransactionType.Withdrawal,
+                    Description = ResolveDescription(description, TransactionType.Withdrawal),
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = Transaction.CalculatePostingDate(now),
@@ -134,7 +150,7 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                var entry = new LedgerEntryDto(withdrawal.TransactionDate, "Uttag", -withdrawal.Amount);
+                var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
                 return new TransactionResult(true, null, entry);
             }
             catch (Exception)
@@ -164,7 +180,7 @@ namespace NordiskaPortal.Api.Services
 
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
-                Description: t.Type == TransactionType.Deposit ? "Insättning" : "Uttag",
+                Description: ResolveDescription(t.Description, t.Type),
                 Amount: t.Type == TransactionType.Deposit ? t.Amount : -t.Amount
             )).ToList();
 

@@ -26,6 +26,7 @@ concurrency:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   VCPKG_COMMIT: '301856f5f2824f788a3ffa6332293861cccd23b4'
@@ -76,9 +77,6 @@ jobs:
         shell: bash
         run: |
           BASE=$(tr -d '[:space:]' < native/VERSION)
-          # github.ref_name is "123/merge" on a pull_request event, not the
-          # branch name — head_ref is the real source-branch name and is
-          # only set for pull_request events, so this covers both triggers.
           BRANCH="${{ github.head_ref || github.ref_name }}"
 
           if [ "$BRANCH" = "main" ]; then
@@ -88,14 +86,10 @@ jobs:
             # 0.1.0-dev.41 < 0.1.0-dev.42 < 0.1.0 under SemVer 2 ordering.
             VERSION="$BASE-dev.${{ github.run_number }}"
           else
-            # Everything else: a manual dispatch on a feature branch, or now
-            # (via the pull_request trigger above) an automatic build for a
-            # PR opened against dev/main. Either way it's a one-off test
-            # build, tagged with the branch so it can't be mistaken for a
-            # real dev build even though run_number is shared across all
-            # triggers of this workflow. SemVer prerelease identifiers only
-            # allow [0-9A-Za-z-], so sanitize e.g. "feat/pdf_signer" ->
-            # "feat-pdf-signer".
+            # Manual dispatch on a feature branch: a one-off test build,
+            # tagged with the branch so it can't be mistaken for a real dev
+            # build. SemVer prerelease identifiers only allow [0-9A-Za-z-],
+            # so sanitize e.g. "feat/pdf_signer" -> "feat-pdf-signer".
             SAFE_BRANCH=$(echo "$BRANCH" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
             VERSION="$BASE-$SAFE_BRANCH.${{ github.run_number }}"
           fi
@@ -125,27 +119,34 @@ jobs:
           runVcpkgInstall: false
 
       # lukka/run-vcpkg@v11 defaults to vcpkg's "x-gha" binary cache
-      # provider, which vcpkg itself removed in April 2025 — so without
-      # this, every run silently rebuilds every dependency from source.
-      # This swaps it for a plain filesystem cache directory that
-      # actions/cache persists between runs instead.
+      # provider, which vcpkg removed in April 2025. Swap it for a plain
+      # filesystem cache that actions/cache persists between runs.
       - name: Point vcpkg at a filesystem binary cache
         run: echo "VCPKG_BINARY_SOURCES=clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite" >> $env:GITHUB_ENV
 
+      # vcpkg's per-package ABI hash includes the compiler version. When the
+      # windows-latest image ships a new MSVC, every cached package becomes
+      # useless. If the actions/cache key doesn't change too, the stale cache
+      # still gets an exact hit, vcpkg rebuilds everything, and actions/cache
+      # refuses to save the fresh result (exact hit = "already saved").
+      # Putting the image version in the key gives each toolchain its own
+      # cache lineage.
+      - name: Compute cache key parts
+        id: ck
+        run: |
+          "image=$env:ImageVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Runner image: $env:ImageVersion"
+
       - name: Restore vcpkg binary cache
-        uses: actions/cache@v4
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/.vcpkg-cache
-          # vcpkg's cache is content-addressed per port (keyed by each
-          # port's own ABI hash), so restoring a slightly-stale cache is
-          # still safe — vcpkg just rebuilds whatever doesn't match. The
-          # vcpkg.json hash + pinned commit here just give a genuine
-          # dependency bump a clean new cache lineage instead of an
-          # ever-growing one.
-          key: vcpkg-windows-x64-static-md-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+          key: vcpkg-win-x64-static-md-release-${{ steps.ck.outputs.image }}-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+          # Only fall back within the same image version. vcpkg would just
+          # rebuild everything from an older image's cache anyway.
           restore-keys: |
-            vcpkg-windows-x64-static-md-${{ hashFiles('native/vcpkg.json') }}-
-            vcpkg-windows-x64-static-md-
+            vcpkg-win-x64-static-md-release-${{ steps.ck.outputs.image }}-
 
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -153,17 +154,44 @@ jobs:
           arch: x64
 
       - name: Configure
-        env:
-          VCPKG_ROOT_RESOLVED: ${{ steps.vcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}
-        run: >
-          cmake -S . -B build/release
-          -G Ninja
-          --no-warn-unused-cli
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT_RESOLVED/scripts/buildsystems/vcpkg.cmake"
-          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
-          -DBUILD_TESTING=OFF
-          -DPDF_ENGINE_RESTRICT_SYMBOLS=ON
+        run: |
+          # msvc-dev-cmd overwrites VCPKG_ROOT with Visual Studio's bundled
+          # vcpkg, which has a different ports tree (and different ABI
+          # hashes). Force the pinned checkout from run-vcpkg instead.
+          $env:VCPKG_ROOT = $env:RUNVCPKG_VCPKG_ROOT
+          Write-Host "Using vcpkg at: $env:VCPKG_ROOT"
+          if (-not (Test-Path "$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake")) {
+            throw "Pinned vcpkg toolchain file not found at $env:VCPKG_ROOT"
+          }
+
+          cmake -S . -B build/release `
+            -G Ninja `
+            --no-warn-unused-cli `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_OVERLAY_TRIPLETS=cmake/triplets `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md-release `
+            -DBUILD_TESTING=OFF `
+            -DPDF_ENGINE_RESTRICT_SYMBOLS=ON
+
+      # Save right after the expensive part (vcpkg builds deps during
+      # Configure), and even if a later step fails or the run is cancelled.
+      # Skipped on an exact hit, since the cache is already up to date.
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.vcpkg-cache
+          key: vcpkg-win-x64-static-md-release-${{ steps.ck.outputs.image }}-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+
+      # Diagnostic: shows whether the cache is actually being populated.
+      # Remove once you're happy that it works.
+      - name: Cache stats
+        if: always()
+        run: |
+          $files = Get-ChildItem "${{ github.workspace }}/.vcpkg-cache" -Recurse -File -ErrorAction SilentlyContinue
+          $mb = [math]::Round((($files | Measure-Object Length -Sum).Sum) / 1MB, 1)
+          Write-Host "vcpkg cache: $($files.Count) files, $mb MB (cache-hit=${{ steps.vcpkg-cache.outputs.cache-hit }})"
 
       - name: Build
         run: cmake --build build/release --target pdf_engine
@@ -176,11 +204,9 @@ jobs:
         run: |
           $dll = "stage/pdf_engine.dll"
           if (-not (Test-Path $dll)) { throw "pdf_engine.dll was not produced" }
-          # dumpbin's output comes back as an array of lines; -notmatch against
-          # an array filters to non-matching *elements* rather than testing
-          # the whole thing, so it's almost always "truthy" regardless of
-          # whether the symbol is present. Join to one string first so the
-          # match is a real yes/no.
+          # dumpbin's output is an array of lines; -notmatch against an array
+          # filters elements rather than testing the whole thing. Join to one
+          # string first so the match is a real yes/no.
           $exportText = (& dumpbin /exports $dll) -join "`n"
           if ($exportText -notmatch 'pdf_engine_generate_and_sign') {
             Write-Host $exportText
@@ -230,15 +256,13 @@ jobs:
           vcpkgJsonGlob: 'native/vcpkg.json'
           runVcpkgInstall: false
 
-      # See the matching step in build-windows: run-vcpkg's default cache
-      # provider (x-gha) was removed from vcpkg upstream in April 2025, so
-      # this filesystem cache + actions/cache is what actually persists
-      # built dependencies between runs.
+      # See the matching step in build-windows.
       - name: Point vcpkg at a filesystem binary cache
         run: echo "VCPKG_BINARY_SOURCES=clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite" >> "$GITHUB_ENV"
 
       - name: Restore vcpkg binary cache
-        uses: actions/cache@v4
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/.vcpkg-cache
           key: vcpkg-linux-x64-pic-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
@@ -259,6 +283,15 @@ jobs:
           -DVCPKG_TARGET_TRIPLET=x64-linux-pic
           -DBUILD_TESTING=OFF
           -DPDF_ENGINE_RESTRICT_SYMBOLS=ON
+
+      # Save straight after Configure so a cancel or a later failing step
+      # can't throw away a cold build's work.
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.vcpkg-cache
+          key: vcpkg-linux-x64-pic-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
 
       - name: Build
         run: cmake --build build/release --target pdf_engine
@@ -353,4 +386,17 @@ jobs:
           dotnet nuget push "artifacts/*.nupkg"
           --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
           --api-key ${{ secrets.GITHUB_TOKEN }}
+          --skip-duplicate
+
+      - name: Authenticate to NuGet.org (OIDC)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: "freeduck"
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           --skip-duplicate

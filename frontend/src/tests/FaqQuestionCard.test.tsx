@@ -4,11 +4,10 @@ import { FaqQuestionCard } from "../features/FAQ/FaqQuestionCard";
 import type { FaqEntry } from "../types/faq";
 
 const mockEntry: FaqEntry = {
-  id: "1",
+  id: 1,
   question: "Hur tar jag ut pengar?",
   answer: "Gå till Sparkonto och välj Uttag.",
   category: "transactions",
-  keywords: ["uttag"],
 };
 
 describe("FaqQuestionCard", () => {

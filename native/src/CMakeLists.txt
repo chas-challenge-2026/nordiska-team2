@@ -5,8 +5,6 @@ add_library(pdf_engine SHARED
     signer/pdf_signer.h
     layouts/tax_report.c
     layouts/tax_report.h
-    layouts/tax_report.c
-    layouts/tax_report.h
     layouts/bank_statement.c
     layouts/bank_statement.h
     layouts/pdf_render.c
@@ -21,6 +19,11 @@ add_library(pdf_engine SHARED
     utils/utils.c
     pdf_engine/pdf_engine.c
 )
+
+if(PDF_ENGINE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED)
+    set_target_properties(pdf_engine PROPERTIES C_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
 
 target_include_directories(pdf_engine
     PUBLIC

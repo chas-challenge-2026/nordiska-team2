@@ -6,6 +6,41 @@
 
 #include <stdio.h>
 
+/* Everything this layout draws. The engine rejects a report that lacks any of
+ * these before rendering, so the "-" / 0 fallbacks in the draw functions
+ * below are unreachable for these fields. */
+static const PdfRequiredField REQUIRED_FIELDS[] = {
+    {"metadata", PDF_FIELD_OBJECT},
+    {"metadata.report_id", PDF_FIELD_STRING},
+    {"metadata.year", PDF_FIELD_NUMBER},
+    {"metadata.period_start", PDF_FIELD_STRING},
+    {"metadata.period_end", PDF_FIELD_STRING},
+
+    {"customer", PDF_FIELD_OBJECT},
+    {"customer.full_name", PDF_FIELD_STRING},
+    {"customer.personal_id", PDF_FIELD_STRING},
+    {"customer.address", PDF_FIELD_STRING},
+
+    {"account", PDF_FIELD_OBJECT},
+    {"account.account_number", PDF_FIELD_STRING},
+    {"account.account_type", PDF_FIELD_STRING},
+    {"account.interest_rate_pct", PDF_FIELD_NUMBER},
+
+    {"summary", PDF_FIELD_OBJECT},
+    {"summary.starting_balance_sek", PDF_FIELD_NUMBER},
+    {"summary.ending_balance_sek", PDF_FIELD_NUMBER},
+    {"summary.total_deposits_sek", PDF_FIELD_NUMBER},
+    {"summary.total_withdrawals_sek", PDF_FIELD_NUMBER},
+    {"summary.total_interest_earned_sek", PDF_FIELD_NUMBER},
+    {"summary.total_tax_withheld_sek", PDF_FIELD_NUMBER},
+
+    {"transactions", PDF_FIELD_ARRAY},
+    {"transactions[].date", PDF_FIELD_STRING},
+    {"transactions[].type", PDF_FIELD_STRING},
+    {"transactions[].amount_sek", PDF_FIELD_NUMBER},
+    {"transactions[].balance_after_sek", PDF_FIELD_NUMBER},
+};
+
 static int draw_title(RenderCtx* ctx, const cJSON* metadata) {
     char subtitle[192];
     snprintf(subtitle, sizeof(subtitle), "Report %s | Tax year %.0f | %s - %s",
@@ -100,7 +135,8 @@ static int tax_report_layout(HPDF_Doc pdf, const cJSON* root) {
     return 0;
 }
 
-// tax_report_extract_id: unchanged from your version.
+// account_number is required above, so this always finds an id for reports
+// that passed validation; the other candidates are kept as fallbacks.
 static void tax_report_extract_id(const cJSON* root, char* out,
                                   size_t out_cap) {
     const cJSON* account  = cJSON_GetObjectItemCaseSensitive(root, "account");
@@ -129,6 +165,11 @@ static void tax_report_extract_id(const cJSON* root, char* out,
 
 const PdfLayoutConfig* tax_report_get_config(void) {
     static const PdfLayoutConfig CONFIG = {
-        .layout_fn = tax_report_layout, .extract_id_fn = tax_report_extract_id};
+        .layout_fn       = tax_report_layout,
+        .extract_id_fn   = tax_report_extract_id,
+        .required_fields = REQUIRED_FIELDS,
+        .required_field_count =
+            sizeof(REQUIRED_FIELDS) / sizeof(REQUIRED_FIELDS[0]),
+    };
     return &CONFIG;
 }
