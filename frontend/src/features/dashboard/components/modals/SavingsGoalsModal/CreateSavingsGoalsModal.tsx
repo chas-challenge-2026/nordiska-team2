@@ -33,8 +33,10 @@ export default function CreateSavingsGoalsModal({
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
     const targetAmountValue = Number(targetAmount);
-    const isMissingFields = name.trim() === "" || targetAmount.trim() === "";
-    const isAmountInvalid = targetAmount.trim() !== "" && (Number.isNaN(targetAmountValue) || targetAmountValue <= 0) 
+    const isMissingName = name.trim() === "";
+    const isMissingAmount = targetAmount.trim() === "";
+    const isAmountInvalid = !isMissingAmount && (Number.isNaN(targetAmountValue) || targetAmountValue <= 0);
+    const isAccountMissing = account === null;
 
     function resetAndClose() {
         setName("");
@@ -56,7 +58,7 @@ export default function CreateSavingsGoalsModal({
 
     function handleCreate() {
         setHasAttemptedSubmit(true);
-        if (isMissingFields || isAmountInvalid) return;
+        if (isMissingName || isAccountMissing) return;
         createMutation.mutate();
 
     }
@@ -74,12 +76,20 @@ export default function CreateSavingsGoalsModal({
                     onChange={setName}
                     placeholder="Ex: Resa till Japan" />
 
+                {hasAttemptedSubmit && isMissingName && (
+                    <p className="text-xsmall text-cancel">Du måste fylla i ett sparmåls-namn.</p>
+                )}
+
                 <p className="mt-2">Målbelopp*</p>
                     <InputField 
                         value={targetAmount}
                         onChange={setTargetAmount}
                         placeholder="Belopp"
                         type="number" />
+
+                {hasAttemptedSubmit && isMissingAmount && (
+                    <p className="text-xsmall text-cancel">Du måste fylla i ett målbelopp.</p>
+                )}        
 
                 {hasAttemptedSubmit && isAmountInvalid && (
                     <p className="text-xsmall text-cancel">Målbeloppet måste vara en siffra större än 0.</p>
@@ -91,16 +101,16 @@ export default function CreateSavingsGoalsModal({
                     options={accountOptions}
                     placeholder="Välj Konto"
                     />
-
-                {hasAttemptedSubmit && isMissingFields && (
-                    <p className="text-xsmall text-cancel">Du måste fylla i namn och målbelopp.</p>
+                {hasAttemptedSubmit && isAccountMissing && (
+                    <p className="text-xsmall text-cancel">Du måste välja ett konto.</p>
                 )}
+
                 {createMutation.isError && (
                     <p className="text-xsmall text-cancel">Ett fel uppstod. Försök igen.</p>
                 )}
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-10">
   
                 <Button
                     label="Avbryt"

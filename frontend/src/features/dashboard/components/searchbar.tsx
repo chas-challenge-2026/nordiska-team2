@@ -11,7 +11,8 @@ export default function SearchBar() {
     }
 
     return (
-        <div className="flex items-center">
+        <div className=" md:flex  items-center hidden 
+                        lg:relative md:absolute md:top-0 md:right-0">
         <InputField 
             value={query}
             onChange={setQuery}

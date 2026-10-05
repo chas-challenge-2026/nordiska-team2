@@ -15,7 +15,7 @@ async function handleLogout() {
     try {
         await apiClient.post('/auth/logout')
     } catch (error) {
-
+        
     }
     auth.setAccessToken(null)
     navigate('/login')

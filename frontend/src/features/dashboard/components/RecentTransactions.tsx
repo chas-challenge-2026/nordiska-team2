@@ -37,11 +37,11 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                     </h2>
                 </header>
 
-                {isLoading 
-                ? (
+                {isLoading ? (
                     <p className="p-3 text-small text-muted">Laddar händelser...</p>
-                ) : <p className="p-3 text-small text-muted">Inga händelser än.</p>
-                }
+                ) : latestTransactions.length === 0 ? ( 
+                    <p className="p-3 text-small text-muted">Inga händelser än.</p>
+                ) : (
 
                 <ul className="divide-y divide-border-light">
                     {latestTransactions.map((transaction) => (
@@ -51,7 +51,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                             subtitle={transaction.account}
                             right={
                                 <div className="flex items-center justify-between 
-                                                gap-3 sm:flex-col sm:items-end">
+                                                gap-1 sm:flex-col sm:items-end">
                                     <p className={transaction.amount >= 0
                                                 ? "font-semibold text-success text-medium whitespace-nowrap"
                                                 : "font-semibold text-foreground text-medium"}>
@@ -69,6 +69,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                     ))}
                 
                 </ul>
+                ) }
                 
                 <footer className="border-t border-border-light text-center">
                 <Link
