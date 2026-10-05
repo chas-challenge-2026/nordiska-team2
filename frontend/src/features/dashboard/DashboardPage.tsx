@@ -3,7 +3,6 @@ import AccountOverview from "./components/AccountOverview";
 import RecentTransactions from "./components/RecentTransactions";
 import QuickActions from "./components/QuickActions";
 import { quickActions } from "./data/quickActions";
-
 import FinancialOverview from "./components/FinancialOverview"
 import SavingsGoal from "./components/SavingsGoals";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
@@ -14,7 +13,6 @@ import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 import { useRecentTransactions } from "../../hooks/useTransactions";
 import { useCustomer } from "../../hooks/useCustomer";
-
 
 export default function DashboardPage() {
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
@@ -29,9 +27,10 @@ export default function DashboardPage() {
 
 
     return ( 
-        <div className="grid min-h-full grid-cols-1 lg:grid-cols-[repeat(14,minmax(0,1fr))]">
+        <div className="relative grid min-h-full grid-cols-1 
+                        lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
-                            min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
+                                min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
                 <header>
                     <h1 className="text-xl sm:text-title">
                         Välkommen tillbaka{firstName ? `, ${firstName}` : ""}!
@@ -46,10 +45,10 @@ export default function DashboardPage() {
                 <RecentTransactions transactions={transactions ?? []} 
                                     isLoading={transactionsLoading} />
                 
-                <Footer />
+                
             </section>
 
-            <aside className=" flex flex-col gap-4 min-w-0 w-full 
+            <aside className="flex flex-col gap-4 min-w-0 w-full 
                                 lg:col-span-4 mt-3 lg:mt-0">
                         <SearchBar />
                         <FinancialOverview 
@@ -61,6 +60,7 @@ export default function DashboardPage() {
                         <FaqOverview />
 
             </aside>
+            <Footer />
         </div>
 
     )

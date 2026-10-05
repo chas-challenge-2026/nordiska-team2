@@ -27,10 +27,15 @@ export default function SelectOptions({
                 value={value}
                 onChange={onChange} 
                 options={options} 
-                className={`text-small border border-muted rounded-default
-                            
-                            ${className}`}
                 placeholder={placeholder}
+                unstyled
+                menuPosition="fixed"
+                classNames={{
+                    control: () => `border border-muted rounded-default p-1 bg-white ${className}`,
+                    menu: () => "border border-muted rounded-default bg-white mt-1 z-20 text-small",
+                    option: (state) => `p-2 ${state.isFocused ? "bg-border" : ""}`,
+                    placeholder: () => "text-muted",
+                }}
             />
         </>        
     )

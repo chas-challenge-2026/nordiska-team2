@@ -1,7 +1,7 @@
-import { Chart as ChartJS, LineElement, PointElement, CategoryScale,LinearScale, Tooltip, Legend } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Chart as ChartJS, LineElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { Bar } from "react-chartjs-2";
 
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 type LedgerEntry = {
     date: string;
@@ -48,18 +48,20 @@ export default function TransactionsChart({ history }: TransactionChartProps) {
             {
                 label: "Insättningar",
                 data: deposits,
-                borderColor: "#2a78d6",
                 backgroundColor: "#2a78d6",
-                borderWidth: 1,
-                pointRadius: 3,
+                borderRadius: 4,
+                maxBarThickness: 24,
+                categoryPercentage: 0.8,
+                barPercentage: 1.0
             },
             {
                 label: "Uttag",
                 data: withdrawals,
-                borderColor: "#eb6834",
                 backgroundColor: "#eb6834",
-                borderWidth: 1,
-                pointRadius: 3,
+                borderRadius: 4,
+                maxBarThickness: 24,
+                categoryPercentage: 0.8,
+                barPercentage: 1.0
             },
         ],
     };
@@ -76,7 +78,7 @@ export default function TransactionsChart({ history }: TransactionChartProps) {
 
     return (
         <div className="relative h-[220px] w-full">
-            <Line data={data}
+            <Bar data={data}
                 options={options} />
         </div>
     )

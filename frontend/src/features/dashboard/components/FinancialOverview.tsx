@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Card from "../../../components/cards/Card";
-import { useFinancialSummary } from "../../../hooks/useFinancialSummary";
+// import { useFinancialSummary } from "../../../hooks/useFinancialSummary"; {/* INKOMSTER OCH UTGIFTER */}
 import type { Account } from "../../../types/account"
 import BalanceChart from "./BalanceCharts";
 
@@ -15,7 +15,7 @@ const currencyFormatter = new Intl.NumberFormat("sv-SE", {
 
 export default function FinancialOverview({ 
     accounts }: FinancialOverviewProps) {
-        const { data: financial, isLoading: financialLoading, isError: financialError  } = useFinancialSummary();
+        // const { data: financial, isLoading: financialLoading, isError: financialError  } = useFinancialSummary(); /* INKOMSTER OCH UTGIFTER */
         const totalBalance = accounts.reduce(
             (total, account) => total + account.balance,
             0,
@@ -33,7 +33,11 @@ export default function FinancialOverview({
                                 {currencyFormatter.format(totalBalance)}
                             </p>
                         </li>
-                        <li className="pb-2">
+
+
+            {/* ========== INKOMSTER OCH UTGIFTER ========== */}
+
+                        {/* <li className="pb-2">
                             <p className="text-small text-muted">
                                 Inkomster
                             </p>
@@ -52,7 +56,9 @@ export default function FinancialOverview({
                             <p className="text-balance font-bold text-brand text-small">
                                 −{currencyFormatter.format(financial?.expenses ?? 0)}
                             </p>
-                        </li>
+                        </li> */}
+
+
                         <li>
                             <BalanceChart accounts={accounts} />
                         </li>

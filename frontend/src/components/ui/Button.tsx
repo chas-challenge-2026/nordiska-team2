@@ -32,7 +32,7 @@ export default function Button({
         <>
             <button 
                 type="button"
-                className={`p-2 m-2 cursor-pointer 
+                className={`p-2 cursor-pointer 
                             border border-border shadow-sm rounded-default
                             transition-transform duration-150 active:scale-98
                             ${buttonVariantClasses[variant]} ${className}`}
