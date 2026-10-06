@@ -17,7 +17,7 @@ namespace NordiskaPortal.Api.Services
         /// Uses an isolated temp folder per call so concurrent generations
         /// never collide or pick up the wrong file.
         /// </summary>
-        public byte[]? GenerateSingleReportPdf(object report, string? pfxPath, string? password)
+        public byte[]? GenerateSingleReportPdf(object report, PdfReportType reportType, string? pfxPath, string? password)
         {
             string tempBaseDir = _configuration["PdfTemp:Directory"] ?? "json-temp";
             string callId = Guid.NewGuid().ToString("N");
@@ -34,7 +34,7 @@ namespace NordiskaPortal.Api.Services
             {
                 int result = PdfEngineNative.pdf_engine_generate_and_sign(
                     tempJsonPath,
-                    PdfReportType.TaxReport,
+                    reportType,
                     tempOutDir,
                     pfxPath,
                     password,

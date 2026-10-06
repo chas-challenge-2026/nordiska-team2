@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Models;
+using NordiskaPortal.Api.Interop;
 
 namespace NordiskaPortal.Api.Services
 {
@@ -50,7 +51,7 @@ namespace NordiskaPortal.Api.Services
                     continue;
                 }
 
-                byte[]? pdfBytes = _pdfGeneratorService.GenerateSingleReportPdf(reportData, null, null);
+                byte[]? pdfBytes = _pdfGeneratorService.GenerateSingleReportPdf(reportData, PdfReportType.TaxReport, null, null);
                 if (pdfBytes == null)
                 {
                     _logger.LogWarning("PDF generation FAILED for account {AccountId}, year {Year}.", accountId, year);
