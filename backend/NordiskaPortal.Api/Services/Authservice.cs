@@ -15,22 +15,34 @@ namespace NordiskaPortal.Api.Services
     {
         private readonly BankContext _db;
         private readonly IConfiguration _config;
+        private readonly IAuditService _audit;   
 
-        public AuthService(BankContext db, IConfiguration config)
+        public AuthService(BankContext db, IConfiguration config,  IAuditService audit)
         {
             _db = db;
             _config = config;
+            _audit = audit;
         }
 
         public async Task<AuthResult?> LoginAsync(string email, string password)
         {
             var customer = await _db.Customers.FirstOrDefaultAsync(c => c.Email == email);
             if (customer == null)
+            {
+                // No email stored: people often type their password into the email field by accident.
+                _audit.Record(AuditActions.LoginFailed, customerId: null);
+                await _db.SaveChangesAsync();
                 return null;
+            }
 
             if (!BCrypt.Net.BCrypt.Verify(password, customer.PasswordHash))
+            {
+                _audit.Record(AuditActions.LoginFailed, customer.Id, actor: "anonymous");
+                await _db.SaveChangesAsync();
                 return null;
+            }
 
+            _audit.Record(AuditActions.Login, customer.Id);  
             return await IssueTokensAsync(customer.Id, customer.Email);
         }
 
@@ -44,8 +56,7 @@ namespace NordiskaPortal.Api.Services
             if (stored == null || !stored.IsActive || stored.Customer == null)
                 return null;
 
-            stored.RevokedAt = DateTime.UtcNow;
-
+            stored.RevokedAt = DateTime.UtcNow; 
             return await IssueTokensAsync(stored.CustomerId, stored.Customer.Email);
         }
 
@@ -57,6 +68,7 @@ namespace NordiskaPortal.Api.Services
             if (stored != null && stored.RevokedAt == null)
             {
                 stored.RevokedAt = DateTime.UtcNow;
+                _audit.Record(AuditActions.Logout, stored.CustomerId); 
                 await _db.SaveChangesAsync();
             }
         }
@@ -64,6 +76,7 @@ namespace NordiskaPortal.Api.Services
         // Public entry point for id-confirmation other than password login (BankID mock)
         public async Task<AuthResult> IssueTokensForCustomerAsync(int customerId, string email)
         {
+            _audit.Record(AuditActions.BankIdLogin, customerId);
             return await IssueTokensAsync(customerId, email);
         }
 

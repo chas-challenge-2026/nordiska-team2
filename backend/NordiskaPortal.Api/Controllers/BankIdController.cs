@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NordiskaPortal.Api.DTOs;
+using NordiskaPortal.Api.Middleware;
 using NordiskaPortal.Api.Services;
 
 // Mock BankID
