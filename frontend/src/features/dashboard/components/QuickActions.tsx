@@ -37,7 +37,8 @@ export default function QuickActions({ actions }: QuickActionsProps){
             <div className="grid-cols-2
                             sm:grid-cols-3
                             xl:grid-cols-5
-                            hidden lg:grid">
+                            hidden lg:grid
+                            gap-3">
                 {actions.map((action) =>(
                     <Button
                     className={`flex flex-col justify-center items-center h-full
