@@ -24,7 +24,7 @@ interface LedgerEntry {
 export default function TransactionPage() {
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
-  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [explicitAccountId, setExplicitAccountId] = useState<number | null>(null);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -39,15 +39,8 @@ export default function TransactionPage() {
     label: account.accountNumber,
   })) ?? [];
 
-const selectedOption = accountOptions.find((o) => o.value === String(selectedAccountId)) ?? null;
-
-  // Default to the first account once accounts load, but only if nothing's been explicitly selected yet.
-  // Doesn't override a user's own choice on every refetch (ex. after a deposit).
-  useEffect(() => {
-    if (accounts && accounts.length > 0 && selectedAccountId === null) {
-      setSelectedAccountId(accounts[0].id);
-    }
-  }, [accounts, selectedAccountId]);
+  const selectedAccountId = explicitAccountId ?? accounts?.[0]?.id ?? null;
+  const selectedOption = accountOptions.find((o) => o.value === String(selectedAccountId)) ?? null;
 
   const selectedAccount = accounts?.find((a) => a.id === selectedAccountId);
   const accountGoals = goals?.filter((goal) => goal.accountId === selectedAccountId) ?? [];
@@ -55,20 +48,13 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
     value: String(goal.id),
     label: goal.name,
   }))
-  const [selectedGoalOption, setSelectedGoalOption] = useState<OptionType | null>(null)
-
-  useEffect(() => {
-    if (accountGoals.length === 0) {
-      setSelectedGoalOption(null);
-      return;
-    }
-
-    const stillValid = selectedGoalOption && accountGoals.some((g) => String(g.id) === selectedGoalOption.value);
-    if (!stillValid) {
-      setSelectedGoalOption({ value: String(accountGoals[0].id), label: accountGoals[0].name })
-      }
-     }, [selectedAccountId, goals]);
-
+  const [explicitGoalOption, setSelectedGoalOption] = useState<OptionType | null>(null)
+  const isExplicitGoalValid = explicitGoalOption && accountGoals.some((g) => String(g.id) === explicitGoalOption.value);
+  const selectedGoalOption = isExplicitGoalValid 
+    ? explicitGoalOption 
+    : (accountGoals[0] 
+      ? { value: String(accountGoals[0].id), label: accountGoals[0].name } 
+      : null);
 
   const accountGoal = accountGoals.find((g) => String(g.id) === selectedGoalOption?.value);
   const progress = accountGoal?.progressPercent ?? 0;
@@ -146,24 +132,26 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
     <>
      <div className="flex flex-col gap-3 mb-3">
     {/* ============ ÖVRE RADEN: rubrik + kontoval ============ */}
-      <div className="flex justify-between">
-        <div>
-          <h1 className="text-xl sm:text-title">Kontohantering</h1>
-          <p className="text-muted text-small mb-5">
-              Sätt in, ta ut, överför pengar mellan konto och följ dina sparmål.
-          </p>
-        </div>
-        <div>
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+          <div>
+            <h1 className="text-xl sm:text-title">Kontohantering</h1>
+            <p className="text-muted text-small mb-5">
+                Sätt in, ta ut, överför pengar mellan konto och följ dina sparmål.
+            </p>
+          </div>
+
+        <div className="hidden md:block">
           <p className="text-xsmall text-muted mb-1">Välj konto</p>
           <SelectOptions 
             value={selectedOption}
-            onChange={(option) => setSelectedAccountId(option ? Number(option.value): null)}
+            onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
             options={accountOptions}
             className="w-100 self-end text-small"
           />
         </div>
       </div>
-      <div>
+
+      <div className="hidden md:block">
          <Button 
             label="Hantera sparmål"
             variant="dropDown"
@@ -199,15 +187,16 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
       </div>
 
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
-    <div className="flex gap-3">
+    <div className="flex gap-3 flex-col md:flex-row">
       <Card 
-        title="hej"
+        title={selectedAccount?.name ?? "Konto"}
         subtitle="Saldo" 
         headerVariant="secondary"
         headerClassName="min-h-25"
         >
           <div>
-            {selectedAccount && <p className="mt-2">
+            <p className="mt-2 text-small text-muted">Tillgänglig saldo</p>
+            {selectedAccount && <p className="mt-2 text-balance font-bold text-brand">
               {amountFormatter.format(selectedAccount.balance)}
               </p>}
           </div>
@@ -220,7 +209,7 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
                 value={selectedGoalOption}
                 onChange= {setSelectedGoalOption}
                 options={goalOptions}
-                className="w-full border-none text-medium font-semibold" />
+                className="-ml-1 w-full border-none text-medium font-semibold" />
             ) : ( 
               <h2 className="font-semibold text-medium">{accountGoal?.name ?? "Sparmål"}</h2>
             )}
@@ -228,21 +217,20 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
           </>
         }
         headerVariant="secondary"
-        headerClassName="min-h-25"
-        
+        headerClassName="min-h-25" 
         >
           <div>
             {accountGoal ? ( 
               <>
                 <div
-                    role="progressbar"
-                    aria-label={`Sparmål: ${accountGoal.name}`}
-                    aria-valuemin={0}
-                    aria-valuemax={accountGoal.targetAmount}
-                    aria-valuenow={currentAmount}
-                    className="h-3 overflow-hidden rounded-full bg-border-light">
-                      <div className={`h-full rounded-full bg-accent ${progress >= 100 ? "bg-success" : "bg-accent"}`}
-                            style={{ width: `${progress}%` }} />
+                  role="progressbar"
+                  aria-label={`Sparmål: ${accountGoal.name}`}
+                  aria-valuemin={0}
+                  aria-valuemax={accountGoal.targetAmount}
+                  aria-valuenow={currentAmount}
+                  className="h-3 overflow-hidden rounded-full bg-border-light">
+                    <div className={`h-full rounded-full bg-accent ${progress >= 100 ? "bg-success" : "bg-accent"}`}
+                          style={{ width: `${progress}%` }} />
                 </div> 
                 <p className="mt-2 text-small">
                   {amountFormatter.format(currentAmount)} / {amountFormatter.format(accountGoal.targetAmount)}
@@ -254,20 +242,34 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
           </div>
       </Card>
       <Card 
-        subtitle="Saldo" 
+        title="Senaste händelse" 
+        subtitle="Insättning/Uttag/Överföring"
         headerVariant="secondary"
         headerClassName="min-h-25"
         >
           <div>
-            {selectedAccount && <p className="mt-2">
-              {selectedAccount.balance.toFixed(2)} kr</p>}
+            {history && history.length > 0 
+              ? ( 
+                <> 
+                  <p className="mt-2 text-small text-muted">
+                    {history[0].description}</p>
+                    <p className={history[0].amount >= 0 
+                      ? "text-success font-bold text-balance"
+                      : "text-balance font-bold text-brand"}>
+                          {amountFormatter.format(history[0].amount)}
+                    </p>
+                  </>
+            ) : (
+                  <p className="mt-2 text-muted text-small">Inga händelser än.</p>
+                )}
           </div>
       </Card>
     </div>
 </div>
 
     <div className="grid grid-cols-1 justify-items-stretch 
-                            md:grid-cols-1 xl:grid-cols-2 gap-3 mb-6">
+                            md:grid-cols-2 gap-3 md:mb-6">
+
       {/* ============ VÄNSTER SIDA ============ */}
       <div>
         <Card title="Insättning/Uttag"
@@ -345,7 +347,9 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
        {/* ============ HÖGER SIDA ============ */}
       <div>
         <Card 
-            headerVariant="noHeader"
+            title="Insättning och uttag"
+            headerVariant="secondary"
+            className="hidden md:block"
             >
               <TransactionsChart history={history ?? []} />
         </Card>
@@ -367,17 +371,17 @@ const selectedOption = accountOptions.find((o) => o.value === String(selectedAcc
                     title={entry.description}
                     subtitle={entry.description}
                     right={
-                          <div className="flex flex-col items-end gap-1">
-                            <p className={entry.amount >= 0
-                                                ? "font-semibold text-success text-medium whitespace-nowrap"
-                                                : "font-semibold text-foreground text-medium"}>
-                                                    {entry.amount > 0 
-                                                        ? "+"
-                                                        : ""}
-                                                    {amountFormatter.format(entry.amount)}</p>
-                            <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
-                          </div>
-                          }  
+                      <div className="flex flex-col items-end gap-1">
+                        <p className={entry.amount >= 0
+                          ? "font-semibold text-success text-medium whitespace-nowrap"
+                          : "font-semibold text-foreground text-medium"}>
+                            {entry.amount > 0 
+                                ? "+"
+                                : ""}
+                            {amountFormatter.format(entry.amount)}</p>
+                        <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
+                      </div>
+                    }  
                   />
                 ))}
               </ul>

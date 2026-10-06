@@ -1,4 +1,5 @@
-import { Chart as ChartJS, LineElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -9,7 +10,9 @@ type LedgerEntry = {
     amount: number;
 };
 
-function buildSeries(history: LedgerEntry[]) {
+const WINDOW_SIZE = 5;
+
+function buildSeries(history: LedgerEntry[], page: number) {
     const byDate = new Map<string, { deposits: number; withdrawals: number; }>();
 
     for(const entry of history) {
@@ -20,17 +23,24 @@ function buildSeries(history: LedgerEntry[]) {
         byDate.set(day, bucket)
     }
 
+    const allDates = [...byDate.keys()].sort(); // äldst -> nyast
+    const end = allDates.length - page * WINDOW_SIZE;
+    const start = Math.max(0, end - WINDOW_SIZE);
+    const dates = allDates.slice(start, end);
+
     const dateFormatter = new Intl.DateTimeFormat("sv-SE", { 
                                                 day: "numeric", 
                                                 month: "numeric", 
                                                 year: "2-digit"})
 
-    const dates = [...byDate.keys()].sort();
     return {
         labels: dates.map((d) => dateFormatter.format(new Date(d))),
         deposits: dates.map((d) => byDate.get(d)!.deposits),
-        withdrawals: dates.map((d) => byDate.get(d)!.withdrawals)
-    }
+        withdrawals: dates.map((d) => byDate.get(d)!.withdrawals),
+        hasOlder: start > 0,
+        hasNewer: page > 0,
+        allDatesCount: allDates.length,
+    };
 }
 
 type TransactionChartProps = {
@@ -38,10 +48,11 @@ type TransactionChartProps = {
 }
 
 export default function TransactionsChart({ history }: TransactionChartProps) {
+    const [page, setPage] = useState(0);
     if (history.length === 0)
         return <p className="text-small text-muted">Inga transaktioner att visa</p>
     
-    const { labels, deposits, withdrawals } = buildSeries(history);
+    const { labels, deposits, withdrawals, hasNewer, hasOlder } = buildSeries(history, page);
 
     const data = {
         labels, datasets: [
@@ -51,7 +62,7 @@ export default function TransactionsChart({ history }: TransactionChartProps) {
                 backgroundColor: "#2a78d6",
                 borderRadius: 4,
                 maxBarThickness: 24,
-                categoryPercentage: 0.8,
+                categoryPercentage: 0.1,
                 barPercentage: 1.0
             },
             {
@@ -60,7 +71,7 @@ export default function TransactionsChart({ history }: TransactionChartProps) {
                 backgroundColor: "#eb6834",
                 borderRadius: 4,
                 maxBarThickness: 24,
-                categoryPercentage: 0.8,
+                categoryPercentage: 0.1,
                 barPercentage: 1.0
             },
         ],
@@ -77,9 +88,28 @@ export default function TransactionsChart({ history }: TransactionChartProps) {
     };
 
     return (
-        <div className="relative h-[220px] w-full">
-            <Bar data={data}
-                options={options} />
+        <div>
+            <div className="relative h-[220px] w-full">
+                <Bar data={data} options={options} />
+            </div>
+            <div className="flex justify-between mt-2">
+                <button
+                    type="button"
+                    className="text-small disabled:opacity-40 disabled:cursor-default"
+                    disabled={!hasOlder}
+                    onClick={() => setPage((p) => p + 1)}
+                >
+                    ← Föregående
+                </button>
+                <button
+                    type="button"
+                    className="text-small disabled:opacity-40 disabled:cursor-default"
+                    disabled={!hasNewer}
+                    onClick={() => setPage((p) => p - 1)}
+                >
+                    Nästa →
+                </button>
+            </div>
         </div>
-    )
+    );
 }
