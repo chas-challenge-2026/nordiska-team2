@@ -14,7 +14,10 @@ type CardProps = {
     subtitle?: string;
     children: ReactNode;
     className?: string;
+    headerClassName?: string;
     headerVariant?: CardHeaderVariant;
+    headerContent?: ReactNode;
+
     to?: string;
 }
 
@@ -23,7 +26,10 @@ export default function Card({
     subtitle, 
     children, 
     className = "",
+    headerClassName= "",
     headerVariant ="primary",
+    headerContent ="",
+
     to,
 }: CardProps){
     const titleId = useId()
@@ -37,24 +43,27 @@ export default function Card({
     const content = (
         <>
             <header className={`
-                flex flex-col gap-1
+                flex flex-col gap-1 justify-end
                 border-b border-border-light 
                 px-3 py-4 
-                ${headerVariantClasses[headerVariant]}`}>
-                
-                <h2 
-                    id={titleId}
-                    className="text-medium font-semibold">
-                        {title}
-                </h2>
-
-                {subtitle && (
-                    <p 
-                    id={subtitleId}
-                    className="text-small opacity-85"
-                    >
-                        {subtitle}
-                    </p>
+                ${headerVariantClasses[headerVariant]} ${headerClassName}`}>
+                    
+                {headerContent ? headerContent : (
+                    <>
+                        <h2 
+                            id={titleId}
+                            className="text-medium font-semibold">
+                                {title}
+                        </h2>
+                        {subtitle && (
+                            <p 
+                            id={subtitleId}
+                            className="text-small opacity-85"
+                            >
+                                {subtitle}
+                            </p>
+                        )}
+                    </>   
                 )}
             </header>
 

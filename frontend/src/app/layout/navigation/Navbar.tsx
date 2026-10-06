@@ -6,17 +6,14 @@ import { apiClient } from "../../../client"
 import logoutWhite from "../../../assets/svg/logout-white.svg"
 
 export default function Navbar() {
-    const auth = useAuth()
-    const navigate = useNavigate()
+const auth = useAuth()
+const navigate = useNavigate()
 
-    async function handleLogout() {
-        try {
-            await apiClient.post('/auth/logout')
-        } catch (error) {
-            // Loggar ut lokalt även om servern inte svarar
-        }
-        auth.setAccessToken(null)
-        navigate('/login')
+async function handleLogout() {
+    try {
+        await apiClient.post('/auth/logout')
+    } catch (error) {
+        
     }
 
     return (

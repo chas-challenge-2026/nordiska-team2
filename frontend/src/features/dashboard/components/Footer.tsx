@@ -23,7 +23,7 @@ const footerLinks: FooterLinkProps[] = [
 
 export default function Footer(){
     return (
-        <footer className="text-xsmall text-muted mt-2">
+        <footer className="text-xsmall text-muted mt-2 lg:col-span-10 mt-5">
             <div className="flex gap-10 justify-center">
                 {footerLinks.map((footerLink) => (
                     <Link
