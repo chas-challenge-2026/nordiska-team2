@@ -85,6 +85,10 @@ public class BankContext : DbContext
             }
         );
 
+        modelBuilder.Entity<SavingsAccount>()
+            .HasIndex(a => a.AccountNumber)
+            .IsUnique();
+
         modelBuilder.Entity<Transaction>().HasData(
             new Transaction
             {

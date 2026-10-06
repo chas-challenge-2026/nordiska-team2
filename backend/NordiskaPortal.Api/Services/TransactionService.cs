@@ -46,15 +46,6 @@ namespace NordiskaPortal.Api.Services
         };
 
         private static string ResolveDescription(string? description, TransactionType type) => string.IsNullOrWhiteSpace(description) ? DefaultDescription(type) : description.Trim();
-
-        // Postgres SQLSTATE 40001: 
-        // Serializable isolation detected a conflicting concurrent transaction. 
-        // The only error that means "try again". 
-        // Anything else is a real bug and should reach GlobalExceptionHandler.
-        private static bool IsSerializationFailure(Exception ex) =>
-            ex is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure }
-            || ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure };
-
         public async Task<decimal> GetBalanceAsync(int accountId) 
         { 
             var transactions = await _db.Transactions
@@ -80,7 +71,7 @@ namespace NordiskaPortal.Api.Services
                 return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
 
             var account = await _db.SavingsAccounts.FindAsync(accountId);
-            if (account == null)
+            if (account == null || account.ClosedAt != null)
                 return new TransactionResult(false, "Kontot kunde inte hittas.", null);
 
             var now = DateTime.UtcNow;
@@ -168,7 +159,7 @@ namespace NordiskaPortal.Api.Services
                 var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
                 return new TransactionResult(true, null, entry);
             }
-            catch (Exception ex) when (IsSerializationFailure(ex))
+            catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
             {
                 /*
                     Postgres raises a serialization failure (SQLSTATE 40001)
@@ -226,7 +217,7 @@ namespace NordiskaPortal.Api.Services
                 // "own accounts only" is enforced here too, so a future caller that forgets 
                 // the controller check still can't move money to someone else's account.
 
-                if (from == null || to == null || from.CustomerId != to.CustomerId)
+                if (from == null || to == null || from.CustomerId != to.CustomerId || from.ClosedAt != null || to.ClosedAt != null)
                 {
                     await dbTransaction.RollbackAsync();
                     return new TransactionResult(false, "Kontot kunde inte hittas.", null);
@@ -279,7 +270,7 @@ namespace NordiskaPortal.Api.Services
                 var entry = new LedgerEntryDto(outgoing.TransactionDate, outgoing.Description, -outgoing.Amount);
                 return new TransactionResult(true, null, entry);
             }
-            catch (Exception ex) when (IsSerializationFailure(ex))
+            catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
             {
                 return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
             }

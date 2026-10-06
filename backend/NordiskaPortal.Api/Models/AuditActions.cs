@@ -18,5 +18,7 @@ namespace NordiskaPortal.Api.Models
         public const string NotificationSent = "notification_sent";
         public const string Transfer = "transfer";
         public const string UnauditedRequest = "unaudited_request";
+        public const string AccountOpened = "account_opened";
+        public const string AccountClosed = "account_closed";
     }
 }

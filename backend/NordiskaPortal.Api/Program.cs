@@ -104,7 +104,10 @@ builder.Services.AddRateLimiter(options =>
 
 // JSON Web Token (JWT)
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? "test-only-signing-key-not-used-in-production-32chars";
+    ?? (builder.Environment.IsEnvironment("Testing")
+        ? "test-only-signing-key-not-used-in-production-32chars"
+        : throw new InvalidOperationException(
+            "Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"<your key>\""));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
