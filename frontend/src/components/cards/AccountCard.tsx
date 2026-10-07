@@ -32,7 +32,7 @@ export default function AccountCard({
             <p className="text-small text-muted">
                 Tillgängligt saldo
             </p>
-            <p className="text-balance font-bold text-brand"> 
+            <p className="text-title font-bold text-brand-text"> 
                 {currencyFormatter.format(balance)}
             </p>
             {interest !== undefined &&(

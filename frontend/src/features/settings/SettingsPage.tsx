@@ -1,18 +1,21 @@
 import { useSettings } from '../../hooks/useSettings'
+import type { Theme } from '../../app/Context/SettingsContext'
 
 const themeOptions = [
     { value: 'light', label: 'Ljust' },
     { value: 'dark', label: 'Mörkt' },
 ] as const
 
-function ThemePreview({ dark }: { dark: boolean }) {
+function ThemePreview({ mode }: { mode: Theme }) {
     return (
-        <div className={`flex h-24 overflow-hidden rounded-md border ${dark ? 'border-[#333a42] bg-[#121417]' : 'border-[#dddddd] bg-[#f5f5f5]'}`}>
-            <div className={`w-6 ${dark ? 'bg-[#171a1f]' : 'bg-[#1a5276]'}`} />
-            <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-                <div className={`h-2 w-1/2 rounded ${dark ? 'bg-[#e8e8e8]' : 'bg-[#333333]'}`} />
-                <div className={`h-8 rounded border ${dark ? 'border-[#333a42] bg-[#1e2228]' : 'border-[#dddddd] bg-white'}`} />
-                <div className={`h-1.5 w-2/5 rounded ${dark ? 'bg-[#7fb3d5]' : 'bg-[#1a5276]'}`} />
+        <div className={mode}>
+            <div className="flex h-24 overflow-hidden rounded-md border border-border bg-background">
+                <div className="w-6 bg-sidebar" />
+                <div className="flex flex-1 flex-col gap-1.5 p-2.5">
+                    <div className="h-2 w-1/2 rounded bg-foreground" />
+                    <div className="h-8 rounded border border-border bg-card" />
+                    <div className="h-1.5 w-2/5 rounded bg-brand-text" />
+                </div>
             </div>
         </div>
     )
@@ -50,7 +53,7 @@ export default function SettingsPage() {
                                             : 'border border-border bg-background'
                                     }`}
                                 >
-                                    <ThemePreview dark={option.value === 'dark'} />
+                                    <ThemePreview mode={option.value} />
                                     <div className="flex items-center gap-2.5">
                                         <input
                                             type="radio"

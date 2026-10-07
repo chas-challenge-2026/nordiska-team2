@@ -14,7 +14,7 @@ export default function NavItem({ item }: NavItemProps) {
                     `group flex w-full rounded-default p-3
                     transition-colors duration-150 ${
                         isActive
-                            ? "bg-card text-brand dark:bg-brand dark:text-white"
+                            ? "bg-card text-brand-text dark:bg-brand dark:text-white"   
                             : "text-white hover:bg-card hover:text-brand dark:hover:bg-white/10 dark:hover:text-white"
                     }`
                 }

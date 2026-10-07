@@ -27,7 +27,7 @@ export default function MobileNavbar() {
                                 items-center justify-center gap-1
                                 px-2 py-2 text-xsmall
                                 ${isActive
-                                    ? "bg-card text-brand dark:bg-brand dark:text-white"
+                                    ? "bg-card text-brand-text dark:bg-brand dark:text-white"
                                     : "text-white"
                                 }`
                             }
