@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NordiskaPortal.Api.Extensions;
 using NordiskaPortal.Api.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 // Returns a customer's accounts + balances for the dashboard.
 namespace NordiskaPortal.Api.Controllers
@@ -45,6 +46,31 @@ namespace NordiskaPortal.Api.Controllers
 
             var summary = await _accountService.GetFinancialSummaryAsync(customerId, periodStart, periodEnd);
             return Ok(summary);
+        }
+
+        // POST /api/accounts - Opens a new savings account. No body: the server decides account number, type and interest rate.
+        [HttpPost]
+        [EnableRateLimiting("SensitiveEndpoints")]
+        public async Task<IActionResult> OpenAccount()
+        {
+            var result = await _accountService.OpenAccountAsync(User.GetCustomerId());
+            return result.Success
+                ? StatusCode(StatusCodes.Status201Created, result.Account)
+                : BadRequest(new { error = result.Error });
+        }
+
+        // DELETE /api/accounts/{id} - Closes an empty account. (never deletes, must keep ledger history)
+        [HttpDelete("{accountId:int}")]
+        [EnableRateLimiting("SensitiveEndpoints")]
+        public async Task<IActionResult> CloseAccount(int accountId)
+        {
+            var customerId = User.GetCustomerId();
+
+            if (!await _accountService.CustomerOwnsAccountAsync(customerId, accountId))
+                return NotFound(new { error = "Kontot kunde inte hittas." });
+
+            var result = await _accountService.CloseAccountAsync(customerId, accountId);
+            return result.Success ? NoContent() : BadRequest(new { error = result.Error });
         }
     }
 }
