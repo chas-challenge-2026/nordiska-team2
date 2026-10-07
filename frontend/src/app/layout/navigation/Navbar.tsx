@@ -29,11 +29,12 @@ async function handleLogout() {
             nordiska<span className="text-accent">.</span>
         </h2>
 
-        <ul className="pt-6 text-medium">
+        <ul className="pt-6 text-medium 
+                        flex flex-col flex-1 h-full">
             {navigationItems.map((item) => (
                 <NavItem key={item.to} item={item} />
             ))}
-            <li className="mt-8">
+            <li className="mb-5">
                 <button
                     onClick={handleLogout}
                     className="group flex w-full rounded-default p-3 text-white transition-colors duration-150 hover:bg-card hover:text-brand dark:hover:bg-white/10 dark:hover:text-white"

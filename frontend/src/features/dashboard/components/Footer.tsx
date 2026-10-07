@@ -8,15 +8,15 @@ type FooterLinkProps = {
 const footerLinks: FooterLinkProps[] = [
     {
         label: "Säkerhet",
-        to: "/taxreport"
+        to: "#"
     },
     {
         label: "Integritet",
-        to: "/taxreport"
+        to: "#"
     },
     {
         label: "Villkor",
-        to: "/taxreport"
+        to: "#"
     }
 ]
 
