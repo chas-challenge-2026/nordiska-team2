@@ -351,7 +351,9 @@ export default function TransactionPage() {
             headerVariant="secondary"
             className="hidden md:block"
             >
-              <TransactionsChart history={history ?? []} />
+              <TransactionsChart 
+                history={history ?? []}
+                currentBalance={selectedAccount?.balance ?? 0} />
         </Card>
       </div>
 

@@ -15,7 +15,9 @@ namespace NordiskaPortal.Api.Models
         Deposit,
         Withdrawal,
         Interest,
-        Tax
+        Tax,
+        TransferIn,
+        TransferOut
     }
 
     public class Transaction

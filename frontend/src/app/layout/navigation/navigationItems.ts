@@ -37,7 +37,7 @@ export const navigationItems: NavigationItem[] = [
         showInMobileNav: true,
     },
     {
-        name: "Skatterapporter",
+        name: "Dokument",
         to: "/taxreport" ,
         iconWhite: taxesWhite,
         iconDark: taxesDark,
