@@ -25,16 +25,21 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
         .slice(0, 5);
 
     return (
-        <section className="overflow-hidden rounded-default
+        <section className="overflow-hidden rounded-card
                             border border-border bg-card shadow-sm"
                 aria-labelledby="recent-transactions-title">
-                
-                <header className="border-b border-border-light 
-                                    px-3 py-2 sm:px-4">
+
+                <header className="flex items-center justify-between
+                                    border-b border-border-light px-5 py-4">
                     <h2 id="recent-transactions-title"
-                        className="font-semibold text-medium text-brand">
+                        className="font-semibold text-medium text-foreground">
                             Senaste händelser
                     </h2>
+                    <Link to="/transactions"
+                          className="text-small text-brand-text hover:underline
+                                     focus-visible:outline-2 focus-visible:outline-brand">
+                        Visa alla
+                    </Link>
                 </header>
 
                 {isLoading ? (
@@ -71,22 +76,6 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                 </ul>
                 ) }
                 
-                <footer className="border-t border-border-light text-center">
-                <Link
-                    to="/transactions"
-                    className="flex w-full items-center 
-                               justify-center 
-                               px-3 py-2 text-small text-brand
-                               transition hover:bg-background
-                               focus-visible:outline-2
-                               focus-visible:outline-offset-2
-                               focus-visible:outline-brand
-                               sm:px-4"
-                >
-                    Visa alla händelser
-                </Link>
-            </footer>
-
         </section>
     )
 }
