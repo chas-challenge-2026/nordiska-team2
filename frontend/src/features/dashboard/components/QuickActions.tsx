@@ -45,19 +45,33 @@ export default function QuickActions({ actions }: QuickActionsProps){
                     {actions.map((action) =>(
                         <Button
                             variant="tile"
-                            className={`flex flex-col justify-center items-center gap-3
+                            className={`group flex flex-col justify-center items-center gap-3
                                         h-full py-5 rounded-card!
+                                        bg-linear-to-br! from-white/80 to-sky-100/70 backdrop-blur-md
+                                        border-sky-200! shadow-md! shadow-brand/10!
+                                        dark:from-card/80 dark:to-card/60 dark:border-border! dark:shadow-none!
+                                        transition duration-300
+                                        hover:-translate-y-1 hover:to-sky-200/80 hover:border-sky-300!
+                                        hover:shadow-xl! hover:shadow-brand/25!
+                                        dark:hover:bg-card!
+                                        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                                         ${variantSizesClasses[action.size ?? "small"]}`}
                             key={action.id}
                             label={action.label}
                             onClick={() => setActiveModal(action.id)}
                             icon={
-                                // Ikonen är mörkblå. I mörkt läge görs den vit med filter.
-                                <img src={action.icon}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="size-7 sm:size-8 dark:brightness-0 dark:invert dark:opacity-85"
-                                />
+                                // Ikonrutan fylls med Nordiska-blått vid hovring och ikonen blir vit.
+                                <span className="grid place-items-center size-12 rounded-xl
+                                                 bg-brand/10 transition duration-300
+                                                 group-hover:bg-brand group-hover:scale-110 group-hover:-rotate-3">
+                                    <img src={action.icon}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="size-7 transition duration-300
+                                                   dark:brightness-0 dark:invert dark:opacity-85
+                                                   group-hover:brightness-0 group-hover:invert"
+                                    />
+                                </span>
                             }
                         />
                     ))}
