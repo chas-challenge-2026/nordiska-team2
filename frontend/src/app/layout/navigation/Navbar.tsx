@@ -37,7 +37,7 @@ async function handleLogout() {
             <li className="mb-5">
                 <button
                     onClick={handleLogout}
-                    className="group flex w-full rounded-default p-3 text-white transition-colors duration-150 hover:bg-card hover:text-brand dark:hover:bg-white/10 dark:hover:text-white"
+                    className="group flex w-full cursor-pointer rounded-default p-3 text-white transition-colors duration-150 hover:bg-card hover:text-brand dark:hover:bg-white/10 dark:hover:text-white"
                 >
                     <img src={logoutWhite} alt="" aria-hidden="true" className="size-5 shrink-0" />
                     <span className="ml-3">Logga ut</span>
