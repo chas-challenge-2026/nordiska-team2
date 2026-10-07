@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Colors */
   --color-background: #f5f5f5;
@@ -7,6 +9,8 @@
   --color-foreground: #333333;
   --color-muted: #777777;
   --color-brand: #1a5276;
+  --color-brand-text: #1a5276;
+  --color-sidebar: #1a5276;
   --color-accent: #f5a623;
   --color-border: #dddddd;
   --color-border-light: #eeeeee;
@@ -15,7 +19,8 @@
   --color-cancel: #CB4F4F;
 
   /* Border radius */
-  --radius-default: 0.75rem;
+  --radius-default: 4px;
+  --radius-card: 12px;
 
   /* Font family */
   --font-sans:
@@ -55,9 +60,56 @@
     font-size: var(--text-body);
   }
 
-  button:not(:disabled),
-  a,
-  [role="button"]:not(:disabled) {
-    cursor: pointer;
+  /* Mörkt läge: skriver över färgerna när <html> har klassen "dark" */
+  .dark {
+    color-scheme: dark; /* gör webbläsarens egna kontroller mörka (pilar, scrollbars) */
+    --color-background: #121417;
+    --color-card: #1e2228;
+    --color-foreground: #e8e8e8;
+    --color-muted: #a0a0a0;
+    --color-border: #333a42;
+    --color-border-light: #2a2f36;
+    --color-brand-text: #7fb3d5;
+    --color-sidebar: #171a1f;
+
+    /* Säkerhetsnät: Tailwinds grå färger "vänds" så att de funkar på mörk bakgrund */
+    --color-gray-200: #333a42; /* kantlinjer */
+    --color-gray-400: #8a9099; /* ikoner */
+    --color-gray-500: #a0a0a0; /* dämpad text */
+    --color-gray-600: #c9ced4; /* brödtext */
+  }
+
+  /* Tvingar ljusa färger inuti ett element, t.ex. temaförhandsvisningen */
+  .light {
+    color-scheme: light;
+    --color-background: #f5f5f5;
+    --color-card: #ffffff;
+    --color-foreground: #333333;
+    --color-muted: #777777;
+    --color-border: #dddddd;
+    --color-border-light: #eeeeee;
+    --color-brand-text: #1a5276;
+    --color-sidebar: #1a5276;
+  }
+}
+
+/*
+  Säkerhetsnät för mörkt läge.
+  Fångar hårdkodade färger i komponenter som inte använder tokens än.
+  Långsiktigt: byt till tokens i komponenten (bg-white -> bg-card,
+  text-brand -> text-brand-text) och ta bort regeln här.
+*/
+@layer utilities {
+  .dark .bg-white {
+    background-color: var(--color-card);
+  }
+  .dark .focus\:bg-white:focus {
+    background-color: var(--color-card);
+  }
+  .dark .hover\:bg-white:hover {
+    background-color: rgb(255 255 255 / 0.1);
+  }
+  .dark .text-brand {
+    color: var(--color-brand-text);
   }
 }

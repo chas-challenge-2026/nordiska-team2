@@ -5,7 +5,7 @@ type CardHeaderVariant = "primary" | "secondary" | "noHeader" ;
 
 const headerVariantClasses: Record<CardHeaderVariant, string> = {
     primary: "bg-brand text-white",
-    secondary: "bg-white text-foreground",
+    secondary: "bg-card text-foreground",
     noHeader: "border-none"
 };
 
@@ -36,7 +36,7 @@ export default function Card({
     const subtitleId = useId();
 
     const sharedClassName = `flex flex-col overflow-hidden 
-                        w-full rounded-default 
+                        w-full rounded-card 
                         border border-border bg-card 
                         shadow-sm ${className}`;
 
@@ -45,7 +45,7 @@ export default function Card({
             <header className={`
                 flex flex-col gap-1 justify-end
                 border-b border-border-light 
-                px-3 py-4 
+                px-5 py-4 
                 ${headerVariantClasses[headerVariant]} ${headerClassName}`}>
                     
                 {headerContent ? headerContent : (
@@ -67,7 +67,7 @@ export default function Card({
                 )}
             </header>
 
-            <div className="flex flex-1 flex-col p-3 text-foreground">
+            <div className="flex flex-1 flex-col p-5 text-foreground">
                 {children}
             </div>
         </>
