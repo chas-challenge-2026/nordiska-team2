@@ -17,6 +17,7 @@ public class BankContext : DbContext
     public DbSet<TaxReport> TaxReports { get; set; }
     public DbSet<FaqEntry> FaqEntries { get; set; }
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
+    public DbSet<AuditEntry> AuditEntries { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -83,6 +84,10 @@ public class BankContext : DbContext
                 CreatedAt = new DateTime(2026, 3, 3, 0, 0, 0, DateTimeKind.Utc)
             }
         );
+
+        modelBuilder.Entity<SavingsAccount>()
+            .HasIndex(a => a.AccountNumber)
+            .IsUnique();
 
         modelBuilder.Entity<Transaction>().HasData(
             new Transaction
@@ -263,5 +268,8 @@ public class BankContext : DbContext
                 IsPopular = true
             }
         );
+
+        // Audit Entry
+        modelBuilder.Entity<AuditEntry>().HasIndex(a => new { a.CustomerId, a.Timestamp });
     }
 }

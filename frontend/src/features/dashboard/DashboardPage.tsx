@@ -7,7 +7,6 @@ import FinancialOverview from "./components/FinancialOverview"
 import SavingsGoal from "./components/SavingsGoals";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import FaqOverview from "./components/Faq";
-import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
 import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
@@ -50,7 +49,6 @@ export default function DashboardPage() {
 
             <aside className="flex flex-col gap-4 min-w-0 w-full 
                                 lg:col-span-4 mt-3 lg:mt-0">
-                        <SearchBar />
                         <FinancialOverview 
                             accounts={accounts}
                             />

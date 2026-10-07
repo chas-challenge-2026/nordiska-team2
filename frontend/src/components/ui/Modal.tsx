@@ -45,11 +45,11 @@ export default function Modal({title,
             aria-labelledby={titleId}
             onCancel={onClose}
              className={`
-                        text-small border border-border 
-                        p-3 rounded-default shadow-sm
-                        backdrop:bg-black/30
-                        m-auto overflow-y-auto
-                        ${className} ${ModalSizes[size]}`}
+                text-small border border-border bg-card text-foreground
+                p-3 rounded-default shadow-sm
+                backdrop:bg-black/30 dark:backdrop:bg-black/60
+                m-auto overflow-y-auto
+                ${className} ${ModalSizes[size]}`}
                         >
                 <div className="flex justify-between items-center">
                     <h2 id={titleId}

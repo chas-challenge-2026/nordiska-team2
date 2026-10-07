@@ -21,7 +21,7 @@ export default function FinancialOverview({
             0,
         );
     return(
-            <Card title="Ekonomisk Översikt"
+            <Card title="Ekonomisk översikt"
             headerVariant="secondary">
                     <ul className="divide-y divide-border-light
                                     flex flex-col gap-3" >
@@ -29,7 +29,7 @@ export default function FinancialOverview({
                             <p className="text-small text-muted">
                                 Totalt saldo
                             </p>
-                            <p className="text-balance font-bold text-brand">
+                            <p className="text-title font-bold text-brand-text">
                                 {currencyFormatter.format(totalBalance)}
                             </p>
                         </li>
@@ -68,14 +68,14 @@ export default function FinancialOverview({
                         to="/transactions"
                         className="flex w-full items-center 
                                 justify-center 
-                                px-3 py-2 text-small text-brand
+                                px-3 py-2 text-small text-brand-text
                                 transition hover:bg-background
                                 focus-visible:outline-2
                                 focus-visible:outline-offset-2
                                 focus-visible:outline-brand
                                 sm:px-4"
                     >
-                        Se din ekonomiska översikt
+                        Se din ekonomiska översikt →
                     </Link>
             </footer>
             </Card>

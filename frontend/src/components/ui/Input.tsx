@@ -22,7 +22,7 @@ export default function InputField({
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
                     className={`text-small border border-muted rounded-default
-                                focus:bg-white
+                                focus:bg-card
                                 p-2 pl-2
                                 w-full
                                 ${className}`}
