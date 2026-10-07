@@ -15,7 +15,7 @@
   --color-cancel: #CB4F4F;
 
   /* Border radius */
-  --radius-default: 4px;
+  --radius-default: 0.75rem;
 
   /* Font family */
   --font-sans:
@@ -53,5 +53,11 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: var(--text-body);
+  }
+
+  button:not(:disabled),
+  a,
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }

@@ -7,7 +7,7 @@ type NavItemProps = {
 
 export default function NavItem ({ item }: NavItemProps) {
     return (
-        <li className={`w-full ${item.startsSection ? "mt-8" : "mt-1"}`}>
+        <li className={`w-full ${item.startsSection ? "mt-auto" : "mt-1"}`}>
             <NavLink
                 to={item.to}
                 className={({ isActive }) =>

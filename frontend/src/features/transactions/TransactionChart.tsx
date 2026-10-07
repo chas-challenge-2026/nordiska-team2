@@ -12,75 +12,98 @@ type LedgerEntry = {
 
 const WINDOW_SIZE = 5;
 
-function buildSeries(history: LedgerEntry[], page: number) {
+function buildSeries(history: LedgerEntry[], page: number, currentBalance: number) {
     const byDate = new Map<string, { deposits: number; withdrawals: number; }>();
 
     for(const entry of history) {
-        const day= entry.date.slice(0, 10)
-        const bucket = byDate.get(day) ?? { deposits: 0, withdrawals: 0}
-        if (entry.amount > 0) bucket.deposits+= entry.amount;
+        const day = entry.date.slice(0, 10)
+        const bucket = byDate.get(day) ?? { deposits: 0, withdrawals: 0 }
+        if (entry.amount > 0) bucket.deposits += entry.amount;
         else bucket.withdrawals += Math.abs(entry.amount);
         byDate.set(day, bucket)
     }
 
     const allDates = [...byDate.keys()].sort(); // äldst -> nyast
+
+    // Räknar ut startsaldo per dag genom att gå baklänges från dagens saldo.
+    const startBalanceByDate = new Map<string, number>()
+    let runningEndBalance = currentBalance;
+    for (let i = allDates.length -1; i >=0; i--) {
+        const d = allDates[i];
+        const { deposits, withdrawals } = byDate.get(d)!;
+        const net = deposits - withdrawals;
+        const startBalance = runningEndBalance - net;
+        startBalanceByDate.set(d, startBalance);
+        runningEndBalance = startBalance;
+    }
+
     const end = allDates.length - page * WINDOW_SIZE;
     const start = Math.max(0, end - WINDOW_SIZE);
     const dates = allDates.slice(start, end);
 
     const dateFormatter = new Intl.DateTimeFormat("sv-SE", { 
-                                                day: "numeric", 
-                                                month: "numeric", 
-                                                year: "2-digit"})
+        day: "numeric", 
+        month: "numeric", 
+        year: "2-digit"})
 
     return {
         labels: dates.map((d) => dateFormatter.format(new Date(d))),
+        startBalances: dates.map((d) => startBalanceByDate.get(d)!),
         deposits: dates.map((d) => byDate.get(d)!.deposits),
-        withdrawals: dates.map((d) => byDate.get(d)!.withdrawals),
+        withdrawals: dates.map((d) => byDate.get(d)!.withdrawals), // negativ -> ritas nedåt
         hasOlder: start > 0,
         hasNewer: page > 0,
-        allDatesCount: allDates.length,
     };
 }
 
 type TransactionChartProps = {
     history: LedgerEntry[];
+    currentBalance: number;
 }
 
-export default function TransactionsChart({ history }: TransactionChartProps) {
+export default function TransactionsChart({ history, currentBalance }: TransactionChartProps) {
     const [page, setPage] = useState(0);
     if (history.length === 0)
         return <p className="text-small text-muted">Inga transaktioner att visa</p>
     
-    const { labels, deposits, withdrawals, hasNewer, hasOlder } = buildSeries(history, page);
+    const { labels, startBalances, deposits, withdrawals, hasNewer, hasOlder } = 
+        buildSeries(history, page, currentBalance);
 
     const data = {
-        labels, datasets: [
+        labels, 
+        datasets: [
+            {
+                label: "Startsaldo",
+                data: startBalances,
+                backgroundColor: "#9aa0a6",
+                stack: "day",
+                borderRadius: 4,
+                maxBarThickness: 34,
+
+            },
             {
                 label: "Insättningar",
                 data: deposits,
-                backgroundColor: "#2a78d6",
+                backgroundColor: "#1a5276",
+                stack:"day",
                 borderRadius: 4,
-                maxBarThickness: 24,
-                categoryPercentage: 0.1,
-                barPercentage: 1.0
+                maxBarThickness: 34,
             },
             {
                 label: "Uttag",
                 data: withdrawals,
-                backgroundColor: "#eb6834",
+                backgroundColor: "#f5a623",
+                stack: "day",
                 borderRadius: 4,
-                maxBarThickness: 24,
-                categoryPercentage: 0.1,
-                barPercentage: 1.0
+                maxBarThickness: 34,
             },
         ],
     };
     const options = {
         maintainAspectRatio: false,
         scales: {
-            y: { beginAtZero: true, grid: { color: "#e1e0d9"} },
-            x: { grid: { display: false } }
+            y: { stacked: true, beginAtZero: true, grid: { color: "#e1e0d9"} },
+            x: { stacked: true, grid: { display: false } }
         },
         plugins: {
             legend: { position: "bottom" as const },
