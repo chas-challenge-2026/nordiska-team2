@@ -220,8 +220,11 @@ export default function LoginPage() {
                             {personalIdError && <p>{personalIdError}</p>}
                             {bankId.errorMessage && <p>{bankId.errorMessage}</p>}
                         </div>
-                    </form>
+                                        </form>
                 </div>
+            )}
+
+            </div>
 
             {showPinModal && (
                 <BankIdPinModal
