@@ -110,10 +110,10 @@ export default function LoginPage() {
             </div>
 
             {/* ========== Höger sida ========== */}
-            <div className="m-auto w-3/5">   
+            <div className="md:m-auto md:w-3/5 md:h-auto md:m-auto h-full w-full">   
                 <Card 
                     headerContent={
-                        <div className="mx-5 my-1">
+                        <div className="mx-5 my-3 md:my-1">
                             <h2 className="text-title">Välkommen!</h2>
                             <p className="text-small text-white opacity-60">
                                 Logga in för att se dina konton och sparmål.
@@ -124,25 +124,26 @@ export default function LoginPage() {
                     className="min-h-125 bg-card/85! backdrop-blur-md border-white/70! dark:border-border!
                                shadow-2xl! shadow-brand/15! dark:shadow-black/40!">
       
-            <div className="relative bg-border flex rounded-default border border-border overflow-hidden m-5">
-                <div className={`absolute inset-y-0 w-1/2 bg-white border-2 border-border rounded-default
-                    transition-transform duration-500 ease-in-out
-                    ${mode === "email" ? "translate-x-0" : "translate-x-full"}`} />
-                <button
-                    type="button"
-                    className={`relative z-10 flex-1 p-2 transition-colors text-small
-                                ${mode === "email" ? "text-brand" : "text-muted bg-border"}`}
-                    onClick={() => setMode("email")}>
-                        E-post
-                </button>
-                <button
-                    type="button"
-                    className={`relative z-10 flex-1 p-2 transition-colors text-small
-                                ${mode === "bankId" ? "text-brand" : "text-muted bg-border"}`}
-                    onClick={() => setMode("bankId")}>
-                        BankID
-                </button>
-            </div>
+                <div className="flex flex-col justify-center h-full gap-6 md:gap-0">
+                    <div className="relative bg-border flex rounded-default border border-border overflow-hidden md:m-5">
+                        <div className={`absolute inset-y-0 w-1/2 bg-white border-2 border-border rounded-default
+                            transition-transform duration-500 ease-in-out
+                            ${mode === "email" ? "translate-x-0" : "translate-x-full"}`} />
+                        <button
+                            type="button"
+                            className={`relative z-10 flex-1 md:p-2 p-3 transition-colors text-small
+                                        ${mode === "email" ? "text-brand" : "text-muted bg-border"}`}
+                            onClick={() => setMode("email")}>
+                                E-post
+                        </button>
+                        <button
+                            type="button"
+                            className={`relative z-10 flex-1 p-2 transition-colors text-small
+                                        ${mode === "bankId" ? "text-brand" : "text-muted bg-border"}`}
+                            onClick={() => setMode("bankId")}>
+                                BankID
+                        </button>
+                    </div>
 
             {mode === "email" && (
                 <div className="text-small px-5 pb-5">
@@ -160,6 +161,11 @@ export default function LoginPage() {
                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
                                     {showPassword ? <Eye /> : <EyeOff />}
                                 </button>
+                                {bankId.status === 'pending' && (
+                                    <button type="button" onClick={bankId.cancel} className="border border-border rounded-default px-4 py-2">
+                                        Avbryt
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -216,12 +222,6 @@ export default function LoginPage() {
                         </div>
                     </form>
                 </div>
-            )}
-
-            <p className="mx-3 mt-5 pt-5 text-small border-t-2 border-border">
-                Vill du bli ny kund? Snart kommer du kunna registrera dig som ny kund hos oss.
-            </p>
-
 
             {showPinModal && (
                 <BankIdPinModal
