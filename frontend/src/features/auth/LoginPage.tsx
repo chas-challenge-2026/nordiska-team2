@@ -8,6 +8,7 @@ import { useBankIdLogin } from "../../hooks/useBankIdLogin"
 import heroImage from "../../assets/images/loginPage.png"
 import checkIcon from "../../assets/svg/check-accent.svg"
 import BankIdPinModal from "../../components/DemoBankIdPinModal"
+import BlobBackground from "../../components/ui/BlobBackground"
 
 
 export default function LoginPage() {
@@ -66,14 +67,22 @@ export default function LoginPage() {
             }
 
     return ( 
-        <div className="grid lg:grid-cols-2 min-h-screen"> 
+        <div className="relative isolate grid min-h-screen lg:grid-cols-2"> 
+            <BlobBackground />
 
             {/* ========== Vänster sida ========== */}
-            <div className="lg:bg-brand lg:p-20 lg:flex lg:flex-col lg:gap-15 hidden ">
-                <h2 className="font-bold text-white">
+            {/* Panelen "flyter" som ett rundat kort, så att det inte blir någon hård kant mot högersidan */}
+            <div className="relative overflow-hidden hidden lg:m-4 lg:rounded-3xl lg:p-16 lg:flex lg:flex-col lg:gap-15
+                            shadow-2xl shadow-brand/20 dark:shadow-black/40
+                            bg-linear-to-br from-brand to-[#0f3550]
+                            dark:from-[#16405e] dark:to-sidebar">
+                {/* Mjuka ljusfläckar i den blå panelen */}
+                <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 size-96 rounded-full bg-sky-400/20 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-1/4 size-80 rounded-full bg-accent/10 blur-3xl" />
+                <h2 className="relative font-bold text-white">
                     nordiska<span className="text-accent">.</span>
                 </h2>
-                <div>
+                <div className="relative">
                     <h1 className="text-white text-page-title font-bold">
                         Morgondagens bank
                         <span className="block ml-auto">– för alla</span>
@@ -82,7 +91,7 @@ export default function LoginPage() {
                         Där finans­iering och teknik möts
                     </p>
                     <img src={heroImage} className="mt-10 mx-auto rounded-xl opacity-90
-                                                    shadow-sm" />
+                                                    shadow-2xl shadow-black/30" />
                     <div className="flex gap-3 mt-2">
                                     {["Eget sparmål", 
                                     "Insättning och uttag", 
@@ -111,7 +120,9 @@ export default function LoginPage() {
                             </p>
                         </div>
                     } 
-                    className="rounded-default min-h-125 h-full md:h-auto">
+                    headerClassName="bg-linear-to-br from-brand to-[#0f3550] dark:from-[#16405e] dark:to-sidebar border-none"
+                    className="min-h-125 bg-card/85! backdrop-blur-md border-white/70! dark:border-border!
+                               shadow-2xl! shadow-brand/15! dark:shadow-black/40!">
       
                 <div className="flex flex-col justify-center h-full gap-6 md:gap-0">
                     <div className="relative bg-border flex rounded-default border border-border overflow-hidden md:m-5">
@@ -134,76 +145,21 @@ export default function LoginPage() {
                         </button>
                     </div>
 
-                {mode === "email" && (
-                    <div className="text-small md:px-5 pb-5">
-                        <form onSubmit={handleSubmit}
-                            className="flex flex-col md:gap-2 gap-5 w-full">
-                            <div>
-                                <p className="text-xsmall ml-1 text-muted font-bold">E-post</p>
-                                <input type="email" 
-                                    placeholder="E-post" 
-                                    value={email} onChange={(e) => 
-                                        setEmail(e.target.value)} 
-                                    className="border border-border rounded-default px-3 py-2 w-full"/>
-                            </div>
-                            
-                            <div>
-                                <p className="text-xsmall ml-1 text-muted font-bold">Lösenord</p>
-                                <div className="relative">
-                                    <input type={showPassword ? "text" : "password"} 
-                                        placeholder="Lösenord" 
-                                        value={password} onChange={(e) => 
-                                            setPassword(e.target.value)} 
-                                        className="border border-border rounded-default px-3 py-2 w-full"/>
-                                    <button type="button" 
-                                        onClick={() => 
-                                            setShowPassword(!showPassword)} 
-                                        className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        {showPassword ? <Eye /> : <EyeOff />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-center">
-                                <button className="bg-brand hover:bg-brand/90 text-white font-bold rounded-default px-4 py-3 w-full mt-3">{isLoading ? 'Loggar in...' : 'Logga in'}</button>
-                            </div>
-                            <div className="flex justify-center text-sm">
-                            {errorMessage && <p>{errorMessage}</p>}
-                            </div>
+            {mode === "email" && (
+                <div className="text-small px-5 pb-5">
+                    <form onSubmit={handleSubmit}
+                        className="flex flex-col gap-2 w-full">
+                        <div>
+                            <p className="text-xsmall ml-1 text-muted font-bold">E-post</p>
+                            <input type="email" placeholder="E-post" value={email} onChange={(e) => setEmail(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"/>
+                        </div>
                         
-                        </form>
-                    </div>
-                )}
-
-                {mode === "bankId" && (
-                    <div className="text-small md:px-5 pb-5">
-                        <form onSubmit={handleBankIdSubmit} className="space-y-4 ">
-                            <div>
-                                <p className="text-xsmall ml-1 text-muted font-bold">
-                                    Personnummer
-                                </p>
-                                <input
-                                    type="text"
-                                    placeholder="ÅÅÅÅMMDD-XXXX"
-                                    value={personalId}
-                                    onChange={(e) => setPersonalId(e.target.value)}
-                                    className="border border-border rounded-default px-3 py-2 w-full"
-                                />
-                            </div>
-                            <div className="flex flex-col md:gap-3 gap-5">
-                                <button
-                                    type="submit"
-                                    disabled={bankId.status === 'pending'}
-                                    className="bg-brand hover:bg-brand/90 text-white rounded-default px-4 py-3 w-full mt-3disabled:opacity-50 mt-3"
-                                >
-                                    {bankId.status === 'pending' ? 'Väntar på BankID...' : 'Logga in med BankID'}
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={bankId.status === 'pending'}
-                                    className="bg-background hover:bg-white text-brand border border-border rounded-default px-4 py-3 w-full disabled:opacity-50"
-                                >
-                                    {bankId.status === 'pending' ? 'Väntar på BankID...' : 'BankID på annan enhet'}
+                        <div>
+                            <p className="text-xsmall ml-1 text-muted font-bold">Lösenord</p>
+                            <div className="relative">
+                                <input type={showPassword ? "text" : "password"} placeholder="Lösenord" value={password} onChange={(e) => setPassword(e.target.value)} className="border border-border rounded-default px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"/>
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    {showPassword ? <Eye /> : <EyeOff />}
                                 </button>
                                 {bankId.status === 'pending' && (
                                     <button type="button" onClick={bankId.cancel} className="border border-border rounded-default px-4 py-2">
@@ -211,17 +167,60 @@ export default function LoginPage() {
                                     </button>
                                 )}
                             </div>
-                            <div className="flex justify-center text-sm">
-                                {personalIdError && <p>{personalIdError}</p>}
-                                {bankId.errorMessage && <p>{bankId.errorMessage}</p>}
-                            </div>
-                        </form>
-                    </div>
-                )}
+                        </div>
 
-                <p className="mx-3 mt-5 pt-5 text-small border-t-2 border-border">
-                    Vill du bli ny kund? Snart kommer du kunna registrera dig som ny kund hos oss.
-                </p>
+                        <div className="flex justify-center">
+                        <button className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white font-bold rounded-default px-4 py-3 w-full mt-3">{isLoading ? 'Loggar in...' : 'Logga in'}</button>
+                        </div>
+                        <div className="flex justify-center text-sm">
+                        {errorMessage && <p>{errorMessage}</p>}
+                        </div>
+                    
+                    </form>
+                </div>
+            )}
+
+            {mode === "bankId" && (
+                <div className="text-small px-5 pb-5">
+                    <form onSubmit={handleBankIdSubmit} className="space-y-4 ">
+                        <div>
+                            <p className="text-xsmall ml-1 text-muted font-bold">
+                                Personnummer
+                            </p>
+                            <input
+                                type="text"
+                                placeholder="ÅÅÅÅMMDD-XXXX"
+                                value={personalId}
+                                onChange={(e) => setPersonalId(e.target.value)}
+                                className="border border-border rounded-default px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                type="submit"
+                                disabled={bankId.status === 'pending'}
+                                className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white rounded-default px-4 py-3 w-full disabled:opacity-50 mt-3"
+                            >
+                                {bankId.status === 'pending' ? 'Väntar på BankID...' : 'Logga in med BankID'}
+                            </button>
+                             <button
+                                type="submit"
+                                disabled={bankId.status === 'pending'}
+                                className="bg-background hover:bg-white text-brand border border-border rounded-default px-4 py-3 w-full disabled:opacity-50"
+                            >
+                                {bankId.status === 'pending' ? 'Väntar på BankID...' : 'BankID på annan enhet'}
+                            </button>
+                            {bankId.status === 'pending' && (
+                                <button type="button" onClick={bankId.cancel} className="border border-border rounded-default px-4 py-2">
+                                    Avbryt
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex justify-center text-sm">
+                            {personalIdError && <p>{personalIdError}</p>}
+                            {bankId.errorMessage && <p>{bankId.errorMessage}</p>}
+                        </div>
+                    </form>
                 </div>
 
             {showPinModal && (
