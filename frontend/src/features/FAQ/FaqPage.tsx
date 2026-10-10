@@ -63,11 +63,11 @@ export function FaqPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Hur tar jag ut pengar?"
-          className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-white text-small focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </form>
 
-      <p className="text-sm text-gray-500 mb-8">
+      <p className="text-xsmall text-gray-500 mb-8 ml-2">
         Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>
 
@@ -87,11 +87,11 @@ export function FaqPage() {
               type="button"
               key={cat.id}
               onClick={() => setSelectedCategoryId(cat.id)}
-              className="text-left rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
+              className="text-left rounded-card border border-border bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
               <Icon size={24} />
-              <p className="font-semibold mt-3">{cat.label}</p>
-              <p className="text-sm text-gray-500">{cat.questionCount} frågor</p>
+              <p className="font-semibold mt-3 text-medium">{cat.label}</p>
+              <p className="text-small text-gray-500">{cat.questionCount} frågor</p>
             </button>
           );
         })}
@@ -109,7 +109,7 @@ export function FaqPage() {
 
       {!result && popular.data && popular.data.length > 0 && (
         <>
-          <h2 className="text-lg font-semibold mb-4">Vanliga frågor just nu</h2>
+          <h2 className="text-medium font-semibold ml-1 mb-4">Vanliga frågor just nu</h2>
           {popular.data.map((entry, index) => (
             <FaqQuestionCard key={entry.id} entry={entry} defaultOpen={index === 0} />
           ))}

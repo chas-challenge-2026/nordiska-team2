@@ -46,9 +46,9 @@ export default function Modal({title,
             onCancel={onClose}
              className={`
                 text-small border border-border bg-card text-foreground
-                p-3 rounded-default shadow-sm
+                p-3 rounded-card shadow-sm
                 backdrop:bg-black/30 dark:backdrop:bg-black/60
-                m-auto overflow-y-auto
+                m-auto overflow-y-auto p-5
                 ${className} ${ModalSizes[size]}`}
                         >
                 <div className="flex justify-between items-center">

@@ -58,41 +58,46 @@ export default function TransferModal({
                 isOpen ={isOpen}
                 onClose={onClose}
         >
-            <div className="flex flex-col gap-1 border border-border rounded-default
-                        w-full h-full p-3"
+            <div className="flex flex-col gap-3 border border-border rounded-card
+                        w-full h-full px-3 pt-3 pb-7"
             >
-                <p className="mt-2">Från konto*</p>
-                <SelectOptions
-                    value={fromAccount}
-                    onChange={setFromAccount}
-                    options={accountOptions}
-                    placeholder="Från konto" />
+                <div>
+                    <p className="mb-1 mt-2 ml-1">Från konto*</p>
+                    <SelectOptions
+                        value={fromAccount}
+                        onChange={setFromAccount}
+                        options={accountOptions}
+                        placeholder="Från konto" />
 
-                {hasAttemptedSubmit && insufficientFunds && (
-                    <p className="text-xsmall text-cancel">Otillräckligt saldo på kontot.</p>
-                )}
-
-                <p className="mt-2">Till konto*</p>
-                <SelectOptions
-                    value={toAccount}
-                    onChange={setToAccount}
-                    options={accountOptions}
-                    placeholder="Till konto" />
-
-                <p className="mt-2">Belopp*</p>
-                    <InputField
-                        value={amount}
-                        onChange={setAmount}
-                        placeholder="Belopp"/>
-                {hasAttemptedSubmit && isAmountInvalid && (
-                    <p className="text-xsmall text-cancel">Beloppet måste vara en siffra.</p>
-                )}
-
-                <p className="mt-2">OCR/Meddelande till mottagaren</p>
-                <TextareaInput
-                    placeholder="OCR/Meddelande"
-                    value={message}
-                    onChange={setMessage}/>
+                    {hasAttemptedSubmit && insufficientFunds && (
+                        <p className="text-xsmall text-cancel">Otillräckligt saldo på kontot.</p>
+                    )}
+                </div>
+                <div>
+                    <p className="mb-1 mt-2 ml-1">Till konto*</p>
+                    <SelectOptions
+                        value={toAccount}
+                        onChange={setToAccount}
+                        options={accountOptions}
+                        placeholder="Till konto" />
+                </div>
+                <div>
+                    <p className="mb-1 mt-2 ml-1">Belopp*</p>
+                        <InputField
+                            value={amount}
+                            onChange={setAmount}
+                            placeholder="Belopp"/>
+                    {hasAttemptedSubmit && isAmountInvalid && (
+                        <p className="text-xsmall text-cancel">Beloppet måste vara en siffra.</p>
+                    )}
+                </div>
+                <div>
+                    <p className="mb-1 mt-2 ml-1">OCR/Meddelande till mottagaren</p>
+                    <TextareaInput
+                        placeholder="Meddelande"
+                        value={message}
+                        onChange={setMessage}/>
+                </div>
             </div>
             <p className="w-full text-xsmall text-right pr-1">* Obligatoriska fält.</p>
 
@@ -105,7 +110,7 @@ export default function TransferModal({
                 )}
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3 mt-5">
 
                 <Button
                     label="Avbryt"

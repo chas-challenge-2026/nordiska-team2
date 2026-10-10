@@ -26,10 +26,10 @@ export default function Alert({
         <>
             <div title={title}
                 className={`${AlertTypesOptions[type]} ${visible ? "opacity-100": "opacity-0"}
-                        p-5 rounded-default border border-border
+                        p-5 rounded-card border border-border 
                         ${className}`}
                 >
-                <p>{message}</p>
+                <p className="text-bold">{message}</p>
             
             </div>    
         </>

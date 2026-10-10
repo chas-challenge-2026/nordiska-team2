@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../../client";
 import { useAccounts } from "../../hooks/useAccounts";
@@ -7,8 +8,8 @@ import type { OptionType } from "../../components/ui/Select";
 import Card from "../../components/cards/Card";
 import ListItem from "../../components/ui/ListItem";
 import Button from "../../components/ui/Button";
-import InputField from "../../components/ui/Input";
 import TransactionsChart from "./TransactionChart";
+import DepositWithdrawFields from "../../components/forms/DepositWithdrawFields";
 import CreateSavingsGoalsModal from "../dashboard/components/modals/SavingsGoalsModal/CreateSavingsGoalsModal";
 import DeleteSavingsGoalModal from "../dashboard/components/modals/SavingsGoalsModal/DeleteSavingsGoalModal";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
@@ -24,7 +25,13 @@ interface LedgerEntry {
 export default function TransactionPage() {
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
-  const [explicitAccountId, setExplicitAccountId] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  const [explicitAccountId, setExplicitAccountId] = useState<number | null>(() => {
+      const accountIdParam = searchParams.get("accountId");
+      return accountIdParam ? Number(accountIdParam) : null;
+  });
+
+  const [description, setDescription] = useState("");
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -63,7 +70,7 @@ export default function TransactionPage() {
   useEffect(() => {
     if (!accountGoal || progress < 100) return;
 
-    const storageKey = `goal-celebrated-${accountGoal.id}`;
+    const storageKey = `goal-celebrated-${accountGoal.name}`;
     const alreadyCelebrated = localStorage.getItem(storageKey) === "true";
 
     if(!alreadyCelebrated) {
@@ -74,7 +81,7 @@ export default function TransactionPage() {
       });
       localStorage.setItem(storageKey, "true")
     }
-  }, [accountGoal?.id, progress >= 100]);
+  }, [accountGoal?.name, progress >= 100]);
 
   const { data: history, isLoading: historyLoading } = useQuery<LedgerEntry[]>({
     queryKey: ["transactions", selectedAccountId],
@@ -94,6 +101,7 @@ export default function TransactionPage() {
       return apiClient.post("/transactions/deposit", {
         accountId: selectedAccountId,
         amount: parsedAmount,
+        description: description.trim() === "" ? undefined : description.trim(),
       });
     },
     onSuccess: () => {
@@ -101,6 +109,7 @@ export default function TransactionPage() {
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals"]})
       setAmount("");
+      setDescription("");
     },
   });
 
@@ -109,12 +118,14 @@ export default function TransactionPage() {
       return apiClient.post("/transactions/withdraw", {
         accountId: selectedAccountId,
         amount: parsedAmount,
+        description: description.trim() === "" ? undefined : description.trim(),
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       setAmount("");
+      setDescription("");
     },
   });
 
@@ -151,19 +162,19 @@ export default function TransactionPage() {
         </div>
       </div>
 
-      <div className="hidden md:block">
+      <div className=" relative hidden md:block">
          <Button 
             label="Hantera sparmål"
             variant="dropDown"
             onClick={() => setIsMenuOpen((open) => !open)}
           ><span>▼</span> </Button>
           {isMenuOpen && (
-            <ul className="absolute z-10 w-1/4 ml-2 p-2
-                            rounded-default border-border bg-card 
+            <ul className="absolute z-10 w-1/4 mt-0.5
+                            rounded-default border border-border bg-card 
                             shadow-sm text-small"
             >
               <li>
-                <button className="w-full text-left p-2 hover:bg-background"
+                <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
                           setIsMenuOpen(false)
                           setIsGoalModalOpen(true)
@@ -173,7 +184,7 @@ export default function TransactionPage() {
                 </button>
               </li>
               <li>
-                <button className="w-full text-left p-2 hover:bg-background"
+                <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
                             setIsMenuOpen(false);
                             setIsDeleteGoalModalOpen(true);
@@ -268,59 +279,33 @@ export default function TransactionPage() {
 </div>
 
     <div className="grid grid-cols-1 justify-items-stretch 
-                            md:grid-cols-2 gap-3 md:mb-6">
+                            md:grid-cols-2 gap-3 md:mb-3">
 
       {/* ============ VÄNSTER SIDA ============ */}
       <div>
         <Card title="Insättning/Uttag"
               headerVariant="secondary"
+              className="min-h-106"
                 >
-          <div className="flex flex-col gap-6
+          <div className="flex flex-col
                           text-small">
 
-            <div className="relative bg-border flex rounded-default border border-border overflow-hidden">
-              <div className={`absolute inset-y-0 w-1/2 bg-white border-2 border-border rounded-default
-                  transition-transform duration-500 ease-in-out
-                  ${mode === "deposit" ? "translate-x-0" : "translate-x-full"}`} />
-                <button
-                  type="button"
-                  className={`relative z-10 flex-1 p-2 transition-colors 
-                              ${mode === "deposit" ? "text-brand" : "text-muted bg-border"}`}
-                  onClick={() => setMode("deposit")}>
-                    Insättning
-                </button>
-                <button
-                  type="button"
-                  className={`relative z-10 flex-1 p-2 transition-colors
-                              ${mode === "withdraw" ? "text-brand" : "text-muted bg-border"}`}
-                  onClick={() => setMode("withdraw")}>
-                    Uttag
-                </button>
-              </div>
+            <DepositWithdrawFields
+              mode={mode}
+              setMode={setMode}
+              amount={amount}
+              setAmount={setAmount}
+              amountInputClassName="p-1"
+              description={description}
+              setDescription={setDescription}
+            />
 
             <div>
-              <InputField className="p-1"
-                placeholder="Belopp"
-                value={amount}
-                onChange={setAmount}
-                type="number"
-              />
                 <p className="mt-2 text-xsmall text-muted mb-3">
                     {mode === "deposit"
                     ? `Efter insättning: ${amountFormatter.format(previewDepositBalance)} kr`
                     : `Efter uttag: ${amountFormatter.format(previewWithdrawBalance)} kr` }
                 </p>
-              <div className="flex gap-3 mt-2">
-                {[100, 500, 1000].map((present) => (
-                  <Button 
-                    key={present}
-                    label={`${present} kr`}
-                    variant="primary"
-                    onClick={() => setAmount(String(present))} 
-                    />
-                ))}
-              </div>
-
 
               <Button
                 variant="secondary"
@@ -347,9 +332,9 @@ export default function TransactionPage() {
        {/* ============ HÖGER SIDA ============ */}
       <div>
         <Card 
-            title="Insättning och uttag"
+            title="Översikt"
             headerVariant="secondary"
-            className="hidden md:block"
+            className="hidden md:flex min-h-106"
             >
               <TransactionsChart 
                 history={history ?? []}
@@ -366,12 +351,12 @@ export default function TransactionPage() {
             {historyLoading ? (
               <p>Laddar historik...</p>
             ) : (
-              <ul className="divide-y divide-border-light">
+              <ul className="divide-y divide-border-light ">
                 {history?.map((entry, index) => (
                   <ListItem 
                     key={index}
                     title={entry.description}
-                    subtitle={entry.description}
+                    subtitle={selectedAccount?.accountNumber}
                     right={
                       <div className="flex flex-col items-end gap-1">
                         <p className={entry.amount >= 0

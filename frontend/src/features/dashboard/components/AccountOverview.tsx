@@ -22,7 +22,7 @@ export default function AccountOverview({ accounts }: AccountOverviewProps) {
                                         accountNumber={account.accountNumber}
                                         balance={account.balance}
                                         interest={account.interest}
-                                        to="/transactions"
+                                        to={`/transactions?accountId=${account.id}`}
                                     />
                                 ))}         
             </div>

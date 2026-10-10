@@ -42,8 +42,8 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
                 onClose={resetAndClose}>
 
             <div className="flex flex-col gap-1 
-                            border border-border rounded-default 
-                            w-full h-full p-3"> 
+                            border border-border rounded-card 
+                            w-full h-full px-4 py-6 mt-3 mb-10"> 
                 <p className="mt-2">Vilket sparmål vill du ta bort?</p>
                     <SelectOptions
                         value={selectedGoal}
@@ -61,9 +61,10 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
                         <p className="text-xsmall text-cancel">Du måste välja ett sparmål</p>
                     )}
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-5">
                     <Button label="Avbryt" variant="cancel" onClick={resetAndClose} />
                     <Button
+                        className="min-w-30"
                         label={deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
                         variant="primary"
                         onClick={handleDelete}
