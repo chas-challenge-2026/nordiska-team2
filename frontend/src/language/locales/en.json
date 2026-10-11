@@ -1,0 +1,31 @@
+{
+    "login": {
+        "heroTitle": "Tomorrow's bank",
+        "heroTitleEnd": "– for everyone",
+        "heroSubtitle": "Where finance meets technology",
+        "features": {
+            "savingsGoal": "Personal savings goals",
+            "depositWithdraw": "Deposits and withdrawals",
+            "faq": "FAQ assistant",
+            "taxReports": "Tax reports"
+        },
+        "welcome": "Welcome!",
+        "subtitle": "Log in to see your accounts and savings goals.",
+        "tabEmail": "Email",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Log in",
+        "submitting": "Logging in...",
+        "personalId": "Personal identity number",
+        "personalIdPlaceholder": "YYYYMMDD-XXXX",
+        "bankIdSubmit": "Log in with BankID",
+        "bankIdOtherDevice": "BankID on another device",
+        "bankIdWaiting": "Waiting for BankID...",
+        "cancel": "Cancel",
+        "errors": {
+            "missingFields": "Please enter both email and password",
+            "invalidCredentials": "Wrong email or password, please try again!",
+            "missingPersonalId": "Please enter your personal identity number"
+        }
+    }
+}

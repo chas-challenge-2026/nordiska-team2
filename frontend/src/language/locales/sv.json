@@ -1,0 +1,31 @@
+{
+    "login": {
+        "heroTitle": "Morgondagens bank",
+        "heroTitleEnd": "– för alla",
+        "heroSubtitle": "Där finansiering och teknik möts",
+        "features": {
+            "savingsGoal": "Eget sparmål",
+            "depositWithdraw": "Insättning och uttag",
+            "faq": "FAQ-assistent",
+            "taxReports": "Skatterapporter"
+        },
+        "welcome": "Välkommen!",
+        "subtitle": "Logga in för att se dina konton och sparmål.",
+        "tabEmail": "E-post",
+        "email": "E-post",
+        "password": "Lösenord",
+        "submit": "Logga in",
+        "submitting": "Loggar in...",
+        "personalId": "Personnummer",
+        "personalIdPlaceholder": "ÅÅÅÅMMDD-XXXX",
+        "bankIdSubmit": "Logga in med BankID",
+        "bankIdOtherDevice": "BankID på annan enhet",
+        "bankIdWaiting": "Väntar på BankID...",
+        "cancel": "Avbryt",
+        "errors": {
+            "missingFields": "Vänligen fyll i både e-post och lösenord",
+            "invalidCredentials": "Fel e-post eller lösenord, försök igen!",
+            "missingPersonalId": "Vänligen fyll i personnummer"
+        }
+    }
+}
