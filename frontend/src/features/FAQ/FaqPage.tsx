@@ -72,6 +72,12 @@ export function FaqPage() {
 
       <p className="text-sm text-gray-500 mb-8">
         {t("faq.popularSearches")}
+          placeholder="Hur tar jag ut pengar?"
+          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-white text-small focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+      <p className="text-xsmall text-gray-500 mb-8 ml-2">
+        Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>
 
       {isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.searching")}</p>}
@@ -82,7 +88,7 @@ export function FaqPage() {
         <p className="text-sm text-red-600 mb-4">{t("faq.categoriesError")}</p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {categories.data?.map((cat) => {
           const Icon = categoryIcons[cat.id] ?? FileText;
           return (
@@ -90,7 +96,7 @@ export function FaqPage() {
               type="button"
               key={cat.id}
               onClick={() => setSelectedCategoryId(cat.id)}
-              className="text-left rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
+              className="text-left rounded-card border border-border bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
               <Icon size={24} />
               <p className="font-semibold mt-3">{cat.label}</p>

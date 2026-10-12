@@ -36,7 +36,7 @@ async function handleLogout() {
             {navigationItems.map((item) => (
                 <NavItem key={item.to} item={item} />
             ))}
-            <li className="mb-5">
+            <li className="mb-5 mt-1">
                 <button
                     onClick={handleLogout}
                     className="group flex w-full cursor-pointer rounded-default p-3 text-white transition-colors duration-150 hover:bg-card hover:text-brand dark:hover:bg-white/10 dark:hover:text-white"

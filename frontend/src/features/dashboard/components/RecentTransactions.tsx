@@ -31,8 +31,8 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                         className="font-semibold text-medium text-foreground">
                             {t("dashboard.recentActivity")}
                     </h2>
-                    <Link to="/transactions"
-                          className="text-small text-brand-text hover:underline
+                    <Link to="/transactions#recenttransactions"
+                          className="text-small text-brand-text hover:underline mr-2
                                      focus-visible:outline-2 focus-visible:outline-brand">
                         {t("dashboard.showAll")}
                     </Link>
@@ -44,7 +44,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                     <p className="p-3 text-small text-muted">{t("common.noActivityYet")}</p>
                 ) : (
 
-                <ul className="divide-y divide-border-light">
+                <ul className="divide-y divide-border-light px-5">
                     {latestTransactions.map((transaction) => (
                         <ListItem
                             key={transaction.id}
@@ -52,7 +52,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                             subtitle={transaction.account}
                             right={
                                 <div className="flex items-center justify-between 
-                                                gap-1 sm:flex-col sm:items-end">
+                                                gap-1 sm:flex-col sm:items-end ">
                                     <p className={transaction.amount >= 0
                                                 ? "font-semibold text-success text-medium whitespace-nowrap"
                                                 : "font-semibold text-foreground text-medium"}>

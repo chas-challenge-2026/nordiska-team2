@@ -1,6 +1,7 @@
 import { useSettings } from '../../hooks/useSettings'
 import type { Theme } from '../../app/Context/SettingsContext'
 import { useTranslation } from 'react-i18next'
+import PageHeader from '../../components/ui/Pageheader'
 
 // label är nycklar i språkfilerna
 const themeOptions = [
@@ -33,15 +34,12 @@ export default function SettingsPage() {
     const { t, i18n } = useTranslation()
 
     return (
-        <div className="flex max-w-3xl flex-col gap-7 p-6">
-            <header className="flex flex-col gap-1.5">
-                <h1 className="text-page-title font-medium text-foreground">{t("settings.title")}</h1>
-                <p className="text-medium text-muted">
-                    {t("settings.subtitle")}
-                </p>
-            </header>
-
-            <section className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex max-w-3xl flex-col gap-7 lg:p-6">
+            <PageHeader 
+              title={t("settings.title")}
+              subtitle={t("settings.subtitle")} />
+        
+            <section className="overflow-hidden md:rounded-xl border border-border bg-card">
                 <div className="border-b border-border px-6 py-5">
                     <h2 className="text-large font-semibold text-foreground">{t("settings.appearance")}</h2>
                     <p className="text-small text-muted">{t("settings.appearanceHint")}</p>

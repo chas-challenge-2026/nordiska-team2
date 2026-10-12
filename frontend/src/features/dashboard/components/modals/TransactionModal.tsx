@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Button from "../../../../components/ui/Button";
-import InputField from "../../../../components/ui/Input";
-import Modal from "../../../../components/ui/Modal"   
+import Modal from "../../../../components/ui/Modal"
 import SelectOptions from "../../../../components/ui/Select";
+import DepositWithdrawFields from "../../../../components/forms/DepositWithdrawFields";
 import { useAccounts } from "../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
@@ -15,6 +15,11 @@ type TransactionModalProps = {
     onClose: () => void;
 };
 
+const amountFormatter = new Intl.NumberFormat("sv-SE", {
+    style: "currency",
+    currency: "SEK",
+});
+
 export default function TransactionModal({
     isOpen,
     onClose,
@@ -25,30 +30,41 @@ export default function TransactionModal({
     const { t } = useTranslation();
 
     const accountOptions: OptionType[] = accounts?.map((account) => ({
-        value: String(account.id), 
-        label: account.accountNumber 
+        value: String(account.id),
+        label: account.accountNumber
     })) ?? []
 
     const [selectedAccount, setSelectedAccount] = useState<OptionType | null>(null);
     const [amount, setAmount] = useState("");
+    const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+    const [description, setDescription] = useState("");
 
     const amountValue = Number(amount);
     const accountData = accounts?.find((a) => String(a.id) === selectedAccount?.value)
     const isMissingFields = selectedAccount === null || amount.trim() === "";
     const isAmountInvalid = amount.trim() !== "" && (Number.isNaN(amountValue) || amountValue <= 0);
-    const insufficientFunds = accountData !== undefined && amountValue > accountData.balance;
+    const insufficientFunds = mode === "withdraw" && accountData !== undefined && amountValue > accountData.balance;
+
+    const previewDepositBalance = (accountData?.balance ?? 0) + (Number.isNaN(amountValue) ? 0 : amountValue);
+    const previewWithdrawBalance = (accountData?.balance ?? 0) - (Number.isNaN(amountValue) ? 0 : amountValue);
 
     function resetAndClose() {
         setSelectedAccount(null);
         setAmount("");
+        setMode("deposit");
         setHasAttemptedSubmit(false);
+        setDescription("");
         onClose();
     }
 
     const depositMutation = useMutation({
         mutationFn: () =>
-            apiClient.post("/transactions/deposit", {accountId: Number(selectedAccount!.value), amount: amountValue}),
+            apiClient.post("/transactions/deposit", {
+                accountId: Number(selectedAccount!.value), 
+                amount: amountValue,
+                description: description.trim() === "" ? undefined : description.trim(),
+            }),
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
@@ -57,10 +73,13 @@ export default function TransactionModal({
         },
     });
 
-    
     const withdrawMutation = useMutation({
         mutationFn: () =>
-            apiClient.post("/transactions/withdraw", {accountId: Number(selectedAccount!.value), amount: amountValue}),
+            apiClient.post("/transactions/withdraw", {
+                accountId: Number(selectedAccount!.value), 
+                amount: amountValue,
+                description: description.trim() === "" ? undefined : description.trim(),
+            }),
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
@@ -69,39 +88,48 @@ export default function TransactionModal({
         },
     });
 
-    function handleDeposit() {
-        setHasAttemptedSubmit(true);
-        if (isMissingFields || isAmountInvalid) return;
-        depositMutation.mutate();
-    }
-
-    function handleWithdraw() {
+    function handleSubmit() {
         setHasAttemptedSubmit(true);
         if (isMissingFields || isAmountInvalid || insufficientFunds) return;
-        withdrawMutation.mutate();
-
+        if (mode === "deposit") depositMutation.mutate();
+        else withdrawMutation.mutate();
     }
-    
+
     return(
         <Modal title={t("transactionModal.title")}
                 isOpen ={isOpen}
                 onClose={resetAndClose} >
-            <div className="flex flex-col gap-1 border border-border rounded-default
-                        w-full h-full p-3"
+            <div className="flex flex-col gap-5 border border-border rounded-card
+                        w-full h-full px-3 pt-3 pb-7"
             >
-                <p className="mt-2">{t("common.accountRequired")}</p>
+              <div className="z-20">  
+                <p className="mb-1 mt-2 ml-1">{t("common.accountRequired")}</p>
                 <SelectOptions 
                     value={selectedAccount} 
                     onChange={setSelectedAccount}
                     options={accountOptions}
                     placeholder={t("common.selectAccount")} />
-
-                <p className="mt-2">{t("common.amountRequired")}</p>
-                    <InputField 
-                        value={amount}
-                        onChange={setAmount}
-                        placeholder={t("common.amount")}
-                        type="number" />
+                </div>
+                <div>
+                    <DepositWithdrawFields
+                        mode={mode}
+                        setMode={setMode}
+                        amount={amount}
+                        setAmount={setAmount}
+                        amountLabel={<p className="mb-1 ml-1">{t("common.accountRequired")}</p>}
+                        quickAmountsClassName="flex gap-3 mt-3"
+                        description={description}
+                        setDescription={setDescription}
+                        descriptionLabel="Meddelande till mottagaren (Valfritt)"
+                    />
+                    {accountData && (
+                        <p className="mt-2 ml-1 text-xsmall text-muted">
+                            {mode === "deposit"
+                                ? `Efter insättning: ${amountFormatter.format(previewDepositBalance)}`
+                                : `Efter uttag: ${amountFormatter.format(previewWithdrawBalance)}`}
+                        </p>
+                    )}
+                </div>
 
                 {hasAttemptedSubmit && isAmountInvalid && (
                     <p className="text-xsmall text-cancel">{t("transactionModal.amountPositive")}</p>
@@ -119,8 +147,8 @@ export default function TransactionModal({
 
             <p className="w-full text-xsmall text-right pr-1">{t("common.requiredFieldsNote")}</p>
 
-            <div className="flex justify-end">
-  
+            <div className="flex justify-end gap-3 mt-5">
+
                 <Button
                     label={t("common.cancel")}
                     variant="cancel"
@@ -142,5 +170,3 @@ export default function TransactionModal({
         </Modal>
     )
 }
-                    
-                    

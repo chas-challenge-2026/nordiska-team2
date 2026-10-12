@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
 
 
 type ModalSizeVariant = "small" | "medium" | "large";
 const ModalSizes: Record<ModalSizeVariant, string> = {
-    small: "w-100 max-h-1/4",
-    medium: "w-1/2 max-h-3/4",
+    small: "w-full max-h-full md:w-100 md:max-h-1/4",
+    medium: "w-full max-h-full md:w-1/2 md:max-h-3/4",
     large: "w-full max-h-full"
 }
 
@@ -26,43 +26,37 @@ export default function Modal({title,
                             isOpen,
                             onClose}: ModalProps) {
     const titleId = useId();
-    const dialogRef = useRef<HTMLDialogElement>(null)
 
-    useEffect(() => {
-        const dialog = dialogRef.current;
-        if (!dialog) return;
-        if (isOpen && !dialog.open) {
-            dialog.showModal();
-        }
-        if (!isOpen && dialog.open) {
-            dialog.close()
-        }
-    }, [isOpen]);
+    if (!isOpen) return null;
 
     return(
-        <dialog
-            ref={dialogRef}
-            aria-labelledby={titleId}
-            onCancel={onClose}
-             className={`
-                text-small border border-border bg-card text-foreground
-                p-3 rounded-default shadow-sm
-                backdrop:bg-black/30 dark:backdrop:bg-black/60
-                m-auto overflow-y-auto
-                ${className} ${ModalSizes[size]}`}
+        <div
+            onClick={onClose}
+            className="fixed inset-x-0 top-0 bottom-[calc(4rem_+_env(safe-area-inset-bottom))] lg:bottom-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60">
+            <div
+                onClick={(e) => e.stopPropagation()}
+                aria-labelledby={titleId}
+                role="dialog"
+                aria-modal="true"
+                className={`
+                    text-small border border-border bg-card text-foreground
+                    p-3 rounded-none md:rounded-card shadow-sm
+                    overflow-y-auto p-5
+                    ${className} ${ModalSizes[size]}`}
                         >
-                <div className="flex justify-between items-center">
-                    <h2 id={titleId}
-                        className="text-large">{title}</h2>
+                    <div className="flex justify-between items-center">
+                        <h2 id={titleId}
+                            className="text-large">{title}</h2>
 
-                    {/* <Button label="x"
-                        onClick={onClose}
-                        variant="cancel"
-                        className="w-8 h-8
-                                    flex justify-center items-center"
-                    /> */}
-                </div>
-            {children}
-        </dialog>
+                        {/* <Button label="x"
+                            onClick={onClose}
+                            variant="cancel"
+                            className="w-8 h-8
+                                        flex justify-center items-center"
+                        /> */}
+                    </div>
+                {children}
+            </div>
+        </div>
     )
 }

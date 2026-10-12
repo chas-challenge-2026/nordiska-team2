@@ -79,7 +79,7 @@ export default function LoginPage() {
 
             {/* ========== Vänster sida ========== */}
             {/* Panelen "flyter" som ett rundat kort, så att det inte blir någon hård kant mot högersidan */}
-            <div className="relative overflow-hidden hidden lg:m-4 lg:rounded-3xl lg:p-16 lg:flex lg:flex-col lg:gap-15
+            <div className="relative overflow-hidden hidden lg:m-4 lg:rounded-card lg:p-16 lg:flex lg:flex-col lg:gap-15
                             shadow-2xl shadow-brand/20 dark:shadow-black/40
                             bg-linear-to-br from-brand to-[#0f3550]
                             dark:from-[#16405e] dark:to-sidebar">
@@ -98,17 +98,17 @@ export default function LoginPage() {
                         {t("login.heroSubtitle")}
                     </p>
                     <img src={heroImage} className="mt-10 mx-auto rounded-xl opacity-90
-                                                    shadow-2xl shadow-black/30" />
+                                                    shadow-2xl shadow-black/30" mb-5/>
                     <div className="flex gap-3 mt-2">
                                     {["savingsGoal",
                                     "depositWithdraw",
                                     "faq",
                                     "taxReports"].map((feature) => (
                                         <div key={feature}
-                                            className="flex items-center gap-2 text-xsmall text-white bg-white/20 rounded-full 
-                                                        px-3 py-1 mt-3">
+                                            className="flex items-center gap-2 text-xsmall text-white bg-white/20 rounded-card 
+                                                        px-3 py-1">
                                                 <img src={checkIcon} className="size-4"/>
-                                                <span>{t(`login.features.${feature}`)}</span>
+                                                <span className="min-w-0 break-words">{t(`login.features.${feature}`)}</span>
                                         </div>
                                     ))}
                     </div>
@@ -128,25 +128,25 @@ export default function LoginPage() {
                         </div>
                     } 
                     headerClassName="bg-linear-to-br from-brand to-[#0f3550] dark:from-[#16405e] dark:to-sidebar border-none"
-                    className="min-h-125 bg-card/85! backdrop-blur-md border-white/70! dark:border-border!
+                    className="md:min-h-125 h-full bg-card/85! rounded-none md:rounded-card backdrop-blur-md border-white/70! dark:border-toggle!
                                shadow-2xl! shadow-brand/15! dark:shadow-black/40!">
       
-                <div className="flex flex-col justify-center h-full gap-6 md:gap-0">
-                    <div className="relative bg-border flex rounded-default border border-border overflow-hidden md:m-5">
-                        <div className={`absolute inset-y-0 w-1/2 bg-white border-2 border-border rounded-default
+                <div className="flex flex-col justify-center h-full gap-6 md:gap-0 ">
+                    <div className="relative bg-toggle flex rounded-card border border-toggle overflow-hidden md:m-5">
+                        <div className={`absolute h-full inset-y-0 w-1/2 bg-white border-2 border-toggle rounded-card
                             transition-transform duration-500 ease-in-out
                             ${mode === "email" ? "translate-x-0" : "translate-x-full"}`} />
                         <button
                             type="button"
                             className={`relative z-10 flex-1 md:p-2 p-3 transition-colors text-small
-                                        ${mode === "email" ? "text-brand" : "text-muted bg-border"}`}
+                                        ${mode === "email" ? "text-brand" : "text-muted bg-toggle"}`}
                             onClick={() => setMode("email")}>
                                 {t("login.tabEmail")}
                         </button>
                         <button
                             type="button"
                             className={`relative z-10 flex-1 p-2 transition-colors text-small
-                                        ${mode === "bankId" ? "text-brand" : "text-muted bg-border"}`}
+                                        ${mode === "bankId" ? "text-brand" : "text-muted bg-toggle"}`}
                             onClick={() => setMode("bankId")}>
                                 BankID
                         </button>
@@ -194,26 +194,26 @@ export default function LoginPage() {
                                 placeholder={t("login.personalIdPlaceholder")}
                                 value={personalId}
                                 onChange={(e) => setPersonalId(e.target.value)}
-                                className="border border-border rounded-default px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"
+                                className="border border-border rounded-card px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"
                             />
                         </div>
                         <div className="flex flex-col gap-3">
                             <button
                                 type="submit"
                                 disabled={bankId.status === 'pending'}
-                                className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white rounded-default px-4 py-3 w-full disabled:opacity-50 mt-3"
+                                className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white rounded-card px-4 py-3 w-full disabled:opacity-50 mt-3"
                             >
                                 {bankId.status === 'pending' ? t("login.bankIdWaiting") : t("login.bankIdSubmit")}
                             </button>
                              <button
                                 type="submit"
                                 disabled={bankId.status === 'pending'}
-                                className="bg-background hover:bg-white text-brand border border-border rounded-default px-4 py-3 w-full disabled:opacity-50"
+                                className="bg-background hover:bg-white text-brand border border-border rounded-card px-4 py-3 w-full disabled:opacity-50"
                             >
                                 {bankId.status === 'pending' ? t("login.bankIdWaiting") : t("login.bankIdOtherDevice")}
                             </button>
                             {bankId.status === 'pending' && (
-                                <button type="button" onClick={bankId.cancel} className="border border-border rounded-default px-4 py-2">
+                                <button type="button" onClick={bankId.cancel} className="border border-border rounded-card px-4 py-2">
                                     {t("login.cancel")}
                                 </button>
                             )}
@@ -226,6 +226,9 @@ export default function LoginPage() {
                 </div>
             )}
 
+            <p className="mx-3 mt-5 pt-5 text-small border-t-2 border-border">
+                Vill du bli ny kund? Snart kommer du kunna registrera dig som ny kund hos oss.
+            </p>
             </div>
 
             {showPinModal && (

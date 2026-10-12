@@ -31,9 +31,9 @@ export default function SelectOptions({
                 unstyled
                 menuPosition="fixed"
                 classNames={{
-                    control: () => `border border-muted rounded-default p-1 bg-card text-foreground ${className}`,
-                    menu: () => "border border-muted rounded-default bg-card text-foreground mt-1 z-20 text-small",
-                    option: (state) => `p-2 ${state.isFocused ? "bg-border" : ""}`,
+                    control: () => `border border-border rounded-card p-1 pl-2 bg-card text-brand-text  ${className}`,
+                    menu: () => "border border-border rounded-default bg-card text-foreground mt-0.5 z-50 text-small",
+                    option: (state) => `p-2 ${state.isFocused ? "bg-background rounded-default" : ""}`,
                     placeholder: () => "text-muted",
                 }}
             />

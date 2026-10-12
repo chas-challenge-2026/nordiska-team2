@@ -58,7 +58,7 @@ export default function FinancialOverview({
                         </li> */}
 
 
-                        <li>
+                        <li className="mb-3">
                             <BalanceChart accounts={accounts} />
                         </li>
                 </ul>

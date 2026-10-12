@@ -4,6 +4,7 @@ import type { QuickAction } from "../../../types/quickActions";
 import TransferModal from "./modals/TransferModal";
 import TransactionModal from "./modals/TransactionModal";
 import { useTranslation } from "react-i18next";
+import CreateSavingsGoalsModal from "./modals/SavingsGoalsModal/CreateSavingsGoalsModal";
 // import PayBillsModal from "./modals/PayBillsModal";
 // import LoanApplicationModal from "./modals/LoanApplicationModal";
 // import AiBuddyModal from "./modals/AiBuddyModal";
@@ -24,7 +25,7 @@ type QuickActionsProps = {
 const modalById: Record<string, React.ComponentType<{ isOpen: boolean; onClose: () => void }>> = {
     transaction: TransactionModal,
     transfer: TransferModal,
-    // payments: PayBillsModal,
+    savingGoals: CreateSavingsGoalsModal,
     // loanApplication: LoanApplicationModal,
     // aiBuddy: AiBuddyModal,
 };
@@ -38,7 +39,7 @@ export default function QuickActions({ actions }: QuickActionsProps){
        <>
             <section aria-labelledby="quick-actions-title"
                      className="hidden lg:flex flex-col gap-3">
-                <h2 id="quick-actions-title"
+                {/* <h2 id="quick-actions-title"
                     className="text-medium font-semibold text-foreground">
                     {t("dashboard.quickActionsTitle")}
                 </h2>

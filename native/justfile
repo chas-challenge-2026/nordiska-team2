@@ -75,7 +75,7 @@ valgrind name="generate_tax_reports_example" *args="": build generate-mock
     fi
 
 # Runs valgrind with comprehensive memory checking
-valgrind-all name="generate_tax_reports_example" *args="": build
+valgrind-all name="generate_tax_reports_example" *args="": build generate-mock
     @if [ -f "build/default/examples/{{ name }}" ]; then \
         valgrind --leak-check=full --show-leak-kinds=all --show-reachable=yes --track-origins=yes --error-exitcode=1 {{ VALGRIND_FLAGS }} ./build/default/examples/{{ name }} {{ args }}; \
     else \

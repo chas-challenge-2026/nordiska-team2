@@ -3,21 +3,43 @@
 devenv.local.nix
 devenv.local.yaml
 .devenv.flake.nix
-.pre-commit-config.yaml
-
-# cache 
-.direnv
-.cache/
 
 # pre-commit
 .pre-commit-config.yaml
 
-# build artifacts
+# cache
+.direnv
+.cache/
+
+# CMake / vcpkg build artifacts
 compile_commands.json
 build/
+CMakeUserPresets.json
+vcpkg_installed/
+stage/
+
+# .NET build output (packaging/PdfEngine.Native.csproj)
 [Bb]in/
 [Oo]bj/
+*.nupkg
+*.snupkg
+artifacts/
+packaging/staging/
 
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Compiled binaries (CI builds these, never commit them)
+*.so
+*.dll
+*.dylib
+*.o
+*.obj
+
+# Secrets
 *.pfx
 *.pem
 

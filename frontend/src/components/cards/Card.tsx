@@ -44,7 +44,7 @@ export default function Card({
         <>
             <header className={`
                 flex flex-col gap-1 justify-end
-                border-b border-border-light 
+                border-b border-border-light
                 px-5 py-4 
                 ${headerVariantClasses[headerVariant]} ${headerClassName}`}>
                     
