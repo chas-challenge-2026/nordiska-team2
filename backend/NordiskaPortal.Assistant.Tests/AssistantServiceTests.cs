@@ -13,6 +13,9 @@ namespace NordiskaPortal.Assistant.Tests
     {
         private const string Question = "Vad är ett sparkonto?";
 
+        // No bank keywords, so it goes through the classifier.
+        private const string PlainQuestion = "Kan ni hjälpa mig med en sak?";
+
         private static AssistantService CreateService(
             HttpMessageHandler handler,
             Action<AssistantOptions>? configure = null)
@@ -46,30 +49,68 @@ namespace NordiskaPortal.Assistant.Tests
         }
 
         [Fact]
-        public async Task Ask_SendsSystemPromptThenExamplesThenTheQuestion()
+        public async Task Ask_ClassifiesFirst_ThenSendsSystemPromptExamplesAndQuestion()
         {
-            // What reaches the model IS the assistant's behaviour. If someone
-            // drops the system prompt or the examples, this fails.
             var handler = FakeOllamaHandler.Answering("Svar.");
             var service = CreateService(handler);
-
-            await service.AskAsync(Question, CancellationToken.None);
-
-            using var body = JsonDocument.Parse(Assert.Single(handler.RequestBodies));
+        
+            await service.AskAsync(PlainQuestion, CancellationToken.None);
+        
+            // Two calls: the classification, then the answer.
+            Assert.Equal(2, handler.RequestBodies.Count);
+            Assert.Contains("JA eller NEJ", handler.RequestBodies[0]);
+        
+            using var body = JsonDocument.Parse(handler.RequestBodies[1]);
             var root = body.RootElement;
             var messages = root.GetProperty("messages").EnumerateArray().ToList();
-
+        
             Assert.Equal("test-model", root.GetProperty("model").GetString());
             Assert.False(root.GetProperty("stream").GetBoolean());
-
+        
             Assert.Equal("system", messages.First().GetProperty("role").GetString());
             Assert.Contains("FAKTA", messages.First().GetProperty("content").GetString());
-
-            // At least one example answer between the prompt and the question.
             Assert.Contains(messages.Skip(1).SkipLast(1), m => m.GetProperty("role").GetString() == "assistant");
-
+        
             Assert.Equal("user", messages.Last().GetProperty("role").GetString());
-            Assert.Equal(Question, messages.Last().GetProperty("content").GetString());
+            Assert.Equal(PlainQuestion, messages.Last().GetProperty("content").GetString());
+        }
+        
+        // A fake Ollama that answers the classification call with `verdict`
+        // and the answer call with `answer` -- told apart by the classifier
+        // prompt's "JA eller NEJ".
+        private static FakeOllamaHandler Classifying(string verdict, string answer) =>
+            new(async (request, ct) =>
+            {
+                var body = await request.Content!.ReadAsStringAsync(ct);
+                return await FakeOllamaHandler.AnswerWith(body.Contains("JA eller NEJ") ? verdict : answer);
+            });
+        
+        [Fact]
+        public async Task Ask_WhenClassifiedOffTopic_ReturnsTheFixedRefusal_AndNeverAsksForAnAnswer()
+        {
+            // The cake-recipe case: the refusal comes from code, so the model
+            // never gets the chance to write the recipe.
+            var handler = Classifying("NEJ", "Här är ett recept på kladdkaka...");
+            var service = CreateService(handler);
+        
+            var result = await service.AskAsync("Ge mig ett recept på kladdkaka", CancellationToken.None);
+        
+            Assert.Equal(AssistantStatus.Ok, result.Status);
+            Assert.Equal(AssistantService.OffTopicReply, result.Answer);
+            Assert.Single(handler.RequestBodies);   // only the classification call was made
+        }
+        
+        [Fact]
+        public async Task Ask_WhenClassifiedAsBanking_ReturnsTheModelsAnswer()
+        {
+            var handler = Classifying("JA", "Ett sparkonto ger ränta.");
+            var service = CreateService(handler);
+        
+            var result = await service.AskAsync(PlainQuestion, CancellationToken.None);
+        
+            Assert.Equal(AssistantStatus.Ok, result.Status);
+            Assert.Equal("Ett sparkonto ger ränta.", result.Answer);
+            Assert.Equal(2, handler.RequestBodies.Count);
         }
 
         [Fact]
@@ -172,5 +213,30 @@ namespace NordiskaPortal.Assistant.Tests
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.AskAsync(Question, cts.Token));
         }
+
+        [Fact]
+        public async Task Ask_WithBankWords_SkipsTheClassifier_EvenIfItWouldSayNej()
+        {
+            var handler = Classifying("NEJ", "Du öppnar ett sparkonto i internetbanken.");
+            var service = CreateService(handler);
+
+            var result = await service.AskAsync("Hur öppnar jag ett sparkonto?", CancellationToken.None);
+
+            Assert.Equal("Du öppnar ett sparkonto i internetbanken.", result.Answer);
+            var body = Assert.Single(handler.RequestBodies);
+            Assert.DoesNotContain("JA eller NEJ", body);
+        }
+
+        [Theory]
+        [InlineData("Hur öppnar jag ett sparkonto?", true)]
+        [InlineData("Hur avslutar jag ett konto?", true)]
+        [InlineData("Vad visar aktivitetsloggen?", true)]
+        [InlineData("Hur loggar jag ut?", true)]
+        [InlineData("Kan jag föra över pengar till någon annan?", true)]
+        [InlineData("Ge mig ett recept på fisk", false)]   // "isk" inside a word
+        [InlineData("Recept på sparris", false)]           // "spar" inside a word
+        [InlineData("Skriv en dikt om katter", false)]
+        public void HasBankKeyword_MatchesWholeBankWordsOnly(string question, bool expected) =>
+            Assert.Equal(expected, AssistantService.HasBankKeyword(question));
     }
 }

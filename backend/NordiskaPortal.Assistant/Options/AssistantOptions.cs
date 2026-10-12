@@ -17,6 +17,9 @@ namespace NordiskaPortal.Assistant.Options
         // memory. 60 s covers that on a laptop CPU.
         public int TimeoutSeconds { get; set; } = 60;
 
+        // Loaded time after a request ("30m", "-1" = forever).
+        public string KeepAlive { get; set; } = "30m";
+
         // How many questions Ollama works on at once. More than this and the
         // CPU just gets slower for everyone -- extra requests wait briefly,
         // then get "busy".
@@ -28,6 +31,9 @@ namespace NordiskaPortal.Assistant.Options
         public int MaxQuestionLength { get; set; } = 500;
 
         // Caps answer length (Ollama's num_predict) -- and with it, cost per request.
-        public int MaxAnswerTokens { get; set; } = 400;
+        public int MaxAnswerTokens { get; set; } = 200;
+
+        // Context window in tokens. The prompt + examples + question fit well within this.
+        public int ContextSize { get; set; } = 2048;
     }
 }

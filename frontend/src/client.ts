@@ -33,7 +33,7 @@ export function setRedirectHandler(handler: () => void) {
 
 let refreshPromise: Promise<string> | null = null;
 
-async function refreshAccessToken(): Promise<string> {
+export async function refreshAccessToken(): Promise<string> {
   if (!refreshPromise) {
     refreshPromise = apiClient
       .post('/auth/refresh')

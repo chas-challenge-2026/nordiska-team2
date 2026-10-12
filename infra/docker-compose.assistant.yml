@@ -1,0 +1,54 @@
+services:
+  ollama:
+    image: ollama/ollama
+    environment:
+      # Keep a loaded model in memory for 30 min after the last use
+      # (Ollama's default is 5 min). Also applies to the warm-up below.
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes:
+      - ollama-data:/root/.ollama 
+    expose:
+      - "11434"
+    deploy:
+      resources:
+        limits:
+          cpus: "${OLLAMA_CPUS:-2}"
+          memory: 6g
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ollama-pull:
+    image: ollama/ollama
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint:
+      - /bin/sh
+      - -c
+      - ollama pull ${ASSISTANT_MODEL:-qwen2.5:3b} && ollama run ${ASSISTANT_MODEL:-qwen2.5:3b} "Hej" > /dev/null
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  assistant:
+    build: ../backend/NordiskaPortal.Assistant
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__Key: ${JWT_KEY}
+      Assistant__BaseUrl: http://ollama:11434
+      Assistant__Model: ${ASSISTANT_MODEL:-qwen2.5:3b}
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN}
+    ports:
+      - "5080:8080"
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
+
+volumes:
+  ollama-data:
+    name: ollama-data

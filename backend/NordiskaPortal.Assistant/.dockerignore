@@ -1,0 +1,7 @@
+# Local build output. Copying Windows bin/obj into a Linux build breaks restore.
+bin/
+obj/
+# Never bake local secrets or IDE state into the image.
+appsettings.Development.json
+*.user
+.vs/
