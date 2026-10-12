@@ -134,7 +134,7 @@ public class NotificationServiceTests
         await db.SaveChangesAsync();
 
         var notificationService = new NotificationService(db, NullLogger<NotificationService>.Instance);
-        var transactionService = new TransactionService(db, notificationService, NullLogger<TransactionService>.Instance);
+        var transactionService = new TransactionService(db, notificationService: notificationService, logger: NullLogger<TransactionService>.Instance);
 
         var result = await transactionService.DepositAsync(1, 2500m);
 
@@ -173,7 +173,7 @@ public class NotificationServiceTests
         await db.SaveChangesAsync();
 
         var notificationService = new NotificationService(db, NullLogger<NotificationService>.Instance);
-        var transactionService = new TransactionService(db, notificationService, NullLogger<TransactionService>.Instance);
+        var transactionService = new TransactionService(db, notificationService: notificationService, logger: NullLogger<TransactionService>.Instance);
 
         // First deposit 1000 kr so we have balance
         await transactionService.DepositAsync(2, 1000m);
