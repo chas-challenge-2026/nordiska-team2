@@ -1,4 +1,38 @@
 {
+    "common": {
+        "cancel": "Avbryt",
+        "close": "Stäng",
+        "loading": "Laddar...",
+        "done": "Klart!",
+        "genericError": "Ett fel uppstod. Försök igen.",
+        "requiredFieldsNote": "* Obligatoriska fält.",
+        "missingRequired": "Du måste fylla i alla obligatoriska fält.",
+        "account": "Konto",
+        "accountRequired": "Konto*",
+        "amount": "Belopp",
+        "amountRequired": "Belopp*",
+        "selectAccount": "Välj konto",
+        "savingsGoal": "Sparmål",
+        "noActivityYet": "Inga händelser än."
+    },
+    "language": {
+        "choose": "Välj språk",
+        "names": {
+            "sv": "Svenska",
+            "en": "English"
+        }
+    },
+    "nav": {
+        "mobileLabel": "Mobil navigation",
+        "overview": "Översikt",
+        "accounts": "Konton",
+        "documents": "Dokument",
+        "faq": "Vanliga frågor",
+        "faqShort": "FAQ",
+        "settings": "Inställningar",
+        "settingsShort": "Inst.",
+        "logout": "Logga ut"
+    },
     "login": {
         "heroTitle": "Morgondagens bank",
         "heroTitleEnd": "– för alla",
@@ -25,7 +59,177 @@
         "errors": {
             "missingFields": "Vänligen fyll i både e-post och lösenord",
             "invalidCredentials": "Fel e-post eller lösenord, försök igen!",
-            "missingPersonalId": "Vänligen fyll i personnummer"
+            "missingPersonalId": "Vänligen fyll i personnummer",
+            "bankIdStartFailed": "Kunde inte starta BankID. Försök igen.",
+            "bankIdTimeout": "BankID-inloggningen tog för lång tid. Försök igen.",
+            "bankIdFailed": "BankID-inloggningen misslyckades.",
+            "bankIdError": "Något gick fel vid BankID-inloggningen."
         }
+    },
+    "bankIdPin": {
+        "enterPin": "Ange pin",
+        "identify": "Identifiera",
+        "demoNote": "Endast för demo - koden kontrolleras ej"
+    },
+    "dashboard": {
+        "welcome": "Välkommen tillbaka, {{name}}!",
+        "welcomeNoName": "Välkommen tillbaka!",
+        "loggedInVia": "Inloggad via (mock)BankID",
+        "loadingAccounts": "Laddar konton",
+        "accountsError": "Kunde inte hämta konton",
+        "noAccounts": "Du har inga konton än.",
+        "quickActionsTitle": "Snabbt & enkelt",
+        "quickActions": {
+            "transaction": "Insättning och uttag",
+            "transfer": "Överföring",
+            "savingGoals": "Skapa sparmål",
+            "loanApplication": "Ansök om lån",
+            "aiBuddy": "Ai Kompis"
+        },
+        "recentActivity": "Senaste händelser",
+        "showAll": "Visa alla",
+        "loadingActivity": "Laddar händelser...",
+        "financialOverview": "Ekonomisk översikt",
+        "totalBalance": "Totalt saldo",
+        "seeFinancialOverview": "Se din ekonomiska översikt →",
+        "noBalance": "Inget saldo att visa",
+        "balanceChartLabel": "Saldo (kr)",
+        "needHelp": "Behöver du hjälp?",
+        "mostCommonQuestions": "Vanligaste frågorna",
+        "loadingSavingsGoals": "Laddar sparmål.",
+        "remainingToGoal": "{{amount}} kvar till målet",
+        "goalReached": "Målet är uppnått!",
+        "search": "Sök",
+        "searchPlaceholder": "Sök ..."
+    },
+    "footer": {
+        "security": "Säkerhet",
+        "privacy": "Integritet",
+        "terms": "Villkor"
+    },
+    "accountCard": {
+        "availableBalance": "Tillgängligt saldo",
+        "interest": "Ränta {{rate}} %"
+    },
+    "accountsPage": {
+        "loadingAccounts": "Laddar konton...",
+        "noAccounts": "Inga konton hittades.",
+        "title": "Kontohantering",
+        "subtitle": "Sätt in, ta ut, överför pengar mellan konton och följ dina sparmål.",
+        "manageGoals": "Hantera sparmål",
+        "createGoal": "Skapa sparmål",
+        "deleteGoal": "Ta bort sparmål",
+        "balance": "Saldo",
+        "noGoalForAccount": "Inget sparmål för det här kontot.",
+        "goalAria": "Sparmål: {{name}}",
+        "latestActivity": "Senaste händelse",
+        "latestActivitySubtitle": "Insättning/Uttag/Överföring",
+        "depositWithdrawTitle": "Insättning/Uttag",
+        "deposit": "Insättning",
+        "withdraw": "Uttag",
+        "afterDeposit": "Efter insättning: {{amount}}",
+        "afterWithdraw": "Efter uttag: {{amount}}",
+        "presetAmount": "{{amount}} kr",
+        "depositMoney": "Sätt in pengar",
+        "depositing": "Sätter in...",
+        "withdrawMoney": "Ta ut pengar",
+        "withdrawing": "Tar ut...",
+        "chartTitle": "Insättning och uttag",
+        "history": "Historik",
+        "loadingHistory": "Laddar historik...",
+        "chart": {
+            "noData": "Inga transaktioner att visa",
+            "startBalance": "Startsaldo",
+            "deposits": "Insättningar",
+            "withdrawals": "Uttag",
+            "previous": "← Föregående",
+            "next": "Nästa →"
+        }
+    },
+    "transactionModal": {
+        "title": "Insättning/Uttag",
+        "amountPositive": "Beloppet måste vara en siffra större än 0.",
+        "insufficientFunds": "Otillräckligt saldo för uttag.",
+        "withdraw": "Ta ut",
+        "withdrawing": "Tar ut ...",
+        "deposit": "Sätt in",
+        "depositing": "Sätter in ...",
+        "depositDone": "Insättningen är genomförd.",
+        "withdrawDone": "Uttaget är genomfört."
+    },
+    "transferModal": {
+        "title": "Överföring",
+        "fromAccount": "Från konto",
+        "fromAccountRequired": "Från konto*",
+        "toAccount": "Till konto",
+        "toAccountRequired": "Till konto*",
+        "insufficientFunds": "Otillräckligt saldo på kontot.",
+        "amountNumber": "Beloppet måste vara en siffra.",
+        "messageLabel": "OCR/Meddelande till mottagaren",
+        "messagePlaceholder": "OCR/Meddelande",
+        "sameAccount": "Överföring kan inte ske till och från samma konto.",
+        "send": "Skicka",
+        "done": "Överföringen är klar."
+    },
+    "createGoalModal": {
+        "title": "Nytt sparmål",
+        "nameRequired": "Namn*",
+        "namePlaceholder": "Ex: Resa till Japan",
+        "missingName": "Du måste fylla i ett namn på sparmålet.",
+        "targetRequired": "Målbelopp*",
+        "missingTarget": "Du måste fylla i ett målbelopp.",
+        "targetPositive": "Målbeloppet måste vara en siffra större än 0.",
+        "linkAccountRequired": "Koppla till konto*",
+        "missingAccount": "Du måste välja ett konto.",
+        "create": "Skapa sparmål",
+        "creating": "Skapar ...",
+        "done": "Sparmålet är skapat."
+    },
+    "deleteGoalModal": {
+        "title": "Ta bort sparmål",
+        "question": "Vilket sparmål vill du ta bort?",
+        "selectGoal": "Välj sparmål",
+        "noGoals": "Inga sparmål att ta bort.",
+        "deleteFailed": "Kunde inte ta bort sparmålet.",
+        "missingGoal": "Du måste välja ett sparmål.",
+        "delete": "Ta bort",
+        "deleting": "Tar bort..."
+    },
+    "faq": {
+        "searchPlaceholder": "Hur tar jag ut pengar?",
+        "popularSearches": "Populära sökord: uttagstid · räntebesked · skatterapport 2025",
+        "searching": "Söker...",
+        "searchFailed": "Sökningen lyckades inte, försök igen!",
+        "loadingCategories": "Laddar kategorier...",
+        "categoriesError": "Kunde inte hämta kategorier.",
+        "questionCount_one": "{{count}} fråga",
+        "questionCount_other": "{{count}} frågor",
+        "searchResults": "Sökresultat",
+        "popularNow": "Vanliga frågor just nu",
+        "loadingQuestions": "Laddar frågor...",
+        "questionsError": "Kunde inte hämta frågorna.",
+        "noQuestions": "Inga frågor i den här kategorin än."
+    },
+    "taxReports": {
+        "error": "Kunde inte hämta skatterapporter.",
+        "title": "Skatterapporter",
+        "available": "Tillgängliga skatterapporter",
+        "reportFor": "Skatterapport för {{year}}",
+        "contains": "Innehåller ekonomisk information",
+        "download": "Ladda ner",
+        "none": "Inga rapporter hittades för kontot."
+    },
+    "settings": {
+        "title": "Inställningar",
+        "subtitle": "Anpassa hur portalen ser ut och vilket språk den visas på.",
+        "appearance": "Utseende",
+        "appearanceHint": "Välj ljust eller mörkt tema.",
+        "theme": "Tema",
+        "light": "Ljust",
+        "dark": "Mörkt",
+        "selected": "Valt",
+        "language": "Språk",
+        "languageHint": "Välj vilket språk portalen ska visas på.",
+        "savedNote": "✓ Dina val sparas automatiskt på den här enheten."
     }
 }

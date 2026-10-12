@@ -8,6 +8,7 @@ import { useAccounts } from "../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
 import { apiClient } from "../../../../client";
+import { useTranslation } from "react-i18next";
 
 type TransactionModalProps = {
     isOpen: boolean;
@@ -21,6 +22,7 @@ export default function TransactionModal({
     const queryClient = useQueryClient()
     const { data: accounts } = useAccounts();
     const { showAlert } = useAlert();
+    const { t } = useTranslation();
 
     const accountOptions: OptionType[] = accounts?.map((account) => ({
         value: String(account.id), 
@@ -50,7 +52,7 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
-            showAlert({ type: "success", title: "Klart!", message: "Insättningen är genomförd." })
+            showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.depositDone") })
             resetAndClose();
         },
     });
@@ -62,7 +64,7 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
-            showAlert({ type: "success", title: "Klart!", message: "Uttaget är genomförd." })
+            showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.withdrawDone") })
             resetAndClose();
         },
     });
@@ -81,57 +83,57 @@ export default function TransactionModal({
     }
     
     return(
-        <Modal title="Insättning/Överföring"
+        <Modal title={t("transactionModal.title")}
                 isOpen ={isOpen}
                 onClose={resetAndClose} >
             <div className="flex flex-col gap-1 border border-border rounded-default
                         w-full h-full p-3"
             >
-                <p className="mt-2">Konto*</p>
+                <p className="mt-2">{t("common.accountRequired")}</p>
                 <SelectOptions 
                     value={selectedAccount} 
                     onChange={setSelectedAccount}
                     options={accountOptions}
-                    placeholder="Välj konto" />
+                    placeholder={t("common.selectAccount")} />
 
-                <p className="mt-2">Belopp*</p>
+                <p className="mt-2">{t("common.amountRequired")}</p>
                     <InputField 
                         value={amount}
                         onChange={setAmount}
-                        placeholder="Belopp"
+                        placeholder={t("common.amount")}
                         type="number" />
 
                 {hasAttemptedSubmit && isAmountInvalid && (
-                    <p className="text-xsmall text-cancel">Beloppet måste vara en siffra större än 0.</p>
+                    <p className="text-xsmall text-cancel">{t("transactionModal.amountPositive")}</p>
                 )}
                 {hasAttemptedSubmit && insufficientFunds && (
-                    <p className="text-xsmall text-cancel">Otillräckligt saldo för uttag.</p>
+                    <p className="text-xsmall text-cancel">{t("transactionModal.insufficientFunds")}</p>
                 )}
                 {hasAttemptedSubmit && isMissingFields && (
-                    <p className="text-xsmall text-cancel">Du måste fylla i alla obligatoriska fält.</p>
+                    <p className="text-xsmall text-cancel">{t("common.missingRequired")}</p>
                 )}
                 {(depositMutation.isError || withdrawMutation.isError) && (
-                    <p className="text-xsmall text-cancel">Ett fel uppstod. Försök igen.</p>
+                    <p className="text-xsmall text-cancel">{t("common.genericError")}</p>
                 )}
             </div>
 
-            <p className="w-full text-xsmall text-right pr-1">* Obligatoriska fält.</p>
+            <p className="w-full text-xsmall text-right pr-1">{t("common.requiredFieldsNote")}</p>
 
             <div className="flex justify-end">
   
                 <Button
-                    label="Avbryt"
+                    label={t("common.cancel")}
                     variant="cancel"
                     onClick={resetAndClose}
                 />
                 <Button
-                    label={withdrawMutation.isPending ? "Tar ut ..." : "Ta ut"}
+                    label={withdrawMutation.isPending ? t("transactionModal.withdrawing") : t("transactionModal.withdraw")}
                     variant="secondary"
                     onClick={handleWithdraw}
                     disabled={withdrawMutation.isPending || depositMutation.isPending}
                 />
                 <Button
-                    label={depositMutation.isPending ? "Sätter in ..." : "Sätt in"}
+                    label={depositMutation.isPending ? t("transactionModal.depositing") : t("transactionModal.deposit")}
                     variant="success"
                     onClick={handleDeposit}
                     disabled={depositMutation.isPending || withdrawMutation.isPending}

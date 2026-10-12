@@ -7,12 +7,20 @@ i18n.use(initReactI18next).init({
     resources: {
         sv: { translation: sv },
         en: { translation: en },
-
     },
-        lng: localStorage.getItem("language") ?? "sv",
-        fallbackLng: "sv",
-        interpolation: { escapeValue: false },
-    
+    lng: localStorage.getItem("language") ?? "sv",
+    fallbackLng: "sv",
+    interpolation: { escapeValue: false },
 })
 
-export default i18n;
+// Sätt <html lang> direkt vid start (skärmläsare uttalar då texten rätt).
+document.documentElement.lang = i18n.language
+
+// Varje gång språket byts: spara valet och uppdatera <html lang>.
+// Därför räcker det att anropa i18n.changeLanguage() i resten av appen.
+i18n.on("languageChanged", (lng) => {
+    localStorage.setItem("language", lng)
+    document.documentElement.lang = lng
+})
+
+export default i18n

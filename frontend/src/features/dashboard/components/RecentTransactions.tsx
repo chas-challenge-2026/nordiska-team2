@@ -1,22 +1,18 @@
 import { Link } from "react-router-dom";
 import type { Transaction } from "../../../types/transaction";
 import ListItem from "../../../components/ui/ListItem";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../../language/useFormatters";
 
 type RecentTransactionProps = {
     transactions: Transaction[];
     isLoading: boolean;
 };
 
-const amountFormatter = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK"
-});
-
-const dateFormatter = new Intl.DateTimeFormat("sv-SE",{
-    dateStyle: "medium",
-});
-
 export default function RecentTransactions({ transactions, isLoading }: RecentTransactionProps) {
+    const { t } = useTranslation();
+    const { locale, currency: amountFormatter } = useFormatters();
+    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
     const latestTransactions = [...transactions]
         .sort(
             (first, second) =>
@@ -33,19 +29,19 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                                     border-b border-border-light px-5 py-4">
                     <h2 id="recent-transactions-title"
                         className="font-semibold text-medium text-foreground">
-                            Senaste händelser
+                            {t("dashboard.recentActivity")}
                     </h2>
                     <Link to="/transactions"
                           className="text-small text-brand-text hover:underline
                                      focus-visible:outline-2 focus-visible:outline-brand">
-                        Visa alla
+                        {t("dashboard.showAll")}
                     </Link>
                 </header>
 
                 {isLoading ? (
-                    <p className="p-3 text-small text-muted">Laddar händelser...</p>
+                    <p className="p-3 text-small text-muted">{t("dashboard.loadingActivity")}</p>
                 ) : latestTransactions.length === 0 ? ( 
-                    <p className="p-3 text-small text-muted">Inga händelser än.</p>
+                    <p className="p-3 text-small text-muted">{t("common.noActivityYet")}</p>
                 ) : (
 
                 <ul className="divide-y divide-border-light">

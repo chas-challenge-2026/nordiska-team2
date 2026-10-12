@@ -12,6 +12,7 @@ import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 import { useRecentTransactions } from "../../hooks/useTransactions";
 import { useCustomer } from "../../hooks/useCustomer";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
@@ -19,9 +20,10 @@ export default function DashboardPage() {
     const { data: customer } = useCustomer();
     const firstName = customer?.name.split(" ") [0]
     const { data: goals, isLoading: goalsLoading } = useSavingsGoals();
+    const { t } = useTranslation();
 
-    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
-    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
+    if (isLoading) return <Alert type="info" message={t("dashboard.loadingAccounts")} /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message={t("dashboard.accountsError")} /> // RIKTIG DATA
     if (!accounts) return null;
 
 
@@ -32,10 +34,12 @@ export default function DashboardPage() {
                                 min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
                 <header>
                     <h1 className="text-xl sm:text-title">
-                        Välkommen tillbaka{firstName ? `, ${firstName}` : ""}!
+                        {firstName
+                            ? t("dashboard.welcome", { name: firstName })
+                            : t("dashboard.welcomeNoName")}
                     </h1>
                     <p className="text-muted text-small">
-                        Inloggad via (mock)BankID
+                        {t("dashboard.loggedInVia")}
                     </p>
                 </header>
 

@@ -8,6 +8,7 @@ import { useAccounts } from "../../../../hooks/useAccounts";
 import type { TransferType } from "../../../../types/transfer";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
+import { useTranslation } from "react-i18next";
 
 type TransferProps = {
     isOpen: boolean;
@@ -21,6 +22,7 @@ export default function TransferModal({
     const { data: accounts } = useAccounts(); // RIKTIG DATA
 
     const { showAlert } = useAlert();
+    const { t } = useTranslation();
     const accountOptions: OptionType[] = accounts?.map((account) => ({
         value: String(account.id), label: account.accountNumber })) ?? []
 
@@ -49,71 +51,71 @@ export default function TransferModal({
             description: message,
         };
         console.log("Redo att skicka:", payload);
-        showAlert({ type: "success", title: "Klart", message: "Överföringen är klart." });
+        showAlert({ type: "success", title: t("common.done"), message: t("transferModal.done") });
         onClose();
     }
 
     return(
-        <Modal title="Överföring"
+        <Modal title={t("transferModal.title")}
                 isOpen ={isOpen}
                 onClose={onClose}
         >
             <div className="flex flex-col gap-1 border border-border rounded-default
                         w-full h-full p-3"
             >
-                <p className="mt-2">Från konto*</p>
+                <p className="mt-2">{t("transferModal.fromAccountRequired")}</p>
                 <SelectOptions
                     value={fromAccount}
                     onChange={setFromAccount}
                     options={accountOptions}
-                    placeholder="Från konto" />
+                    placeholder={t("transferModal.fromAccount")} />
 
                 {hasAttemptedSubmit && insufficientFunds && (
-                    <p className="text-xsmall text-cancel">Otillräckligt saldo på kontot.</p>
+                    <p className="text-xsmall text-cancel">{t("transferModal.insufficientFunds")}</p>
                 )}
 
-                <p className="mt-2">Till konto*</p>
+                <p className="mt-2">{t("transferModal.toAccountRequired")}</p>
                 <SelectOptions
                     value={toAccount}
                     onChange={setToAccount}
                     options={accountOptions}
-                    placeholder="Till konto" />
+                    placeholder={t("transferModal.toAccount")} />
 
-                <p className="mt-2">Belopp*</p>
+                <p className="mt-2">{t("common.amountRequired")}</p>
                     <InputField
                         value={amount}
                         onChange={setAmount}
-                        placeholder="Belopp"/>
+                        placeholder={t("common.amount")}/>
                 {hasAttemptedSubmit && isAmountInvalid && (
-                    <p className="text-xsmall text-cancel">Beloppet måste vara en siffra.</p>
+                    <p className="text-xsmall text-cancel">{t("transferModal.amountNumber")}</p>
                 )}
 
-                <p className="mt-2">OCR/Meddelande till mottagaren</p>
+                <p className="mt-2">{t("transferModal.messageLabel")}</p>
                 <TextareaInput
-                    placeholder="OCR/Meddelande"
+                    placeholder={t("transferModal.messagePlaceholder")}
                     value={message}
                     onChange={setMessage}/>
             </div>
-            <p className="w-full text-xsmall text-right pr-1">* Obligatoriska fält.</p>
+            <p className="w-full text-xsmall text-right pr-1">{t("common.requiredFieldsNote")}</p>
 
             <div className="text-xsmall text-cancel text-right pr-1 mb-1">
                 {hasAttemptedSubmit && sameAccount && (
-                    <p>Överföring kan inte ske till och från samma konto.</p>
+                    <p>{t("transferModal.sameAccount")}</p>
                 )}
                 {hasAttemptedSubmit && isMissingFields && (
-                    <p>Du måste fylla i alla obligatoriska fält.</p>
+                    <p>{t("common.missingRequired")}</p>
                 )}
             </div>
 
             <div className="flex justify-end">
 
                 <Button
-                    label="Avbryt"
+                    label={t("common.cancel")}
                     variant="cancel"
                     onClick={onClose}
                 />
                 <Button
-                    label="Skicka"
+                    label={t("transferModal.send")}
                     variant="success"
                     onClick={handleConfirmed}
                 />

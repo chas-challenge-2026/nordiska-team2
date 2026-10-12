@@ -4,6 +4,7 @@ import Modal from "../../../../../components/ui/Modal";
 import SelectOptions from "../../../../../components/ui/Select";
 import type { OptionType } from "../../../../../components/ui/Select";
 import { useSavingsGoals, useDeleteSavingsGoals } from "../../../../../hooks/useSavingsGoals";
+import { useTranslation } from "react-i18next";
 
 type DeleteSavingsGoalModalProps = {
     isOpen: boolean;
@@ -13,6 +14,7 @@ type DeleteSavingsGoalModalProps = {
 export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavingsGoalModalProps) {
     const { data: goals } = useSavingsGoals(); 
     const deleteMutation = useDeleteSavingsGoals();
+    const { t } = useTranslation();
 
     const goalOptions: OptionType[] = goals?.map((goal) => ({
         value: String(goal.id),
@@ -37,34 +39,34 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
     }
 
     return (
-        <Modal title ="Ta bort sparmål" 
+        <Modal title={t("deleteGoalModal.title")} 
                 isOpen={isOpen}
                 onClose={resetAndClose}>
 
             <div className="flex flex-col gap-1 
                             border border-border rounded-default 
                             w-full h-full p-3"> 
-                <p className="mt-2">Vilket sparmål vill du ta bort?</p>
+                <p className="mt-2">{t("deleteGoalModal.question")}</p>
                     <SelectOptions
                         value={selectedGoal}
                         onChange={setSelectedGoal}
                         options={goalOptions}
-                        placeholder="Välj sparmål"
+                        placeholder={t("deleteGoalModal.selectGoal")}
                     />
                     {goalOptions.length === 0 && (
-                        <p className="text-xsmall text-muted">Inga sparmål att ta bort.</p>
+                        <p className="text-xsmall text-muted">{t("deleteGoalModal.noGoals")}</p>
                     )}
                     {deleteMutation.isError && (
-                        <p className="text-xsmall text-cancel">Kunde inte ta bort sparmålet.</p>
+                        <p className="text-xsmall text-cancel">{t("deleteGoalModal.deleteFailed")}</p>
                     )}
                     {hasAttemptedSubmit && !selectedGoal && (
-                        <p className="text-xsmall text-cancel">Du måste välja ett sparmål</p>
+                        <p className="text-xsmall text-cancel">{t("deleteGoalModal.missingGoal")}</p>
                     )}
             </div>
             <div className="flex justify-end">
-                    <Button label="Avbryt" variant="cancel" onClick={resetAndClose} />
+                    <Button label={t("common.cancel")} variant="cancel" onClick={resetAndClose} />
                     <Button
-                        label={deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
+                        label={deleteMutation.isPending ? t("deleteGoalModal.deleting") : t("deleteGoalModal.delete")}
                         variant="primary"
                         onClick={handleDelete}
                         disabled={!selectedGoal || deleteMutation.isPending}

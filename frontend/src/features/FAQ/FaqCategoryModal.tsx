@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { X } from "lucide-react"; 
+import { useTranslation } from "react-i18next";
 
 type Props = {
     isOpen: boolean; 
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function FaqCategoryModal({ isOpen, onClose, title, children }: Props) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
@@ -16,7 +18,7 @@ export function FaqCategoryModal({ isOpen, onClose, title, children }: Props) {
             <div className="bg-white w-full md:max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lf font-semibold">{title}</h2>
-                    <button onClick={onClose} aria-label="Stäng">
+                    <button onClick={onClose} aria-label={t("common.close")}>
                         <X size={20} />
                             </button> 
                 </div>

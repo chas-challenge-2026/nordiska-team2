@@ -3,31 +3,30 @@ import Card from "../../../components/cards/Card";
 // import { useFinancialSummary } from "../../../hooks/useFinancialSummary"; {/* INKOMSTER OCH UTGIFTER */}
 import type { Account } from "../../../types/account"
 import BalanceChart from "./BalanceCharts";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../../language/useFormatters";
 
 type FinancialOverviewProps = {
     accounts: Account[];
 }
 
-const currencyFormatter = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-});
-
 export default function FinancialOverview({ 
     accounts }: FinancialOverviewProps) {
+        const { t } = useTranslation();
+        const { currency: currencyFormatter } = useFormatters();
         // const { data: financial, isLoading: financialLoading, isError: financialError  } = useFinancialSummary(); /* INKOMSTER OCH UTGIFTER */
         const totalBalance = accounts.reduce(
             (total, account) => total + account.balance,
             0,
         );
     return(
-            <Card title="Ekonomisk översikt"
+            <Card title={t("dashboard.financialOverview")}
             headerVariant="secondary">
                     <ul className="divide-y divide-border-light
                                     flex flex-col gap-3" >
                         <li className="mt-2 pb-2">
                             <p className="text-small text-muted">
-                                Totalt saldo
+                                {t("dashboard.totalBalance")}
                             </p>
                             <p className="text-title font-bold text-brand-text">
                                 {currencyFormatter.format(totalBalance)}
@@ -75,7 +74,7 @@ export default function FinancialOverview({
                                 focus-visible:outline-brand
                                 sm:px-4"
                     >
-                        Se din ekonomiska översikt →
+                        {t("dashboard.seeFinancialOverview")}
                     </Link>
             </footer>
             </Card>

@@ -10,6 +10,7 @@ import checkIcon from "../../assets/svg/check-accent.svg"
 import BankIdPinModal from "../../components/DemoBankIdPinModal"
 import BlobBackground from "../../components/ui/BlobBackground"
 import { useTranslation } from "react-i18next"
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher"
 
 
 export default function LoginPage() {
@@ -70,6 +71,11 @@ export default function LoginPage() {
     return ( 
         <div className="relative isolate grid min-h-screen lg:grid-cols-2"> 
             <BlobBackground />
+
+            {/* Språkväljare uppe i högra hörnet */}
+            <div className="absolute top-4 right-4 z-10">
+                <LanguageSwitcher />
+            </div>
 
             {/* ========== Vänster sida ========== */}
             {/* Panelen "flyter" som ett rundat kort, så att det inte blir någon hård kant mot högersidan */}
@@ -214,7 +220,7 @@ export default function LoginPage() {
                         </div>
                         <div className="flex justify-center text-sm">
                             {personalIdError && <p>{t(personalIdError)}</p>}
-                            {bankId.errorMessage && <p>{bankId.errorMessage}</p>}
+                            {bankId.errorMessage && <p>{t(bankId.errorMessage)}</p>}
                         </div>
                                         </form>
                 </div>
