@@ -9,6 +9,13 @@ public class NotificationBackgroundWorker : BackgroundService
     private readonly ILogger<NotificationBackgroundWorker> _logger;
     private readonly TimeSpan _pollInterval;
 
+    public const int MaxRetries = 3;
+
+    // Exponential backoff: 30s after the 1st failure, 2 min after the 2nd.
+    // The 3rd failure marks the notification as permanently failed.
+    public static TimeSpan BackoffFor(int retryCount) =>
+        TimeSpan.FromSeconds(30 * Math.Pow(4, Math.Max(0, retryCount - 1)));
+
     public NotificationBackgroundWorker(
         IServiceScopeFactory scopeFactory,
         ILogger<NotificationBackgroundWorker> logger,
@@ -56,8 +63,11 @@ public class NotificationBackgroundWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BankContext>();
 
+        var now = DateTime.UtcNow;
         var pending = await db.Notifications
-            .Where(n => n.Status == "pending" && n.RetryCount < 3)
+            .Where(n => n.Status == "pending"
+                        && n.RetryCount < MaxRetries
+                        && (n.NextAttemptAt == null || n.NextAttemptAt <= now))
             .OrderBy(n => n.CreatedAt)
             .Take(25)
             .ToListAsync(cancellationToken);
@@ -82,14 +92,17 @@ public class NotificationBackgroundWorker : BackgroundService
             catch (Exception ex)
             {
                 notification.RetryCount++;
-                if (notification.RetryCount >= 3)
+                if (notification.RetryCount >= MaxRetries)
                 {
                     notification.Status = "failed";
+                    notification.NextAttemptAt = null;
                     _logger.LogError(ex, "Notification {Id} failed permanently after {Retries} attempts.", notification.Id, notification.RetryCount);
                 }
                 else
                 {
-                    _logger.LogWarning(ex, "Notification {Id} attempt {Retries} failed, will retry.", notification.Id, notification.RetryCount);
+                    var delay = BackoffFor(notification.RetryCount);
+                    notification.NextAttemptAt = DateTime.UtcNow + delay;
+                    _logger.LogWarning(ex, "Notification {Id} attempt {Retries} failed, will retry in {Delay}.", notification.Id, notification.RetryCount, delay);
                 }
             }
         }

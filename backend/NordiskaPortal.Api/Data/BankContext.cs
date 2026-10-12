@@ -35,6 +35,7 @@ public class BankContext : DbContext
 
         modelBuilder.Entity<Notification>().HasIndex(n => new { n.Status, n.CreatedAt });
         modelBuilder.Entity<Notification>().HasIndex(n => n.CustomerId);
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.RefId, n.Type }).IsUnique();
 
         modelBuilder.Entity<Customer>().HasData(
             new Customer

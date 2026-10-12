@@ -16,24 +16,25 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
-    public async Task EnqueueTransactionNotificationAsync(
+    public async Task StageTransactionNotificationAsync(
         int customerId,
         string recipient,
         string type,
         string refId,
         string message)
     {
-        // Idempotency check: don't create duplicate notifications for the same transaction/reference
-        var exists = await _db.Notifications
-            .AnyAsync(n => n.RefId == refId && n.Type == type);
-
-        if (exists)
+        // Idempotency: don't create duplicates for the same reference.
+        // Checks both saved rows and rows already staged on this context.
+        var alreadyStaged = _db.Notifications.Local.Any(n => n.RefId == refId && n.Type == type);
+        if (alreadyStaged || await _db.Notifications.AnyAsync(n => n.RefId == refId && n.Type == type))
         {
-            _logger.LogInformation("Notification already enqueued for refId {RefId} and type {Type}. Skipping duplicate.", refId, type);
+            _logger.LogInformation("Notification already exists for refId {RefId} and type {Type}. Skipping duplicate.", refId, type);
             return;
         }
 
-        var notification = new Notification
+        // Intentionally NOT saved here. The caller's SaveChangesAsync commits it
+        // together with the transaction, so they are one unit of work.
+        _db.Notifications.Add(new Notification
         {
             CustomerId = customerId,
             Recipient = recipient,
@@ -43,12 +44,7 @@ public class NotificationService : INotificationService
             Status = "pending",
             CreatedAt = DateTime.UtcNow,
             RetryCount = 0
-        };
-
-        _db.Notifications.Add(notification);
-        await _db.SaveChangesAsync();
-
-        _logger.LogInformation("Enqueued notification {NotificationId} for customer {CustomerId} (type: {Type}).", notification.Id, customerId, type);
+        });
     }
 
     public async Task<List<NotificationDto>> GetNotificationsForCustomerAsync(int customerId)

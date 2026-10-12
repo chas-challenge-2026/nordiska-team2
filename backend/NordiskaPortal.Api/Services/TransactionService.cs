@@ -11,13 +11,15 @@ namespace NordiskaPortal.Api.Services
     public class TransactionService : ITransactionService
     {
         private readonly BankContext _db;
-        private readonly IAuditService? _audit;
+        private readonly IAuditService _audit;
         private readonly INotificationService? _notificationService;
         private readonly ILogger<TransactionService>? _logger;
 
+        // Audit is mandatory: a money movement must never go unaudited.
+        // Notifications are optional so callers/tests that don't care can omit them.
         public TransactionService(
             BankContext db,
-            IAuditService? audit = null,
+            IAuditService audit,
             INotificationService? notificationService = null,
             ILogger<TransactionService>? logger = null)
         {
@@ -25,6 +27,25 @@ namespace NordiskaPortal.Api.Services
             _audit = audit;
             _notificationService = notificationService;
             _logger = logger;
+        }
+
+        // Stages (does not save) a confirmation notification for a persisted transaction.
+        // The caller saves it in the same unit of work as the transaction itself.
+        private async Task StageConfirmationAsync(SavingsAccount account, string type, int transactionId, string message)
+        {
+            if (_notificationService == null)
+                return;
+
+            var customer = await _db.Customers.FindAsync(account.CustomerId);
+            if (customer == null || string.IsNullOrWhiteSpace(customer.Email))
+            {
+                // No address to send to: skip rather than inventing a recipient.
+                _logger?.LogWarning("Customer {CustomerId} has no email address; no {Type} notification created.", account.CustomerId, type);
+                return;
+            }
+
+            await _notificationService.StageTransactionNotificationAsync(
+                account.CustomerId, customer.Email, type, transactionId.ToString(), message);
         }
 
         // Definition of which types add money and which remove it.
@@ -95,29 +116,22 @@ namespace NordiskaPortal.Api.Services
                 Status = TransactionStatus.Posted
             };
 
+            // One DB transaction so the ledger row, audit row and notification row
+            // commit together or not at all. The notification needs the generated
+            // transaction id, hence two saves inside the same DB transaction.
+            using var dbTransaction = await _db.Database.BeginTransactionAsync();
+
             _db.Transactions.Add(transaction);
-            _audit?.Record(AuditActions.Deposit, account.CustomerId, account.AccountNumber);
+            _audit.Record(AuditActions.Deposit, account.CustomerId, account.AccountNumber);
             await _db.SaveChangesAsync();
 
-            if (_notificationService != null)
-            {
-                try
-                {
-                    var customer = await _db.Customers.FindAsync(account.CustomerId);
-                    var recipient = customer?.Email ?? "kund@nordiska.se";
-                    await _notificationService.EnqueueTransactionNotificationAsync(
-                        account.CustomerId,
-                        recipient,
-                        "deposit_confirmation",
-                        transaction.Id.ToString(),
-                        $"Insättning på {amount:N2} kr till konto {account.AccountNumber} har genomförts."
-                    );
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Misslyckades att skapa notifiering för insättning på konto {AccountId}.", accountId);
-                }
-            }
+            await StageConfirmationAsync(
+                account,
+                "deposit_confirmation",
+                transaction.Id,
+                $"Insättning på {amount:N2} kr till konto {account.AccountNumber} har genomförts.");
+            await _db.SaveChangesAsync();
+            await dbTransaction.CommitAsync();
 
             var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount);
             return new TransactionResult(true, null, entry);
@@ -180,29 +194,18 @@ namespace NordiskaPortal.Api.Services
                 };
 
                 _db.Transactions.Add(withdrawal);
-                _audit?.Record(AuditActions.Withdrawal, account.CustomerId, account.AccountNumber);
+                _audit.Record(AuditActions.Withdrawal, account.CustomerId, account.AccountNumber);
+                await _db.SaveChangesAsync();
+
+                // Same (serializable) DB transaction as the ledger row: the notification
+                // commits together with the withdrawal, or neither does.
+                await StageConfirmationAsync(
+                    account,
+                    "withdrawal_confirmation",
+                    withdrawal.Id,
+                    $"Uttag på {amount:N2} kr från konto {account.AccountNumber} har genomförts.");
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
-
-                if (_notificationService != null)
-                {
-                    try
-                    {
-                        var customer = await _db.Customers.FindAsync(account.CustomerId);
-                        var recipient = customer?.Email ?? "kund@nordiska.se";
-                        await _notificationService.EnqueueTransactionNotificationAsync(
-                            account.CustomerId,
-                            recipient,
-                            "withdrawal_confirmation",
-                            withdrawal.Id.ToString(),
-                            $"Uttag på {amount:N2} kr från konto {account.AccountNumber} har genomförts."
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError(ex, "Misslyckades att skapa notifiering för uttag på konto {AccountId}.", accountId);
-                    }
-                }
 
                 var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
                 return new TransactionResult(true, null, entry);
@@ -308,7 +311,7 @@ namespace NordiskaPortal.Api.Services
                 };
 
                 _db.Transactions.AddRange(outgoing, incoming);
-                _audit?.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
+                _audit.Record(AuditActions.Transfer, from.CustomerId, $"{from.AccountNumber}>{to.AccountNumber}");
 
                 // One save: both ledger rows and the audit row commit together.
                 // Money can never leave one account without arriving in the other.

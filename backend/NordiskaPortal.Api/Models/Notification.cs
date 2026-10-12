@@ -33,5 +33,9 @@ namespace NordiskaPortal.Api.Models
         public DateTime? SentAt { get; set; }
 
         public int RetryCount { get; set; } = 0;
+
+        // Earliest time the worker may try (again) to send this row.
+        // Null means "as soon as possible". Set after a failed attempt to implement backoff.
+        public DateTime? NextAttemptAt { get; set; }
     }
 }
