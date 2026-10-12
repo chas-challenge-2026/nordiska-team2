@@ -71,11 +71,8 @@ export function FaqPage() {
       </form>
 
       <p className="text-sm text-gray-500 mb-8">
-        {t("faq.popularSearches")}
-          placeholder="Hur tar jag ut pengar?"
-          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-white text-small focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
+        {t("faq.popularSearches")} </p>
+        
       <p className="text-xsmall text-gray-500 mb-8 ml-2">
         Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>

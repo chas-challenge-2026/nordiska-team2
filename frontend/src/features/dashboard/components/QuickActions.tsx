@@ -39,7 +39,7 @@ export default function QuickActions({ actions }: QuickActionsProps){
        <>
             <section aria-labelledby="quick-actions-title"
                      className="hidden lg:flex flex-col gap-3">
-                {/* <h2 id="quick-actions-title"
+                <h2 id="quick-actions-title"
                     className="text-medium font-semibold text-foreground">
                     {t("dashboard.quickActionsTitle")}
                 </h2>

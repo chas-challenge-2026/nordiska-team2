@@ -23,7 +23,6 @@ export default function SavingsGoal({
     const { t } = useTranslation();
   
     const { currency: currencyFormatter } = useFormatters();
-    const goalOptions: OptionType[] = goals.map((goal) => ({
     const goalOptions: OptionType[] = goals.map((goal) => {
         const goalAccount = accounts.find((a) => a.id === goal.accountId);
         return{

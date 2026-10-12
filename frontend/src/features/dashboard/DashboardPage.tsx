@@ -33,13 +33,11 @@ export default function DashboardPage() {
                         lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
                                 min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
-                < <PageHeader
-                    title=`
-                        {firstName
-                            ? t("dashboard.welcome", ${ name: firstName })
-                            : t("dashboard.welcomeNoName")`}
+                 <PageHeader
+                    title={firstName
+                            ? t("dashboard.welcome", { name: firstName })
+                            : t("dashboard.welcomeNoName")}
                      subtitle={t("dashboard.loggedInVia")} />
-                    </h1>
 
                 <AccountOverview accounts={accounts}/>
                 <QuickActions actions={quickActions}/>

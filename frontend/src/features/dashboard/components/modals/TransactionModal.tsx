@@ -155,15 +155,12 @@ export default function TransactionModal({
                     onClick={resetAndClose}
                 />
                 <Button
-                    label={withdrawMutation.isPending ? t("transactionModal.withdrawing") : t("transactionModal.withdraw")}
-                    variant="secondary"
-                    onClick={handleWithdraw}
-                    disabled={withdrawMutation.isPending || depositMutation.isPending}
-                />
-                <Button
-                    label={depositMutation.isPending ? t("transactionModal.depositing") : t("transactionModal.deposit")}
+                    label={
+                        mode === "deposit" 
+                        ? depositMutation.isPending ? t("transactionModal.depositing") : t("transactionModal.deposit")
+                        : withdrawMutation.isPending ? t("transactionModal.withdrawing") : t("transactionModal.withdraw") }
                     variant="success"
-                    onClick={handleDeposit}
+                    onClick={handleSubmit}
                     disabled={depositMutation.isPending || withdrawMutation.isPending}
                 />
             </div>
