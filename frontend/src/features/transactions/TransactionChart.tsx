@@ -75,7 +75,7 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
             {
                 label: "Startsaldo",
                 data: startBalances,
-                backgroundColor: "#9aa0a6",
+                backgroundColor: "#C6C6C6",
                 stack: "day",
                 borderRadius: 4,
                 maxBarThickness: 34,
@@ -111,8 +111,8 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
     };
 
     return (
-        <div>
-            <div className="relative h-[220px] w-full">
+        <div className="mt-auto">
+            <div className="relative h-[290px] w-full">
                 <Bar data={data} options={options} />
             </div>
             <div className="flex justify-between mt-2">

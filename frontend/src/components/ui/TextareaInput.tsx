@@ -17,7 +17,7 @@ export default function TextareaInput({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className={`text-small border border-muted rounded-default
+                className={`text-small border border-muted rounded-card
                             focus:bg-card
                             p-2 pl-2
                             w-full

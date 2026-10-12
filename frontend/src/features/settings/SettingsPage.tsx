@@ -1,5 +1,6 @@
 import { useSettings } from '../../hooks/useSettings'
 import type { Theme } from '../../app/Context/SettingsContext'
+import PageHeader from '../../components/ui/Pageheader'
 
 const themeOptions = [
     { value: 'light', label: 'Ljust' },
@@ -25,15 +26,12 @@ export default function SettingsPage() {
     const { theme, setTheme } = useSettings()
 
     return (
-        <div className="flex max-w-3xl flex-col gap-7 p-6">
-            <header className="flex flex-col gap-1.5">
-                <h1 className="text-page-title font-medium text-foreground">Inställningar</h1>
-                <p className="text-medium text-muted">
-                    Anpassa hur portalen ser ut och vilket språk den visas på.
-                </p>
-            </header>
+        <div className="flex max-w-3xl flex-col gap-7 lg:p-6">
+            <PageHeader 
+                title="Inställningar"
+                subtitle="Anpassa hur portalen ser ut och vilket språk den visas på." />
 
-            <section className="overflow-hidden rounded-xl border border-border bg-card">
+            <section className="overflow-hidden md:rounded-xl border border-border bg-card">
                 <div className="border-b border-border px-6 py-5">
                     <h2 className="text-large font-semibold text-foreground">Utseende</h2>
                     <p className="text-small text-muted">Välj ljust eller mörkt tema.</p>

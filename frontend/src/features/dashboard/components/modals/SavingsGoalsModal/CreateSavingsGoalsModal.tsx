@@ -68,7 +68,7 @@ export default function CreateSavingsGoalsModal({
                 isOpen ={isOpen}
                 onClose={resetAndClose} >
             <div className="flex flex-col gap-1 border border-border rounded-default
-                        w-full h-full p-3"
+                        w-full h-full px-4 py-6 mt-3 mb-6"
             >
                 <p className="mt-2">Namn*</p>
                 <InputField 
@@ -110,7 +110,7 @@ export default function CreateSavingsGoalsModal({
                 )}
             </div>
 
-            <div className="flex justify-end mt-10">
+            <div className="flex justify-end mt-10 gap-5">
   
                 <Button
                     label="Avbryt"

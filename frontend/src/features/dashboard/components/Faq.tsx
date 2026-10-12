@@ -3,7 +3,8 @@ import Card from "../../../components/cards/Card"
 
 export default function FaqOverview() {
     return (
-        <Card title="Behöver du hjälp?"
+        <Card 
+            title="Behöver du hjälp?"
             headerVariant="secondary">
             {/* -m-5 tar bort kortets padding så att raden blir klickbar i hela bredden */}
             <ul className="-m-5 divide-y divide-border-light">

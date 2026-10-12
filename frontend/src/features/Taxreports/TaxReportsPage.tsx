@@ -3,6 +3,7 @@ import { useAccounts } from "../../hooks/useAccounts";
 import Button from "../../components/ui/Button";
 import Card from "../../components/cards/Card";
 import ListItem from "../../components/ui/ListItem";
+import PageHeader from "../../components/ui/Pageheader";
 
 export default function TaxReportsPage() {
     const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -17,7 +18,7 @@ export default function TaxReportsPage() {
     return (
         <>
             <div>
-                <h1 className="text-xl sm:text-title mb-5">Skatterapporter</h1>
+                <PageHeader title="Skatterapporter" />
                  <Card title="Tillgängliga skatterapporter"
                         headerVariant="secondary">
                     <ul className="divide-y divide-border-brand">

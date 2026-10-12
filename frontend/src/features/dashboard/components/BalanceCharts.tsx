@@ -26,7 +26,7 @@ export default function BalanceChart({ accounts }: BalanceChartProps ) {
                 // Ingen kantfärg: mellanrummen (spacing) visar kortets bakgrund,
                 // så diagrammet funkar i både ljust och mörkt läge.
                 borderWidth: 0,
-                spacing: 3,
+                spacing: 2,
             }
         ]
     }
@@ -49,7 +49,7 @@ export default function BalanceChart({ accounts }: BalanceChartProps ) {
                               className="size-3 shrink-0 rounded-sm"
                               style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                         <span className="text-muted">
-                            {account.accountNumber} · {Math.round((account.balance / total) * 100)} %
+                            {account.accountNumber} <span className="sm:inline hidden"> · {Math.round((account.balance / total) * 100)} % </span>
                         </span>
                     </li>
                 ))}

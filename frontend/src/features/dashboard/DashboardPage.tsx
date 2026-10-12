@@ -2,6 +2,7 @@
 import AccountOverview from "./components/AccountOverview";
 import RecentTransactions from "./components/RecentTransactions";
 import QuickActions from "./components/QuickActions";
+import PageHeader from "../../components/ui/Pageheader";
 import { quickActions } from "./data/quickActions";
 import FinancialOverview from "./components/FinancialOverview"
 import SavingsGoal from "./components/SavingsGoals";
@@ -29,15 +30,10 @@ export default function DashboardPage() {
         <div className="relative grid min-h-full grid-cols-1 
                         lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
-                                min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
-                <header>
-                    <h1 className="text-xl sm:text-title">
-                        Välkommen tillbaka{firstName ? `, ${firstName}` : ""}!
-                    </h1>
-                    <p className="text-muted text-small">
-                        Inloggad via (mock)BankID
-                    </p>
-                </header>
+                                min-h-0 gap-3 sm:gap-4 lg:pr-6 lg:col-span-10">
+                <PageHeader 
+                    title={`Välkommen tillbaka${firstName ? `, ${firstName}` : ""}!`}
+                    subtitle="Inloggad via (mock)BankID." />
 
                 <AccountOverview accounts={accounts}/>
                 <QuickActions actions={quickActions}/>
@@ -53,8 +49,8 @@ export default function DashboardPage() {
                             accounts={accounts}
                             />
 
-                        <SavingsGoal 
-                            goals={goals ?? []} isLoading={goalsLoading}/>
+                        <SavingsGoal
+                            goals={goals ?? []} isLoading={goalsLoading} accounts={accounts}/>
                         <FaqOverview />
 
             </aside>
