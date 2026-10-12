@@ -14,6 +14,8 @@ import CreateSavingsGoalsModal from "../dashboard/components/modals/SavingsGoals
 import DeleteSavingsGoalModal from "../dashboard/components/modals/SavingsGoalsModal/DeleteSavingsGoalModal";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../language/useFormatters";
 import PageHeader from "../../components/ui/Pageheader";
 
 
@@ -38,6 +40,8 @@ export default function TransactionPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const { data: goals } = useSavingsGoals();
+  const { t } = useTranslation();
+  const { locale, currency: amountFormatter } = useFormatters();
 
 
 
@@ -137,17 +141,13 @@ export default function TransactionPage() {
       document.getElementById("recenttransactions")?.scrollIntoView({ behavior: "smooth"});
     }
   }, [location.hash, accountsLoading, accounts])
+  
+  if (accountsLoading) return <p>{t("accountsPage.loadingAccounts")}</p>;
+  if (!accounts || accounts.length === 0) return <p>{t("accountsPage.noAccounts")}</p>;
 
-  if (accountsLoading) return <p>Laddar konton...</p>;
-  if (!accounts || accounts.length === 0) return <p>Inga konton hittades.</p>;
-
-  const dateFormatter = new Intl.DateTimeFormat("sv-SE", { 
+  const dateFormatter = new Intl.DateTimeFormat(locale, { 
     dateStyle: "short" })
 
-  const amountFormatter = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK"
-});
   return (
     <>
      <div className="flex flex-col gap-3 mb-3">
@@ -155,12 +155,12 @@ export default function TransactionPage() {
       <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
           <div>
             <PageHeader 
-              title="Kontohantering" 
-              subtitle="Sätt in, ta ut, överför pengar mellan konto och följ dina sparmål." />
+              title={t("accountsPage.title")}
+              subtitle={t("accountsPage.subtitle")} />
           </div>
 
         <div className="hidden md:block">
-          <p className="text-xsmall text-muted mb-1">Välj konto</p>
+          <p className="text-xsmall text-muted mb-1">{t("common.selectAccount")}</p>
           <SelectOptions 
             value={selectedOption}
             onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
@@ -221,7 +221,7 @@ export default function TransactionPage() {
 
       <div className=" relative hidden md:block">
          <Button 
-            label="Hantera sparmål"
+            label={t("accountsPage.manageGoals")}
             variant="dropDown"
             onClick={() => setIsMenuOpen((open) => !open)}
           ><span>▼</span> </Button>
@@ -237,7 +237,7 @@ export default function TransactionPage() {
                           setIsGoalModalOpen(true)
                         }}
                 >
-                  Skapa sparmål
+                  {t("accountsPage.createGoal")}
                 </button>
               </li>
               <li>
@@ -247,7 +247,7 @@ export default function TransactionPage() {
                             setIsDeleteGoalModalOpen(true);
                         }}
                 >
-                    Ta bort sparmål
+                    {t("accountsPage.deleteGoal")}
                 </button>
               </li>
             </ul>
@@ -257,13 +257,13 @@ export default function TransactionPage() {
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
     <div className="flex gap-3 flex-col md:flex-row">
       <Card 
-        title={selectedAccount?.name ?? "Konto"}
-        subtitle="Saldo" 
+        title={selectedAccount?.name ?? t("common.account")}
+        subtitle={t("accountsPage.balance")} 
         headerVariant="secondary"
         headerClassName="min-h-25"
         >
           <div>
-            <p className="mt-2 text-small text-muted">Tillgänglig saldo</p>
+            <p className="mt-2 text-small text-muted">{t("accountCard.availableBalance")}</p>
             {selectedAccount && <p className="mt-2 text-balance font-bold text-brand">
               {amountFormatter.format(selectedAccount.balance)}
               </p>}
@@ -279,9 +279,9 @@ export default function TransactionPage() {
                 options={goalOptions}
                 className="-ml-1 w-full border-none text-medium font-semibold" />
             ) : ( 
-              <h2 className="font-semibold text-medium">{accountGoal?.name ?? "Sparmål"}</h2>
+              <h2 className="font-semibold text-medium">{accountGoal?.name ?? t("common.savingsGoal")}</h2>
             )}
-              <p className="text-small opacity-85">Sparmål</p>
+              <p className="text-small opacity-85">{t("common.savingsGoal")}</p>
           </>
         }
         headerVariant="secondary"
@@ -292,7 +292,7 @@ export default function TransactionPage() {
               <>
                 <div
                   role="progressbar"
-                  aria-label={`Sparmål: ${accountGoal.name}`}
+                  aria-label={t("accountsPage.goalAria", { name: accountGoal.name })}
                   aria-valuemin={0}
                   aria-valuemax={accountGoal.targetAmount}
                   aria-valuenow={currentAmount}
@@ -305,13 +305,13 @@ export default function TransactionPage() {
                 </p>
               </>              
             ) : (
-                <p className="mt-2 text-muted text-small">Ingen sparmål för detta konto.</p>
+                <p className="mt-2 text-muted text-small">{t("accountsPage.noGoalForAccount")}</p>
             )}
           </div>
       </Card>
       <Card 
-        title="Senaste händelser" 
-        subtitle="Insättning/Uttag/Överföring"
+        title={t("accountsPage.latestActivity")}
+        subtitle={t("accountsPage.latestActivitySubtitle")}
         headerVariant="secondary"
         headerClassName="min-h-25"
         >
@@ -328,7 +328,7 @@ export default function TransactionPage() {
                     </p>
                   </>
             ) : (
-                  <p className="mt-2 text-muted text-small">Inga händelser än.</p>
+                  <p className="mt-2 text-muted text-small">{t("common.noActivityYet")}</p>
                 )}
           </div>
       </Card>
@@ -340,7 +340,7 @@ export default function TransactionPage() {
 
       {/* ============ VÄNSTER SIDA ============ */}
       <div>
-        <Card title="Insättning/Uttag"
+        <Card title={t("accountsPage.depositWithdrawTitle")}
               headerVariant="secondary"
               className="min-h-106"
                 >
@@ -360,17 +360,28 @@ export default function TransactionPage() {
             <div>
                 <p className="mt-2 text-xsmall text-muted mb-3">
                     {mode === "deposit"
-                    ? `Efter insättning: ${amountFormatter.format(previewDepositBalance)} kr`
-                    : `Efter uttag: ${amountFormatter.format(previewWithdrawBalance)} kr` }
+                    ? t("accountsPage.afterDeposit", { amount: amountFormatter.format(previewDepositBalance) })
+                    : t("accountsPage.afterWithdraw", { amount: amountFormatter.format(previewWithdrawBalance) }) }
                 </p>
+              <div className="flex gap-3 mt-2">
+                {[100, 500, 1000].map((present) => (
+                  <Button 
+                    key={present}
+                    label={t("accountsPage.presetAmount", { amount: present })}
+                    variant="primary"
+                    onClick={() => setAmount(String(present))} 
+                    />
+                ))}
+              </div>
+
 
               <Button
                 variant="secondary"
                 className="w-full mt-5"
                 label={ 
                   mode === "deposit"
-                    ? (depositMutation.isPending ? "Sätter in..." : "Sätt in pengar")
-                    : (withdrawMutation.isPending ? "Tar ut..." : "Ta ut pengar")
+                    ? (depositMutation.isPending ? t("accountsPage.depositing") : t("accountsPage.depositMoney"))
+                    : (withdrawMutation.isPending ? t("accountsPage.withdrawing") : t("accountsPage.withdrawMoney"))
                 }
                 onClick={() => (mode === "deposit" ? depositMutation.mutate() : withdrawMutation.mutate())}
                 disabled={parsedAmount <= 0 || depositMutation.isPending|| withdrawMutation.isPending}
@@ -378,7 +389,7 @@ export default function TransactionPage() {
                 
               {(depositMutation.isError || withdrawMutation.isError) && (
                 <p>
-                  Ett fel uppstod. Försök igen.
+                  {t("common.genericError")}
                 </p>
               )}
             </div>
@@ -389,7 +400,7 @@ export default function TransactionPage() {
        {/* ============ HÖGER SIDA ============ */}
       <div>
         <Card 
-            title="Översikt"
+            title={t("accountsPage.chartTitle")}
             headerVariant="secondary"
             className="hidden md:flex min-h-106"
             >
@@ -401,37 +412,36 @@ export default function TransactionPage() {
 
     </div>
 
-      <section id="recenttransactions">
-        <Card title="Historik"
-              headerVariant="secondary">
-    
-              {historyLoading ? (
-                <p>Laddar historik...</p>
-              ) : (
-                <ul className="divide-y divide-border-light ">
-                  {history?.map((entry, index) => (
-                    <ListItem 
-                      key={index}
-                      title={entry.description}
-                      subtitle={selectedAccount?.accountNumber}
-                      right={
-                        <div className="flex flex-col items-end gap-1">
-                          <p className={entry.amount >= 0
-                            ? "font-semibold text-success text-medium whitespace-nowrap"
-                            : "font-semibold text-foreground text-medium"}>
-                              {entry.amount > 0 
-                                  ? "+"
-                                  : ""}
-                              {amountFormatter.format(entry.amount)}</p>
-                          <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
-                        </div>
-                      }  
-                    />
-                  ))}
-                </ul>
-              )}
-        </Card>
-      </section>
+
+      <Card title={t("accountsPage.history")}
+            headerVariant="secondary">
+  
+            {historyLoading ? (
+              <p>{t("accountsPage.loadingHistory")}</p>
+            ) : (
+              <ul className="divide-y divide-border-light">
+                {history?.map((entry, index) => (
+                  <ListItem 
+                    key={index}
+                    title={entry.description}
+                    subtitle={entry.description}
+                    right={
+                      <div className="flex flex-col items-end gap-1">
+                        <p className={entry.amount >= 0
+                          ? "font-semibold text-success text-medium whitespace-nowrap"
+                          : "font-semibold text-foreground text-medium"}>
+                            {entry.amount > 0 
+                                ? "+"
+                                : ""}
+                            {amountFormatter.format(entry.amount)}</p>
+                        <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
+                      </div>
+                    }  
+                  />
+                ))}
+              </ul>
+            )}
+      </Card>
       <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
       <DeleteSavingsGoalModal isOpen={isDeleteGoalModalOpen} onClose={() => setIsDeleteGoalModalOpen(false)} />
 

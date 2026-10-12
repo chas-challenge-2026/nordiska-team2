@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /*
     DEMO ONLY -- this PIN is never checked, by anything, anywhere.
@@ -17,6 +18,7 @@ type BankIdPinModalProps = {
 
 export default function BankIdPinModal({ onConfirm, onCancel }: BankIdPinModalProps) {
     const [pin, setPin] = useState('');
+    const { t } = useTranslation();
 
     const isComplete = pin.length === 6;
 
@@ -39,7 +41,7 @@ export default function BankIdPinModal({ onConfirm, onCancel }: BankIdPinModalPr
             >
                 <h2 className="font-bold text-center">BankID</h2>
                 <p className="text-muted text-small text-center mt-1">
-                    Ange pin
+                    {t("bankIdPin.enterPin")}
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-4 space-y-4">
@@ -62,20 +64,20 @@ export default function BankIdPinModal({ onConfirm, onCancel }: BankIdPinModalPr
                             disabled={!isComplete}
                             className="bg-brand hover:bg-brand/90 text-white rounded-default px-4 py-2 disabled:opacity-50"
                         >
-                            Identifiera
+                            {t("bankIdPin.identify")}
                         </button>
                         <button
                             type="button"
                             onClick={onCancel}
                             className="border border-border rounded-default px-4 py-2"
                         >
-                            Avbryt
+                            {t("common.cancel")}
                         </button>
                     </div>
                 </form>
 
                 <p className="text-muted text-center mt-4" style={{ fontSize: '0.7rem' }}>
-                    Endast för demo - koden kontrolleras ej
+                    {t("bankIdPin.demoNote")}
                 </p>
             </div>
         </div>

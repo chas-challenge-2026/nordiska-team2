@@ -13,6 +13,7 @@ import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 import { useRecentTransactions } from "../../hooks/useTransactions";
 import { useCustomer } from "../../hooks/useCustomer";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
@@ -20,9 +21,10 @@ export default function DashboardPage() {
     const { data: customer } = useCustomer();
     const firstName = customer?.name.split(" ") [0]
     const { data: goals, isLoading: goalsLoading } = useSavingsGoals();
+    const { t } = useTranslation();
 
-    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
-    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
+    if (isLoading) return <Alert type="info" message={t("dashboard.loadingAccounts")} /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message={t("dashboard.accountsError")} /> // RIKTIG DATA
     if (!accounts) return null;
 
 
@@ -30,10 +32,14 @@ export default function DashboardPage() {
         <div className="relative grid min-h-full grid-cols-1 
                         lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
-                                min-h-0 gap-3 sm:gap-4 lg:pr-6 lg:col-span-10">
-                <PageHeader 
-                    title={`Välkommen tillbaka${firstName ? `, ${firstName}` : ""}!`}
-                    subtitle="Inloggad via (mock)BankID." />
+                                min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
+                < <PageHeader
+                    title=`
+                        {firstName
+                            ? t("dashboard.welcome", ${ name: firstName })
+                            : t("dashboard.welcomeNoName")`}
+                     subtitle={t("dashboard.loggedInVia")} />
+                    </h1>
 
                 <AccountOverview accounts={accounts}/>
                 <QuickActions actions={quickActions}/>
