@@ -79,7 +79,7 @@ export function FaqPage() {
         <p className="text-sm text-red-600 mb-4">Kunde inte hämta kategorier.</p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {categories.data?.map((cat) => {
           const Icon = categoryIcons[cat.id] ?? FileText;
           return (

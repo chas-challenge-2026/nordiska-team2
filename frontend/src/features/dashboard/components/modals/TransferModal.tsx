@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../../../../client";
 import Button from "../../../../components/ui/Button";
 import InputField from "../../../../components/ui/Input";
 import Modal from "../../../../components/ui/Modal"
 import TextareaInput from "../../../../components/ui/TextareaInput";
 import SelectOptions from "../../../../components/ui/Select";
 import { useAccounts } from "../../../../hooks/useAccounts";
-import type { TransferType } from "../../../../types/transfer";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
 
@@ -28,8 +29,27 @@ export default function TransferModal({
     const [toAccount, setToAccount] = useState<OptionType | null>(null);
     const [amount, setAmount] = useState("");
     const [message, setMessage] = useState("");
-
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+    const queryClient = useQueryClient();
+    const transferMutation = useMutation ({
+        mutationFn: () =>
+            apiClient.post("/transactions/transfer", {
+                fromAccountId: Number(fromAccount!.value),
+                toAccountId: Number(toAccount!.value),
+                amount: amountValue,
+                description: message.trim() === "" ? undefined : message.trim(), 
+            }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["accounts"] });
+            queryClient.invalidateQueries({ queryKey: ["transactions", Number(fromAccount!.value)] });
+            queryClient.invalidateQueries({ queryKey: ["transactions", Number(toAccount!.value)] })
+            queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+
+            showAlert({ type: "success", title: "Klart", message: "Överföring lyckades."});
+            resetAndClose();   
+        }
+    })
+
     const amountValue = Number(amount);
     const fromAccountData = accounts?.find((account) => String(account.id) === fromAccount?.value);
     const insufficientFunds = fromAccountData !== undefined && amountValue > fromAccountData.balance;
@@ -38,19 +58,19 @@ export default function TransferModal({
     const isAmountInvalid = amount.trim() !== "" && (Number.isNaN(amountValue) || amountValue <= 0);
     const isValid = !isMissingFields && !sameAccount && !isAmountInvalid && !insufficientFunds;
 
-    function handleConfirmed() {
-        setHasAttemptedSubmit(true);
-        if (!isValid || !fromAccount || !toAccount) return;
-
-        const payload: TransferType = {
-            fromAccountId: fromAccount.value,
-            toAccountId: toAccount.value,
-            amount: amountValue,
-            description: message,
-        };
-        console.log("Redo att skicka:", payload);
-        showAlert({ type: "success", title: "Klart", message: "Överföringen är klart." });
+    function resetAndClose() {
+        setFromAccount(null);
+        setToAccount(null);
+        setAmount("")
+        setMessage("");
+        setHasAttemptedSubmit(false);
         onClose();
+    }
+
+    function handleConfirmed() {
+    setHasAttemptedSubmit(true);
+    if (!isValid || !fromAccount || !toAccount) return;
+    transferMutation.mutate();  
     }
 
     return(
@@ -108,6 +128,9 @@ export default function TransferModal({
                 {hasAttemptedSubmit && isMissingFields && (
                     <p>Du måste fylla i alla obligatoriska fält.</p>
                 )}
+                {transferMutation.isError && (
+                    <p>Ett fel uppstod. Försök igen.</p>
+            )}
             </div>
 
             <div className="flex justify-end gap-3 mt-5">
@@ -116,13 +139,16 @@ export default function TransferModal({
                     label="Avbryt"
                     variant="cancel"
                     onClick={onClose}
+
                 />
                 <Button
-                    label="Skicka"
+                    label={transferMutation.isPending ? "Skickar..." : "Skicka"}
                     variant="success"
                     onClick={handleConfirmed}
+                    disabled={transferMutation.isPending}
                 />
             </div>
+        
         </Modal>
     )
 }

@@ -10,7 +10,7 @@ export default function AuthenticatedLayout() {
       <Navbar />
       <MobileNavbar />
 
-      <main className="relative isolate flex min-w-0 flex-col bg-background p-4 
+      <main className="relative isolate flex min-w-0 flex-col bg-background md:p-4 
                       sm:px-6 sm:pt-6 pb-24
                       lg:col-span-10 lg:pb-6
                       ">

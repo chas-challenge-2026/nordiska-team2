@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../../client";
 import { useAccounts } from "../../hooks/useAccounts";
@@ -14,6 +14,7 @@ import CreateSavingsGoalsModal from "../dashboard/components/modals/SavingsGoals
 import DeleteSavingsGoalModal from "../dashboard/components/modals/SavingsGoalsModal/DeleteSavingsGoalModal";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
+import PageHeader from "../../components/ui/Pageheader";
 
 
 interface LedgerEntry {
@@ -124,10 +125,18 @@ export default function TransactionPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
       setAmount("");
       setDescription("");
     },
   });
+
+  const location = useLocation();
+  useEffect(() => {
+    if (!accountsLoading && accounts && location.hash === "#recenttransactions") {
+      document.getElementById("recenttransactions")?.scrollIntoView({ behavior: "smooth"});
+    }
+  }, [location.hash, accountsLoading, accounts])
 
   if (accountsLoading) return <p>Laddar konton...</p>;
   if (!accounts || accounts.length === 0) return <p>Inga konton hittades.</p>;
@@ -145,10 +154,9 @@ export default function TransactionPage() {
     {/* ============ ÖVRE RADEN: rubrik + kontoval ============ */}
       <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
           <div>
-            <h1 className="text-xl sm:text-title">Kontohantering</h1>
-            <p className="text-muted text-small mb-5">
-                Sätt in, ta ut, överför pengar mellan konto och följ dina sparmål.
-            </p>
+            <PageHeader 
+              title="Kontohantering" 
+              subtitle="Sätt in, ta ut, överför pengar mellan konto och följ dina sparmål." />
           </div>
 
         <div className="hidden md:block">
@@ -160,6 +168,55 @@ export default function TransactionPage() {
             className="w-100 self-end text-small"
           />
         </div>
+      </div>
+
+      {/*========== Mobilversion ==========*/}
+      <div className="flex md:hidden gap-3">
+          <div className="flex-1">
+            <p className="text-xsmall text-muted mb-1 hidden">Välj konto</p>
+            <SelectOptions 
+              value={selectedOption}
+              onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
+              options={accountOptions}
+              className="w-full self-end text-small"
+            />
+          </div>
+
+          <div className="relative flex-1 content-end">
+             <Button 
+                label="Hantera sparmål"
+                className="w-full"
+                variant="dropDown"
+                onClick={() => setIsMenuOpen((open) => !open)}
+              ><span>▼</span> </Button>
+              {isMenuOpen && (
+                <ul className="absolute z-10 w-full right-0 mt-0.5
+                                rounded-default border border-border bg-card 
+                                shadow-sm text-small"
+                >
+                  <li>
+                    <button className="w-full text-left hover:bg-background px-2 py-2"
+                            onClick={() => {
+                              setIsMenuOpen(false)
+                              setIsGoalModalOpen(true)
+                            }}
+                    >
+                      Skapa sparmål
+                    </button>
+                  </li>
+                  <li>
+                    <button className="w-full text-left hover:bg-background px-2 py-2"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsDeleteGoalModalOpen(true);
+                            }}
+                    >
+                        Ta bort sparmål
+                    </button>
+                  </li>
+                </ul>
+              )}
+          </div>
       </div>
 
       <div className=" relative hidden md:block">
@@ -253,7 +310,7 @@ export default function TransactionPage() {
           </div>
       </Card>
       <Card 
-        title="Senaste händelse" 
+        title="Senaste händelser" 
         subtitle="Insättning/Uttag/Överföring"
         headerVariant="secondary"
         headerClassName="min-h-25"
@@ -344,36 +401,37 @@ export default function TransactionPage() {
 
     </div>
 
-
-      <Card title="Historik"
-            headerVariant="secondary">
-  
-            {historyLoading ? (
-              <p>Laddar historik...</p>
-            ) : (
-              <ul className="divide-y divide-border-light ">
-                {history?.map((entry, index) => (
-                  <ListItem 
-                    key={index}
-                    title={entry.description}
-                    subtitle={selectedAccount?.accountNumber}
-                    right={
-                      <div className="flex flex-col items-end gap-1">
-                        <p className={entry.amount >= 0
-                          ? "font-semibold text-success text-medium whitespace-nowrap"
-                          : "font-semibold text-foreground text-medium"}>
-                            {entry.amount > 0 
-                                ? "+"
-                                : ""}
-                            {amountFormatter.format(entry.amount)}</p>
-                        <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
-                      </div>
-                    }  
-                  />
-                ))}
-              </ul>
-            )}
-      </Card>
+      <section id="recenttransactions">
+        <Card title="Historik"
+              headerVariant="secondary">
+    
+              {historyLoading ? (
+                <p>Laddar historik...</p>
+              ) : (
+                <ul className="divide-y divide-border-light ">
+                  {history?.map((entry, index) => (
+                    <ListItem 
+                      key={index}
+                      title={entry.description}
+                      subtitle={selectedAccount?.accountNumber}
+                      right={
+                        <div className="flex flex-col items-end gap-1">
+                          <p className={entry.amount >= 0
+                            ? "font-semibold text-success text-medium whitespace-nowrap"
+                            : "font-semibold text-foreground text-medium"}>
+                              {entry.amount > 0 
+                                  ? "+"
+                                  : ""}
+                              {amountFormatter.format(entry.amount)}</p>
+                          <p className="text-xsmall text-muted whitespace-nowrap">{dateFormatter.format(new Date(entry.date))}</p> 
+                        </div>
+                      }  
+                    />
+                  ))}
+                </ul>
+              )}
+        </Card>
+      </section>
       <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
       <DeleteSavingsGoalModal isOpen={isDeleteGoalModalOpen} onClose={() => setIsDeleteGoalModalOpen(false)} />
 

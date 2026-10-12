@@ -35,7 +35,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                         className="font-semibold text-medium text-foreground">
                             Senaste händelser
                     </h2>
-                    <Link to="/transactions"
+                    <Link to="/transactions#recenttransactions"
                           className="text-small text-brand-text hover:underline mr-2
                                      focus-visible:outline-2 focus-visible:outline-brand">
                         Visa alla

@@ -91,17 +91,17 @@ export default function LoginPage() {
                         Där finans­iering och teknik möts
                     </p>
                     <img src={heroImage} className="mt-10 mx-auto rounded-card opacity-90
-                                                    shadow-2xl shadow-black/30" />
-                    <div className="flex gap-3 mt-2">
+                                                    shadow-2xl shadow-black/30 mb-5" />
+                    <div className="grid lg:grid-cols-3 gap-3 mt-2 ">
                                     {["Eget sparmål", 
                                     "Insättning och uttag", 
                                     "FAQ-assistent",
                                     "Skatterapporter"].map((feature) => (
                                         <div key={feature}
                                             className="flex items-center gap-2 text-xsmall text-white bg-white/20 rounded-card 
-                                                        px-3 py-1 mt-3">
+                                                        px-3 py-1">
                                                 <img src={checkIcon} className="size-4"/>
-                                                <span>{feature}</span>
+                                                <span className="min-w-0 break-words">{feature}</span>
                                         </div>
                                     ))}
                     </div>
@@ -121,12 +121,12 @@ export default function LoginPage() {
                         </div>
                     } 
                     headerClassName="bg-linear-to-br from-brand to-[#0f3550] dark:from-[#16405e] dark:to-sidebar border-none"
-                    className="min-h-125 bg-card/85! backdrop-blur-md border-white/70! dark:border-toggle!
+                    className="md:min-h-125 h-full bg-card/85! rounded-none md:rounded-card backdrop-blur-md border-white/70! dark:border-toggle!
                                shadow-2xl! shadow-brand/15! dark:shadow-black/40!">
       
-                <div className="flex flex-col justify-center h-full gap-6 md:gap-0">
+                <div className="flex flex-col justify-center h-full gap-6 md:gap-0 ">
                     <div className="relative bg-toggle flex rounded-card border border-toggle overflow-hidden md:m-5">
-                        <div className={`absolute inset-y-0 w-1/2 bg-white border-2 border-toggle rounded-card
+                        <div className={`absolute h-full inset-y-0 w-1/2 bg-white border-2 border-toggle rounded-card
                             transition-transform duration-500 ease-in-out
                             ${mode === "email" ? "translate-x-0" : "translate-x-full"}`} />
                         <button
