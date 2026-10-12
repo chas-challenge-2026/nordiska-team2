@@ -9,10 +9,17 @@ namespace NordiskaPortal.Api.Services
     public class TransactionService : ITransactionService
     {
         private readonly BankContext _db;
+        private readonly INotificationService? _notificationService;
+        private readonly ILogger<TransactionService>? _logger;
 
-        public TransactionService(BankContext db)
+        public TransactionService(
+            BankContext db,
+            INotificationService? notificationService = null,
+            ILogger<TransactionService>? logger = null)
         {
             _db = db;
+            _notificationService = notificationService;
+            _logger = logger;
         }
 
         private static decimal GetSignedAmount(Transaction transaction) 
@@ -85,6 +92,26 @@ namespace NordiskaPortal.Api.Services
             _db.Transactions.Add(transaction);
             await _db.SaveChangesAsync();
 
+            if (_notificationService != null)
+            {
+                try
+                {
+                    var customer = await _db.Customers.FindAsync(account.CustomerId);
+                    var recipient = customer?.Email ?? "kund@nordiska.se";
+                    await _notificationService.EnqueueTransactionNotificationAsync(
+                        account.CustomerId,
+                        recipient,
+                        "deposit_confirmation",
+                        transaction.Id.ToString(),
+                        $"Insättning på {amount:N2} kr till konto {account.AccountNumber} har genomförts."
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Misslyckades att skapa notifiering för insättning på konto {AccountId}.", accountId);
+                }
+            }
+
             var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount);
             return new TransactionResult(true, null, entry);
         }
@@ -149,6 +176,26 @@ namespace NordiskaPortal.Api.Services
                 _db.Transactions.Add(withdrawal);
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
+
+                if (_notificationService != null)
+                {
+                    try
+                    {
+                        var customer = await _db.Customers.FindAsync(account.CustomerId);
+                        var recipient = customer?.Email ?? "kund@nordiska.se";
+                        await _notificationService.EnqueueTransactionNotificationAsync(
+                            account.CustomerId,
+                            recipient,
+                            "withdrawal_confirmation",
+                            withdrawal.Id.ToString(),
+                            $"Uttag på {amount:N2} kr från konto {account.AccountNumber} har genomförts."
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "Misslyckades att skapa notifiering för uttag på konto {AccountId}.", accountId);
+                    }
+                }
 
                 var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
                 return new TransactionResult(true, null, entry);

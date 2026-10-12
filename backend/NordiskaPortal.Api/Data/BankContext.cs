@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Models;
 
 namespace NordiskaPortal.Api.Data;
@@ -17,6 +17,7 @@ public class BankContext : DbContext
     public DbSet<TaxReport> TaxReports { get; set; }
     public DbSet<FaqEntry> FaqEntries { get; set; }
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,6 +31,9 @@ public class BankContext : DbContext
         modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
 
         modelBuilder.Entity<TaxReport>().HasIndex(r => new { r.AccountId, r.Year }).IsUnique();
+
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.Status, n.CreatedAt });
+        modelBuilder.Entity<Notification>().HasIndex(n => n.CustomerId);
 
         modelBuilder.Entity<Customer>().HasData(
             new Customer
