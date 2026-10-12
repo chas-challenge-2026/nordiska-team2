@@ -41,6 +41,7 @@ export const navigationItems: NavigationItem[] = [
         to: "/taxreport" ,
         iconWhite: taxesWhite,
         iconDark: taxesDark,
+        showInMobileNav: true,
     },
     {
         name: "Vanliga frågor",

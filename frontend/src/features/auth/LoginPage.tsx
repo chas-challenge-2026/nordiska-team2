@@ -121,7 +121,7 @@ export default function LoginPage() {
                         </div>
                     } 
                     headerClassName="bg-linear-to-br from-brand to-[#0f3550] dark:from-[#16405e] dark:to-sidebar border-none"
-                    className="md:min-h-125 h-full bg-card/85! rounded-none md:rounded-card backdrop-blur-md border-white/70! dark:border-toggle!
+                    className="md:min-h-125 h-full bg-card/85! backdrop-blur-md border-white/70! dark:border-toggle!
                                shadow-2xl! shadow-brand/15! dark:shadow-black/40!">
       
                 <div className="flex flex-col justify-center h-full gap-6 md:gap-0 ">

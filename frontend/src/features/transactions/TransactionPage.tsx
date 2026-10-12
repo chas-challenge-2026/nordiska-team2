@@ -171,94 +171,170 @@ export default function TransactionPage() {
       </div>
 
       {/*========== Mobilversion ==========*/}
-      <div className="flex md:hidden gap-3">
-          <div className="flex-1">
+      <div className="flex flex-col md:hidden gap-0.3 sm:gap-3 ">
+          <div>
             <p className="text-xsmall text-muted mb-1 hidden">Välj konto</p>
             <SelectOptions 
               value={selectedOption}
               onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
               options={accountOptions}
-              className="w-full self-end text-small"
+              className="w-full self-end text-small rounded-none sm:rounded-card"
             />
           </div>
-
-          <div className="relative flex-1 content-end">
-             <Button 
-                label="Hantera sparmål"
-                className="w-full"
-                variant="dropDown"
-                onClick={() => setIsMenuOpen((open) => !open)}
-              ><span>▼</span> </Button>
-              {isMenuOpen && (
-                <ul className="absolute z-10 w-full right-0 mt-0.5
-                                rounded-default border border-border bg-card 
-                                shadow-sm text-small"
-                >
-                  <li>
-                    <button className="w-full text-left hover:bg-background px-2 py-2"
-                            onClick={() => {
-                              setIsMenuOpen(false)
-                              setIsGoalModalOpen(true)
-                            }}
-                    >
-                      Skapa sparmål
-                    </button>
-                  </li>
-                  <li>
-                    <button className="w-full text-left hover:bg-background px-2 py-2"
-                            onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsDeleteGoalModalOpen(true);
-                            }}
-                    >
-                        Ta bort sparmål
-                    </button>
-                  </li>
-                </ul>
-              )}
+          <div>
+            <div className="relative">
+              {/*========== Hantera Konto ==========*/}
+              <Button 
+                  label="Hantera sparmål"
+                  className="w-full rounded-none sm:rounded-card"
+                  variant="dropDown"
+                  onClick={() => setIsMenuOpen((open) => !open)}
+                ><span>▼</span> </Button>
+                {isMenuOpen && (
+                  <ul className="absolute z-10 w-full right-0 mt-0.5
+                                  rounded-default border border-border bg-card 
+                                  shadow-sm text-small"
+                  >
+                    <li>
+                      <button className="w-full text-left hover:bg-background px-2 py-2"
+                              onClick={() => {
+                                setIsMenuOpen(false)
+                                setIsGoalModalOpen(true)
+                              }}
+                      >
+                        Skapa sparmål
+                      </button>
+                    </li>
+                    <li>
+                      <button className="w-full text-left hover:bg-background px-2 py-2"
+                              onClick={() => {
+                                  setIsMenuOpen(false);
+                                  setIsDeleteGoalModalOpen(true);
+                              }}
+                      >
+                          Ta bort sparmål
+                      </button>
+                    </li>
+                  </ul>
+                )}
+            </div>
+        </div>
+          {/*========== Hantera Konto ==========*/}
+          <div className="relative">
+            <Button 
+              label="Hantera konto"
+              className="w-full rounded-none sm:rounded-card"
+              variant="dropDown"
+              onClick={() => setIsMenuOpen((open) => !open)}
+            ><span>▼</span> </Button>
+            {isMenuOpen && (
+              <ul className="absolute z-10 w-full right-0 mt-0.5
+                              md:rounded-default border border-border bg-card 
+                              shadow-sm text-small"
+              >
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsGoalModalOpen(true)
+                          }}
+                  >
+                    Skapa sparmål
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                              setIsMenuOpen(false);
+                              setIsDeleteGoalModalOpen(true);
+                          }}
+                  >
+                      Ta bort sparmål
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
-      </div>
+        </div>
 
-      <div className=" relative hidden md:block">
-         <Button 
-            label="Hantera sparmål"
-            variant="dropDown"
-            onClick={() => setIsMenuOpen((open) => !open)}
-          ><span>▼</span> </Button>
-          {isMenuOpen && (
-            <ul className="absolute z-10 w-1/4 mt-0.5
-                            rounded-default border border-border bg-card 
-                            shadow-sm text-small"
-            >
-              <li>
-                <button className="w-full text-left hover:bg-background px-2 py-2"
-                        onClick={() => {
-                          setIsMenuOpen(false)
-                          setIsGoalModalOpen(true)
-                        }}
-                >
-                  Skapa sparmål
-                </button>
-              </li>
-              <li>
-                <button className="w-full text-left hover:bg-background px-2 py-2"
-                        onClick={() => {
-                            setIsMenuOpen(false);
-                            setIsDeleteGoalModalOpen(true);
-                        }}
-                >
-                    Ta bort sparmål
-                </button>
-              </li>
-            </ul>
-          )}
+      {/*========== Menuval ========== */}
+      <div className="flex flex-cols w-full gap-2">
+        <div className=" relative hidden md:block">
+          <Button 
+              label="Hantera sparmål"
+              variant="dropDown"
+              onClick={() => setIsMenuOpen((open) => !open)}
+            ><span>▼</span> </Button>
+            {isMenuOpen && (
+              <ul className="absolute z-10 min-w-40 mt-0.5
+                              rounded-card border border-border bg-card 
+                              shadow-sm text-small"
+              >
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsGoalModalOpen(true)
+                          }}
+                  >
+                    Skapa sparmål
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                              setIsMenuOpen(false);
+                              setIsDeleteGoalModalOpen(true);
+                          }}
+                  >
+                      Ta bort sparmål
+                  </button>
+                </li>
+              </ul>
+            )}
+        </div>
+        <div className=" relative hidden md:block">
+          <Button 
+              label="Hantera sparmål"
+              variant="dropDown"
+              onClick={() => setIsMenuOpen((open) => !open)}
+            ><span>▼</span> </Button>
+            {isMenuOpen && (
+              <ul className="absolute z-10 min-w-40 mt-0.5
+                              rounded-card border border-border bg-card 
+                              shadow-sm text-small"
+              >
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                            setIsMenuOpen(false)
+                            setIsGoalModalOpen(true)
+                          }}
+                  >
+                    Skapa sparmål
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                              setIsMenuOpen(false);
+                              setIsDeleteGoalModalOpen(true);
+                          }}
+                  >
+                      Ta bort sparmål
+                  </button>
+                </li>
+              </ul>
+            )}
+        </div>
       </div>
+      
 
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
-    <div className="flex gap-3 flex-col md:flex-row">
+    <div className="flex md:gap-3 flex-col md:flex-row">
       <Card 
         title={selectedAccount?.name ?? "Konto"}
-        subtitle="Saldo" 
+        subtitle="Saldo"
         headerVariant="secondary"
         headerClassName="min-h-25"
         >
@@ -285,7 +361,7 @@ export default function TransactionPage() {
           </>
         }
         headerVariant="secondary"
-        headerClassName="min-h-25" 
+        headerClassName="min-h-25"
         >
           <div>
             {accountGoal ? ( 

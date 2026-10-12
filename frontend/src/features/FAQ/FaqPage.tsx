@@ -6,6 +6,7 @@ import type { FaqSearchResult } from "../../types/faq";
 import { useFaqCategories, useFaqCategoryEntries, useFaqPopular } from "../../hooks/useFaq";
 import { FaqQuestionCard } from "./FaqQuestionCard";
 import { FaqCategoryModal } from "./FaqCategoryModal";
+import PageHeader from "../../components/ui/Pageheader";
 
 // Behöver dubbelkolla Ivans Seed-data.
 const categoryIcons: Record<string, LucideIcon> = {
@@ -57,13 +58,16 @@ export function FaqPage() {
 
   return (
     <div>
+       <PageHeader 
+          title="Vanliga frågor"
+          subtitle="Här kan du hitta svar på din fråga." />
       <form onSubmit={handleSubmit} className="relative mb-2">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Hur tar jag ut pengar?"
-          className="w-full pl-12 pr-4 py-4 rounded-xl border border-border bg-white text-small focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-12 pr-4 py-4 md:rounded-xl border border-border bg-white text-small focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </form>
 
@@ -87,7 +91,7 @@ export function FaqPage() {
               type="button"
               key={cat.id}
               onClick={() => setSelectedCategoryId(cat.id)}
-              className="text-left rounded-card border border-border bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
+              className="text-left md:rounded-card border border-border bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
               <Icon size={24} />
               <p className="font-semibold mt-3 text-medium">{cat.label}</p>

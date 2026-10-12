@@ -17,7 +17,7 @@ export default function MobileNavbar() {
                        pb-[env(safe-area-inset-bottom)]
                        lg:hidden"
         >
-            <ul className="grid grid-cols-4">
+            <ul className="grid grid-cols-5">
                 {mobileItems.map((item) => (
                     <li key={item.to}>
                         <NavLink

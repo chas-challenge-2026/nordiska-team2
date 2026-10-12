@@ -1,4 +1,5 @@
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import type { ChartEvent, LegendItem } from "chart.js"
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 
@@ -49,8 +50,14 @@ function buildSeries(history: LedgerEntry[], page: number, currentBalance: numbe
     return {
         labels: dates.map((d) => dateFormatter.format(new Date(d))),
         startBalances: dates.map((d) => startBalanceByDate.get(d)!),
-        deposits: dates.map((d) => byDate.get(d)!.deposits),
-        withdrawals: dates.map((d) => byDate.get(d)!.withdrawals), // negativ -> ritas nedåt
+        netAmounts: dates.map((d) => {
+            const { deposits, withdrawals } = byDate.get(d)!;
+            return Math.abs(deposits - withdrawals);
+        }),
+        netColors: dates.map((d) => {
+            const { deposits, withdrawals } = byDate.get(d)!;
+            return deposits - withdrawals >= 0 ? "#1a5276" : "#f5a623";
+        }),
         hasOlder: start > 0,
         hasNewer: page > 0,
     };
@@ -63,18 +70,28 @@ type TransactionChartProps = {
 
 export default function TransactionsChart({ history, currentBalance }: TransactionChartProps) {
     const [page, setPage] = useState(0);
+    const [hidden, setHidden] = useState({ start: false, deposit: false, withdrawal: false })
+
     if (history.length === 0)
         return <p className="text-small text-muted">Inga transaktioner att visa</p>
     
-    const { labels, startBalances, deposits, withdrawals, hasNewer, hasOlder } = 
+    const { labels, startBalances, netAmounts, netColors, hasNewer, hasOlder } = 
         buildSeries(history, page, currentBalance);
+
+    const displayedStartBalances = startBalances.map((v) => (hidden.start ? 0 : v ));
+    const displayedNetAmounts = netAmounts.map((amt, i) => {
+        const isDeposit = netColors[i] ==="#1a5276";
+        if (isDeposit && hidden.deposit) return 0;
+        if (!isDeposit && hidden.withdrawal) return 0;
+        return amt;
+    })
 
     const data = {
         labels, 
         datasets: [
             {
                 label: "Startsaldo",
-                data: startBalances,
+                data: displayedStartBalances,
                 backgroundColor: "#C6C6C6",
                 stack: "day",
                 borderRadius: 4,
@@ -82,18 +99,10 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
 
             },
             {
-                label: "Insättningar",
-                data: deposits,
-                backgroundColor: "#1a5276",
+                label: "Insättning/uttag (netto)",
+                data: displayedNetAmounts,
+                backgroundColor: netColors,
                 stack:"day",
-                borderRadius: 4,
-                maxBarThickness: 34,
-            },
-            {
-                label: "Uttag",
-                data: withdrawals,
-                backgroundColor: "#f5a623",
-                stack: "day",
                 borderRadius: 4,
                 maxBarThickness: 34,
             },
@@ -106,7 +115,30 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
             x: { stacked: true, grid: { display: false } }
         },
         plugins: {
-            legend: { position: "bottom" as const },
+            legend: { position: "bottom" as const,
+                labels: {
+                    generateLabels: () => [
+                    { text: "Startsaldo", fillStyle: "#C6C6C6", strokeStyle: "#C6C6C6" },
+                    { text: "Insättning (netto)", fillStyle: "#1a5276", strokeStyle: "#1a5276" },
+                    { text: "Uttag (netto)", fillStyle: "#f5a623", strokeStyle: "#f5a623" },
+                    ]
+                },
+                onClick: (_event: ChartEvent, legendItem: LegendItem) => {
+                    if (legendItem.text === "Startsaldo") setHidden((h) => ({ ...h, start: !h.start }));
+                    else if (legendItem.text === "Insättning (netto)") setHidden((h) => ({ ...h, deposit: !h.deposit }));
+                    else if (legendItem.text === "Uttag (netto)") setHidden((h) => ({ ...h, withdrawal: !h.withdrawal }));
+                },
+                onHover: (event: ChartEvent) => {
+                    if (event.native?.target) {
+                        (event.native.target as HTMLElement).style.cursor = "pointer";
+                    }
+                },
+                onLeave: (event: ChartEvent) => {
+                    if (event.native?.target) {
+                        (event.native.target as HTMLElement).style.cursor = "default";
+                    }
+                },
+            },
         },
     };
 
