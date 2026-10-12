@@ -142,7 +142,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/.vcpkg-cache
-          key: vcpkg-win-x64-static-md-release-${{ steps.ck.outputs.image }}-${{ hashFiles('native/vcpkg.json') }}-${{ env.VCPKG_COMMIT }}
+          key: vcpkg-win-x64-static-md-release-${{ steps.ck.outputs.image }}-${{ hashFiles('native/vcpkg.json', 'native/cmake/triplets/**') }}-${{ env.VCPKG_COMMIT }}
           # Only fall back within the same image version. vcpkg would just
           # rebuild everything from an older image's cache anyway.
           restore-keys: |

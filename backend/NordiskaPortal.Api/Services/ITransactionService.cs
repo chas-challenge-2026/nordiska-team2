@@ -13,5 +13,6 @@ namespace NordiskaPortal.Api.Services
         Task<TransactionResult> DepositAsync(int accountId, decimal amount, string? description = null);
         Task<TransactionResult> WithdrawAsync(int accountId, decimal amount, string? description = null);
         Task<List<LedgerEntryDto>> GetHistoryAsync(int accountId);
+        Task<TransactionResult> TransferAsync(int fromAccountId, int toAccountId, decimal amount, string? description = null);
     }
 }

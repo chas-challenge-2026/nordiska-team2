@@ -8,6 +8,7 @@ import { useAccounts } from "../../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../../components/ui/Select";
 import { useAlert } from "../../../../../hooks/useAlert";
 import { apiClient } from "../../../../../client";
+import { useTranslation } from "react-i18next";
 
 type CreateSavingsGoalsProps = {
     isOpen: boolean;
@@ -21,6 +22,7 @@ export default function CreateSavingsGoalsModal({
     const queryClient = useQueryClient()
     const { data: accounts } = useAccounts();
     const { showAlert } = useAlert();
+    const { t } = useTranslation();
 
     const accountOptions: OptionType[] = accounts?.map((account) => ({
         value: String(account.id), 
@@ -51,7 +53,7 @@ export default function CreateSavingsGoalsModal({
             apiClient.post("/savings-goals", {name, targetAmount: targetAmountValue, accountId: account ? Number(account.value) : null, }),
             onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["savings-goals"] })
-            showAlert({ type: "success", title: "Klart!", message: "Sparmål är skapad." })
+            showAlert({ type: "success", title: t("common.done"), message: t("createGoalModal.done") })
             resetAndClose();
         },
     });
@@ -64,61 +66,61 @@ export default function CreateSavingsGoalsModal({
     }
     
     return(
-        <Modal title="Nytt sparmål"
+        <Modal title={t("createGoalModal.title")}
                 isOpen ={isOpen}
                 onClose={resetAndClose} >
             <div className="flex flex-col gap-1 border border-border rounded-default
-                        w-full h-full p-3"
+                        w-full h-full px-4 py-6 mt-3 mb-6"
             >
-                <p className="mt-2">Namn*</p>
+                <p className="mt-2">{t("createGoalModal.nameRequired")}</p>
                 <InputField 
                     value={name} 
                     onChange={setName}
-                    placeholder="Ex: Resa till Japan" />
+                    placeholder={t("createGoalModal.namePlaceholder")} />
 
                 {hasAttemptedSubmit && isMissingName && (
-                    <p className="text-xsmall text-cancel">Du måste fylla i ett sparmåls-namn.</p>
+                    <p className="text-xsmall text-cancel">{t("createGoalModal.missingName")}</p>
                 )}
 
-                <p className="mt-2">Målbelopp*</p>
+                <p className="mt-2">{t("createGoalModal.targetRequired")}</p>
                     <InputField 
                         value={targetAmount}
                         onChange={setTargetAmount}
-                        placeholder="Belopp"
+                        placeholder={t("common.amount")}
                         type="number" />
 
                 {hasAttemptedSubmit && isMissingAmount && (
-                    <p className="text-xsmall text-cancel">Du måste fylla i ett målbelopp.</p>
+                    <p className="text-xsmall text-cancel">{t("createGoalModal.missingTarget")}</p>
                 )}        
 
                 {hasAttemptedSubmit && isAmountInvalid && (
-                    <p className="text-xsmall text-cancel">Målbeloppet måste vara en siffra större än 0.</p>
+                    <p className="text-xsmall text-cancel">{t("createGoalModal.targetPositive")}</p>
                 )}
-                <p className="mt-2">Koppla till konto*</p>
+                <p className="mt-2">{t("createGoalModal.linkAccountRequired")}</p>
                 <SelectOptions
                     value={account} 
                     onChange={setAccount}
                     options={accountOptions}
-                    placeholder="Välj Konto"
+                    placeholder={t("common.selectAccount")}
                     />
                 {hasAttemptedSubmit && isAccountMissing && (
-                    <p className="text-xsmall text-cancel">Du måste välja ett konto.</p>
+                    <p className="text-xsmall text-cancel">{t("createGoalModal.missingAccount")}</p>
                 )}
 
                 {createMutation.isError && (
-                    <p className="text-xsmall text-cancel">Ett fel uppstod. Försök igen.</p>
+                    <p className="text-xsmall text-cancel">{t("common.genericError")}</p>
                 )}
             </div>
 
-            <div className="flex justify-end mt-10">
+            <div className="flex justify-end mt-10 gap-5">
   
                 <Button
-                    label="Avbryt"
+                    label={t("common.cancel")}
                     variant="cancel"
                     onClick={resetAndClose}
                 />
                 <Button
-                    label={createMutation.isPending ? "Skapar ..." : "Skapa sparmål"}
+                    label={createMutation.isPending ? t("createGoalModal.creating") : t("createGoalModal.create")}
                     variant="secondary"
                     onClick={handleCreate}
                     disabled={createMutation.isPending}

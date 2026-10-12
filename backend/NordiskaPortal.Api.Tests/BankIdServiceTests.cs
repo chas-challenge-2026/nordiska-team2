@@ -30,20 +30,25 @@ namespace NordiskaPortal.Api.Tests
             return new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
         }
 
-        // BankIdService is a Singleton in production, depending on IServiceScopeFactory 
-        // rather than BankContext/IAuthService directly. 
-        // 
-        // Testing it through a fake/direct-injection shortcut would miss 
-        // that the real scope-factory path works. 
-        // 
-        // This builds a small real DI container, wired the same shape as Program.cs's, 
-        // against the same Testcontainers Postgres instance the other test classes share.
+        // BankIdService is a Singleton in production, depending on
+        // IServiceScopeFactory rather than BankContext/IAuthService
+        // directly (see backend-documentation.md §5b for why). Testing
+        // it through a fake/direct-injection shortcut would miss exactly
+        // the thing worth proving -- that the real scope-factory path
+        // works. This builds a small real DI container, wired the same
+        // shape as Program.cs's, against the same Testcontainers
+        // Postgres instance the other test classes share.
         private IServiceScopeFactory BuildScopeFactory()
         {
             var services = new ServiceCollection();
             services.AddScoped(_ => _fixture.CreateContext());
             services.AddScoped<IAuthService>(sp =>
-                new AuthService(sp.GetRequiredService<BankContext>(), BuildTestConfig()));
+            {
+                // Same BankContext instance for both -- mirrors Program.cs,
+                // where DI hands every scoped service the request's one context.
+                var db = sp.GetRequiredService<BankContext>();
+                return new AuthService(db, BuildTestConfig(), AuditServiceTests.For(db));
+            });
 
             var provider = services.BuildServiceProvider();
             return provider.GetRequiredService<IServiceScopeFactory>();
@@ -78,9 +83,9 @@ namespace NordiskaPortal.Api.Tests
             var service = new BankIdService(BuildScopeFactory());
             var orderRef = service.StartOrder("19850505-1234"); // Anna, seeded
 
-            // The mock's simulated approval delay is 3 seconds.
-            // Waited out for real here rather than mocked. 
-            // The delay is a private implementation detail with no injection seam.
+            // The mock's simulated approval delay is 3 seconds -- waited
+            // out for real here rather than mocked, since the delay is a
+            // private implementation detail with no injection seam.
             await Task.Delay(TimeSpan.FromSeconds(3.5));
 
             var result = await service.GetStatusAsync(orderRef);
@@ -107,8 +112,8 @@ namespace NordiskaPortal.Api.Tests
         [Fact]
         public async Task GetStatusAsync_PolledAgainAfterCompletion_ReturnsFailed()
         {
-            // Orders are one-time use.
-            // The same orderRef must not resolve twice whether the first result was complete or failed.
+            // Orders are one-time use -- the same orderRef must not
+            // resolve twice, whether the first result was complete or failed.
             var service = new BankIdService(BuildScopeFactory());
             var orderRef = service.StartOrder("19850505-1234");
 
@@ -123,9 +128,9 @@ namespace NordiskaPortal.Api.Tests
         [Fact]
         public async Task GetStatusAsync_IssuedToken_HasCorrectCustomerIdClaim()
         {
-            // Proves a BankID-issued token is a genuinely real.
-            // Correctly signed token for the intended customer.
-            // Not a stand-in or placeholder value.
+            // Proves the actual design goal from §5b: a BankID-issued
+            // token is a genuinely real, correctly signed token for the
+            // RIGHT customer -- not a stand-in or placeholder value.
             var service = new BankIdService(BuildScopeFactory());
             var orderRef = service.StartOrder("19850505-1234"); // Anna, customer id 1
 

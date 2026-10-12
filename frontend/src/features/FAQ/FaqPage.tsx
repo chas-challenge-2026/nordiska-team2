@@ -6,6 +6,7 @@ import type { FaqSearchResult } from "../../types/faq";
 import { useFaqCategories, useFaqCategoryEntries, useFaqPopular } from "../../hooks/useFaq";
 import { FaqQuestionCard } from "./FaqQuestionCard";
 import { FaqCategoryModal } from "./FaqCategoryModal";
+import { useTranslation } from "react-i18next";
 
 // Behöver dubbelkolla Ivans Seed-data.
 const categoryIcons: Record<string, LucideIcon> = {
@@ -21,6 +22,7 @@ export function FaqPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const categories = useFaqCategories();
   const popular = useFaqPopular();
@@ -49,7 +51,8 @@ export function FaqPage() {
       setResult(response.data);
     } catch {
       clearTimeout(timeoutId);
-      setError("Sökningen lyckades inte, försök igen!");
+      // Vi sparar nyckeln och översätter först när felet visas
+      setError("faq.searchFailed");
     } finally {
       setIsLoading(false);
     }
@@ -62,24 +65,27 @@ export function FaqPage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Hur tar jag ut pengar?"
+          placeholder={t("faq.searchPlaceholder")}
           className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </form>
 
       <p className="text-sm text-gray-500 mb-8">
+        {t("faq.popularSearches")} </p>
+        
+      <p className="text-xsmall text-gray-500 mb-8 ml-2">
         Populära sökord: uttagstid · räntebesked · skatterapport 2025
       </p>
 
-      {isLoading && <p className="text-sm text-gray-500 mb-4">Söker...</p>}
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+      {isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.searching")}</p>}
+      {error && <p className="text-sm text-red-600 mb-4">{t(error)}</p>}
 
-      {categories.isLoading && <p className="text-sm text-gray-500 mb-4">Laddar kategorier...</p>}
+      {categories.isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.loadingCategories")}</p>}
       {categories.isError && (
-        <p className="text-sm text-red-600 mb-4">Kunde inte hämta kategorier.</p>
+        <p className="text-sm text-red-600 mb-4">{t("faq.categoriesError")}</p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {categories.data?.map((cat) => {
           const Icon = categoryIcons[cat.id] ?? FileText;
           return (
@@ -87,11 +93,11 @@ export function FaqPage() {
               type="button"
               key={cat.id}
               onClick={() => setSelectedCategoryId(cat.id)}
-              className="text-left rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
+              className="text-left rounded-card border border-border bg-white p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
               <Icon size={24} />
               <p className="font-semibold mt-3">{cat.label}</p>
-              <p className="text-sm text-gray-500">{cat.questionCount} frågor</p>
+              <p className="text-sm text-gray-500">{t("faq.questionCount", { count: cat.questionCount })}</p>
             </button>
           );
         })}
@@ -99,7 +105,7 @@ export function FaqPage() {
 
       {result && !isLoading && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Sökresultat</h2>
+          <h2 className="text-lg font-semibold mb-4">{t("faq.searchResults")}</h2>
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             {result.matched && <p className="font-semibold mb-2">{result.question}</p>}
             <p className="text-gray-600">{result.answer}</p>
@@ -109,7 +115,7 @@ export function FaqPage() {
 
       {!result && popular.data && popular.data.length > 0 && (
         <>
-          <h2 className="text-lg font-semibold mb-4">Vanliga frågor just nu</h2>
+          <h2 className="text-lg font-semibold mb-4">{t("faq.popularNow")}</h2>
           {popular.data.map((entry, index) => (
             <FaqQuestionCard key={entry.id} entry={entry} defaultOpen={index === 0} />
           ))}
@@ -121,12 +127,12 @@ export function FaqPage() {
         onClose={() => setSelectedCategoryId(null)}
         title={selectedCategory?.label ?? ""}
       >
-        {categoryEntries.isLoading && <p className="text-gray-500">Laddar frågor...</p>}
+        {categoryEntries.isLoading && <p className="text-gray-500">{t("faq.loadingQuestions")}</p>}
         {categoryEntries.isError && (
-          <p className="text-red-600">Kunde inte hämta frågorna.</p>
+          <p className="text-red-600">{t("faq.questionsError")}</p>
         )}
         {categoryEntries.data?.length === 0 && (
-          <p className="text-gray-500">Inga frågor i den här kategorin än.</p>
+          <p className="text-gray-500">{t("faq.noQuestions")}</p>
         )}
         {categoryEntries.data?.map((entry) => (
           <FaqQuestionCard key={entry.id} entry={entry} />

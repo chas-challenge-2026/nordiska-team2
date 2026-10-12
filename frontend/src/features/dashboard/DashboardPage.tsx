@@ -2,17 +2,18 @@
 import AccountOverview from "./components/AccountOverview";
 import RecentTransactions from "./components/RecentTransactions";
 import QuickActions from "./components/QuickActions";
+import PageHeader from "../../components/ui/Pageheader";
 import { quickActions } from "./data/quickActions";
 import FinancialOverview from "./components/FinancialOverview"
 import SavingsGoal from "./components/SavingsGoals";
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import FaqOverview from "./components/Faq";
-import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
 import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
 import { useRecentTransactions } from "../../hooks/useTransactions";
 import { useCustomer } from "../../hooks/useCustomer";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
@@ -20,9 +21,10 @@ export default function DashboardPage() {
     const { data: customer } = useCustomer();
     const firstName = customer?.name.split(" ") [0]
     const { data: goals, isLoading: goalsLoading } = useSavingsGoals();
+    const { t } = useTranslation();
 
-    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
-    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
+    if (isLoading) return <Alert type="info" message={t("dashboard.loadingAccounts")} /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message={t("dashboard.accountsError")} /> // RIKTIG DATA
     if (!accounts) return null;
 
 
@@ -31,14 +33,11 @@ export default function DashboardPage() {
                         lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
                                 min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
-                <header>
-                    <h1 className="text-xl sm:text-title">
-                        Välkommen tillbaka{firstName ? `, ${firstName}` : ""}!
-                    </h1>
-                    <p className="text-muted text-small">
-                        Inloggad via (mock)BankID
-                    </p>
-                </header>
+                 <PageHeader
+                    title={firstName
+                            ? t("dashboard.welcome", { name: firstName })
+                            : t("dashboard.welcomeNoName")}
+                     subtitle={t("dashboard.loggedInVia")} />
 
                 <AccountOverview accounts={accounts}/>
                 <QuickActions actions={quickActions}/>
@@ -50,13 +49,12 @@ export default function DashboardPage() {
 
             <aside className="flex flex-col gap-4 min-w-0 w-full 
                                 lg:col-span-4 mt-3 lg:mt-0">
-                        <SearchBar />
                         <FinancialOverview 
                             accounts={accounts}
                             />
 
-                        <SavingsGoal 
-                            goals={goals ?? []} isLoading={goalsLoading}/>
+                        <SavingsGoal
+                            goals={goals ?? []} isLoading={goalsLoading} accounts={accounts}/>
                         <FaqOverview />
 
             </aside>

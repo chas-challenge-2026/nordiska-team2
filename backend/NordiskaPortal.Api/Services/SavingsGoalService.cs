@@ -10,12 +10,14 @@ namespace NordiskaPortal.Api.Services
         private readonly BankContext _db;
         private readonly IAccountService _accountService;
         private readonly ITransactionService _transactionService;
+        private readonly IAuditService _audit;
 
-        public SavingsGoalService(BankContext db, IAccountService accountService, ITransactionService transactionService)
+        public SavingsGoalService(BankContext db, IAccountService accountService, ITransactionService transactionService, IAuditService audit)
         {
             _db = db;
             _accountService = accountService;
             _transactionService = transactionService;
+            _audit = audit;
         }
 
         public async Task<List<SavingsGoalDto>> GetGoalsAsync(int customerId)
@@ -60,8 +62,17 @@ namespace NordiskaPortal.Api.Services
                 Deadline = request.Deadline,
             };
 
-            _db.SavingsGoals.Add(goal);
-            await _db.SaveChangesAsync();
+            // Two saves (the goal id only exists after the first), wrapped so they're atomic.
+            await using (var tx = await _db.Database.BeginTransactionAsync())
+            {
+                _db.SavingsGoals.Add(goal);
+                await _db.SaveChangesAsync();
+
+                _audit.Record(AuditActions.SavingsGoalCreated, customerId, goal.Id.ToString());
+                await _db.SaveChangesAsync();
+
+                await tx.CommitAsync();
+            }
 
             return await ToDtoAsync(goal);
         }
@@ -75,6 +86,7 @@ namespace NordiskaPortal.Api.Services
                 return false;
 
             _db.SavingsGoals.Remove(goal);
+            _audit.Record(AuditActions.SavingsGoalDeleted, customerId, goal.Id.ToString()); 
             await _db.SaveChangesAsync();
             return true;
         }

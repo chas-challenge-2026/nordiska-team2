@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 type FooterLinkProps = {
     label: string,
@@ -7,21 +8,22 @@ type FooterLinkProps = {
 
 const footerLinks: FooterLinkProps[] = [
     {
-        label: "Säkerhet",
-        to: "/taxreport"
+        label: "footer.security",
+        to: "#"
     },
     {
-        label: "Integritet",
-        to: "/taxreport"
+        label: "footer.privacy",
+        to: "#"
     },
     {
-        label: "Villkor",
-        to: "/taxreport"
+        label: "footer.terms",
+        to: "#"
     }
 ]
 
 
 export default function Footer(){
+    const { t } = useTranslation()
     return (
         <footer className="text-xsmall text-muted mt-2 lg:col-span-10 mt-5">
             <div className="flex gap-10 justify-center">
@@ -29,7 +31,7 @@ export default function Footer(){
                     <Link
                     key={footerLink.label}
                     to={footerLink.to}>
-                        {footerLink.label}
+                        {t(footerLink.label)}
                     </Link>
                 ))}
             </div>

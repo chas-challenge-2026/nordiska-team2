@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using NordiskaPortal.Api.DTOs;
+using NordiskaPortal.Api.Middleware;
 using NordiskaPortal.Api.Services;
 
 namespace NordiskaPortal.Api.Controllers
@@ -30,6 +31,7 @@ namespace NordiskaPortal.Api.Controllers
         }
 
         [HttpPost("refresh")]
+        [SkipAuditCheck("Refresh happens silently every 15 minutes; auditing it would bury real events.")]
         public async Task<IActionResult> Refresh()
         {
             if (!Request.Cookies.TryGetValue(RefreshCookieName, out var refreshToken))

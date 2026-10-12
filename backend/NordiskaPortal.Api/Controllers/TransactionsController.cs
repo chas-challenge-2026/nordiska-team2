@@ -73,5 +73,20 @@ namespace NordiskaPortal.Api.Controllers
             var balance = await _transactionService.GetBalanceAsync(accountId);
             return Ok(new { accountId, balance });
         }
+
+        [HttpPost("transfer")]
+        [EnableRateLimiting("SensitiveEndpoints")]
+        public async Task<IActionResult> Transfer(TransferRequest request)
+        {
+            var customerId = User.GetCustomerId();
+
+            // Both accounts must be the caller's. One shared 404 for either failure.
+            if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.FromAccountId) ||
+                !await _accountService.CustomerOwnsAccountAsync(customerId, request.ToAccountId))
+                return NotFound(new { error = "Kontot kunde inte hittas." });
+
+            var result = await _transactionService.TransferAsync(request.FromAccountId, request.ToAccountId, request.Amount, request.Description);
+            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+        }
     }
 }

@@ -1,14 +1,16 @@
 import AccountCard from "../../../components/cards/AccountCard";
 import type { Account } from "../../../types/account"
+import { useTranslation } from "react-i18next";
 
 type AccountOverviewProps = {
     accounts: Account[]; 
 }
 
 export default function AccountOverview({ accounts }: AccountOverviewProps) {
+    const { t } = useTranslation();
     if (accounts.length === 0) {
         return (
-            <p className="text-samll text-muted"> Du har inga konton än.</p>
+            <p className="text-small text-muted">{t("dashboard.noAccounts")}</p>
         )
     }
     return (
@@ -22,7 +24,7 @@ export default function AccountOverview({ accounts }: AccountOverviewProps) {
                                         accountNumber={account.accountNumber}
                                         balance={account.balance}
                                         interest={account.interest}
-                                        to="/transactions"
+                                        to={`/transactions?accountId=${account.id}`}
                                     />
                                 ))}         
             </div>

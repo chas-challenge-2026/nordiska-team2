@@ -33,9 +33,11 @@ builder.Services.AddSingleton<IBankIdService, BankIdService>();
 builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<FaqCategoryService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<NotificationBackgroundWorker>();
 builder.Services.AddScoped<BankStatementService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
@@ -105,7 +107,10 @@ builder.Services.AddRateLimiter(options =>
 
 // JSON Web Token (JWT)
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? "test-only-signing-key-not-used-in-production-32chars";
+    ?? (builder.Environment.IsEnvironment("Testing")
+        ? "test-only-signing-key-not-used-in-production-32chars"
+        : throw new InvalidOperationException(
+            "Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"<your key>\""));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -162,6 +167,7 @@ app.UseCors("AllowFrontend");   // CORS
 app.UseRateLimiter();           // Rate Limiter
 app.UseAuthentication();        // Authentication, Keep above Authorization
 app.UseAuthorization();         // Authorization
+app.UseMiddleware<AuditSafetyNetMiddleware>();
 app.MapHealthChecks("/health"); // Health check endpoint
 app.MapControllers().RequireRateLimiting("sliding");
 
