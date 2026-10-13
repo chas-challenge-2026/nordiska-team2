@@ -1,0 +1,4 @@
+**/build
+**/.devenv
+**/.direnv
+.git
