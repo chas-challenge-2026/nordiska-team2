@@ -3,7 +3,7 @@ import transferIcon from "../../../assets/svg/transfer-dark.svg";
 import bankIdIcon from "../../../assets/svg/bankid-dark.svg";
 import cardIcon from "../../../assets/svg/credit-dark.svg";
 import walletIcon from "../../../assets/svg/wallet-dark.svg";
-import aiBuddyIcon from "../../../assets/svg/ai-buddy-dark.svg";
+// import aiBuddyIcon from "../../../assets/svg/ai-buddy-dark.svg";
 import type { QuickAction } from "../../../types/quickActions";
 
 // label är nycklar i språkfilerna, de översätts med t() i QuickActions.tsx
@@ -26,12 +26,6 @@ export const quickActions: QuickAction[] = [
         icon: walletIcon,
         size: "small",
     },
-    //     {
-    //     id: "download",
-    //     label: "Ladda ner skatterapp.",
-    //     icon: downloadIcon,
-    //     size: "xsmall",
-    // },
         {
         id: "loanApplication",
         label: "dashboard.quickActions.loanApplication",

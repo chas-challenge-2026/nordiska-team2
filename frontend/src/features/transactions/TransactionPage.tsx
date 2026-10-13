@@ -17,7 +17,8 @@ import confetti from "canvas-confetti"
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
 import PageHeader from "../../components/ui/Pageheader";
-
+import CreateAccountModal from "../dashboard/components/modals/NewAccountModal/CreateAccountModal"
+import DeleteAccountModal from "../dashboard/components/modals/NewAccountModal/DeleteAccountModal";
 
 interface LedgerEntry {
   date: string;
@@ -37,13 +38,15 @@ export default function TransactionPage() {
   const [description, setDescription] = useState("");
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isGoalMenuOpen, setIsGoalMenuOpen] = useState(false)
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const { data: goals } = useSavingsGoals();
   const { t } = useTranslation();
   const { locale, currency: amountFormatter } = useFormatters();
 
-
+const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
+const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -171,53 +174,91 @@ export default function TransactionPage() {
       </div>
 
       {/*========== Mobilversion ==========*/}
-      <div className="flex md:hidden gap-3">
-          <div className="flex-1">
+      <div className="flex flex-col md:hidden gap-0.3 sm:gap-3 ">
+          <div>
             <p className="text-xsmall text-muted mb-1 hidden">Välj konto</p>
             <SelectOptions 
               value={selectedOption}
               onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
               options={accountOptions}
-              className="w-full self-end text-small"
+              className="w-full self-end text-small rounded-none sm:rounded-card"
             />
           </div>
-
-          <div className="relative flex-1 content-end">
-             <Button 
-                label="Hantera sparmål"
-                className="w-full"
-                variant="dropDown"
-                onClick={() => setIsMenuOpen((open) => !open)}
-              ><span>▼</span> </Button>
-              {isMenuOpen && (
-                <ul className="absolute z-10 w-full right-0 mt-0.5
-                                rounded-default border border-border bg-card 
-                                shadow-sm text-small"
-                >
-                  <li>
-                    <button className="w-full text-left hover:bg-background px-2 py-2"
-                            onClick={() => {
-                              setIsMenuOpen(false)
-                              setIsGoalModalOpen(true)
-                            }}
-                    >
-                      Skapa sparmål
-                    </button>
-                  </li>
-                  <li>
-                    <button className="w-full text-left hover:bg-background px-2 py-2"
-                            onClick={() => {
-                                setIsMenuOpen(false);
-                                setIsDeleteGoalModalOpen(true);
-                            }}
-                    >
-                        Ta bort sparmål
-                    </button>
-                  </li>
-                </ul>
-              )}
+          <div>
+            <div className="relative">
+              {/*========== Hantera sparmål ==========*/}
+              <Button 
+                  label="Hantera sparmål"
+                  className="w-full rounded-none sm:rounded-card"
+                  variant="dropDown"
+                  onClick={() => setIsGoalMenuOpen((open) => !open)}
+                ><span>▼</span> </Button>
+                {isGoalMenuOpen && (
+                  <ul className="absolute z-10 w-full right-0 mt-0.5
+                                  rounded-default border border-border bg-card 
+                                  shadow-sm text-small"
+                  >
+                    <li>
+                      <button className="w-full text-left hover:bg-background px-2 py-2"
+                              onClick={() => {
+                                setIsGoalMenuOpen(false)
+                                setIsGoalModalOpen(true)
+                              }}
+                      >
+                        Skapa sparmål
+                      </button>
+                    </li>
+                    <li>
+                      <button className="w-full text-left hover:bg-background px-2 py-2"
+                              onClick={() => {
+                                  setIsGoalMenuOpen(false);
+                                  setIsDeleteGoalModalOpen(true);
+                              }}
+                      >
+                          Ta bort sparmål
+                      </button>
+                    </li>
+                  </ul>
+                )}
+            </div>
+        </div>
+          {/*========== Hantera Konto ==========*/}
+          <div className="relative">
+            <Button 
+              label="Hantera konto"
+              className="w-full rounded-none sm:rounded-card"
+              variant="dropDown"
+              onClick={() => setIsAccountMenuOpen((open) => !open)}
+            ><span>▼</span> </Button>
+            {isAccountMenuOpen && (
+              <ul className="absolute z-10 w-full right-0 mt-0.5
+                              md:rounded-default border border-border bg-card 
+                              shadow-sm text-small"
+              >
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                            setIsAccountMenuOpen(false)
+                            setIsAccountMenuOpen(true)
+                          }}
+                  >
+                    Skapa konto
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full text-left hover:bg-background px-2 py-2"
+                          onClick={() => {
+                              setIsAccountMenuOpen(false);
+                              setIsDeleteAccountModalOpen(true);
+                          }}
+                  >
+                      Ta bort Konto
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
-      </div>
+        </div>
 
       <div className=" relative hidden md:block">
          <Button 
@@ -253,9 +294,10 @@ export default function TransactionPage() {
             </ul>
           )}
       </div>
+      
 
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
-    <div className="flex gap-3 flex-col md:flex-row">
+    <div className="flex md:gap-3 flex-col md:flex-row">
       <Card 
         title={selectedAccount?.name ?? t("common.account")}
         subtitle={t("accountsPage.balance")} 
@@ -285,7 +327,7 @@ export default function TransactionPage() {
           </>
         }
         headerVariant="secondary"
-        headerClassName="min-h-25" 
+        headerClassName="min-h-25"
         >
           <div>
             {accountGoal ? ( 
@@ -444,6 +486,9 @@ export default function TransactionPage() {
       </Card>
       <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
       <DeleteSavingsGoalModal isOpen={isDeleteGoalModalOpen} onClose={() => setIsDeleteGoalModalOpen(false)} />
+
+      <CreateAccountModal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} />
+      <DeleteAccountModal isOpen={isDeleteAccountModalOpen} onClose={() => setIsDeleteAccountModalOpen(false)} />
 
     </>
   );

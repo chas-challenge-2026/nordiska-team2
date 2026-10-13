@@ -11,7 +11,7 @@ export function FaqQuestionCard({ entry, defaultOpen = false}: Props) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="border border-gray-200 rounded-card mb-3 bg-white">
+        <div className="border border-gray-200 md:rounded-card md:mb-3 bg-white">
             <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center p-4 text-left font-semibold text-medium"
                 >
                     {entry.question}

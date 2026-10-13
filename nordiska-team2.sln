@@ -1,0 +1,55 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "native", "native", "{2F2BA0B1-8447-348E-8DA4-622F0257D38B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordiskaPortal", "backend\NordiskaPortal\NordiskaPortal.csproj", "{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordiskaPortal.Api", "backend\NordiskaPortal.Api\NordiskaPortal.Api.csproj", "{E299E1A5-9151-8122-3321-33C453B1FA96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordiskaPortal.Api.Tests", "backend\NordiskaPortal.Api.Tests\NordiskaPortal.Api.Tests.csproj", "{C046D0D3-FDD0-0B55-9809-A27287221775}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "packaging", "packaging", "{F249801D-1A38-66E4-156B-F2DB82F39526}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfEngine.Native", "native\packaging\PdfEngine.Native.csproj", "{6AF0523B-0495-5FA8-80A7-D82ADC920A0E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E299E1A5-9151-8122-3321-33C453B1FA96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E299E1A5-9151-8122-3321-33C453B1FA96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E299E1A5-9151-8122-3321-33C453B1FA96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E299E1A5-9151-8122-3321-33C453B1FA96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C046D0D3-FDD0-0B55-9809-A27287221775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C046D0D3-FDD0-0B55-9809-A27287221775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C046D0D3-FDD0-0B55-9809-A27287221775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C046D0D3-FDD0-0B55-9809-A27287221775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AF0523B-0495-5FA8-80A7-D82ADC920A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AF0523B-0495-5FA8-80A7-D82ADC920A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AF0523B-0495-5FA8-80A7-D82ADC920A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AF0523B-0495-5FA8-80A7-D82ADC920A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E5E16E1A-D45C-8CFD-2809-275EAC2D6B7F} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{E299E1A5-9151-8122-3321-33C453B1FA96} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{C046D0D3-FDD0-0B55-9809-A27287221775} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{F249801D-1A38-66E4-156B-F2DB82F39526} = {2F2BA0B1-8447-348E-8DA4-622F0257D38B}
+		{6AF0523B-0495-5FA8-80A7-D82ADC920A0E} = {F249801D-1A38-66E4-156B-F2DB82F39526}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42117837-3681-4855-B82E-E145BAAE0F07}
+	EndGlobalSection
+EndGlobal

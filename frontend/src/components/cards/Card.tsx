@@ -35,9 +35,9 @@ export default function Card({
     const titleId = useId()
     const subtitleId = useId();
 
-    const sharedClassName = `flex flex-col overflow-hidden 
-                        w-full rounded-card 
-                        border border-border bg-card 
+    const sharedClassName = `flex flex-col overflow-hidden
+                        w-full rounded-none md:rounded-card
+                        border border-border bg-card
                         shadow-sm ${className}`;
 
     const content = (
