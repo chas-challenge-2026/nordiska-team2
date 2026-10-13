@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -32,8 +33,9 @@ typedef struct {
     const char*            out_dir;
     const PdfLayoutConfig* config;
     PdfSigner*             signer;
-    PdfEngineProgressCb    progress_cb;
-    void*                  progress_ctx;
+    int require_signature; /**< 1: a report is only published if signed */
+    PdfEngineProgressCb progress_cb;
+    void*               progress_ctx;
     long object_index; /**< Position in the array; used for reporting ids */
     int  success_count;
     int  saw_any_object;
@@ -158,6 +160,49 @@ static int validate_report(const cJSON* root, const PdfLayoutConfig* cfg,
     return 0;
 }
 
+/**
+ * @brief Returns 1 if the file at `path` contains a PDF signature.
+ *
+ * PoDoFo writes a /ByteRange entry into every signature dictionary; libharu
+ * never does, so its presence means the signing step really left a signature
+ * in the file (not just that a function returned 0).
+ */
+static int pdf_has_signature(const char* path) {
+    FILE* f = fopen(path, "rb");
+    if (!f) {
+        return 0;
+    }
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        return 0;
+    }
+    long size = ftell(f);
+    if (size <= 0 || fseek(f, 0, SEEK_SET) != 0) {
+        fclose(f);
+        return 0;
+    }
+    char* data = (char*)malloc((size_t)size);
+    if (!data) {
+        fclose(f);
+        return 0;
+    }
+    size_t got = fread(data, 1, (size_t)size, f);
+    fclose(f);
+    if (got != (size_t)size) {
+        free(data);
+        return 0;
+    }
+
+    static const char KEY[]   = "/ByteRange";
+    const size_t      KEY_LEN = sizeof(KEY) - 1;
+    int               found   = 0;
+    for (size_t i = 0; !found && i + KEY_LEN <= got; i++) {
+        found = data[i] == '/' && memcmp(data + i, KEY, KEY_LEN) == 0;
+    }
+    free(data);
+    return found;
+}
+
 /** @brief Renders, optionally signs, and atomically publishes one PDF. */
 static int render_and_publish(const char* json_obj_str, const BatchState* batch,
                               const char* report_id) {
@@ -176,11 +221,25 @@ static int render_and_publish(const char* json_obj_str, const BatchState* batch,
         return PDF_ENGINE_ERROR_GENERATION_FAILED;
     }
 
-    if (batch->signer) {
+    if (batch->require_signature) {
+        // Never publish an unsigned file from the signing entry point: a
+        // missing signer, a failed sign, or a "successful" sign that left no
+        // signature behind all reject the report.
+        if (!batch->signer) {
+            LOG_ERROR("No signer available for '%s'", out_path);
+            remove(tmp_path);
+            return PDF_ENGINE_ERROR_SIGNING_FAILED;
+        }
         int sign_result = pdf_signer_sign(batch->signer, tmp_path, tmp_path);
         if (sign_result != 0) {
             LOG_ERROR("Signing failed for '%s' (pdf_signer status=%d)",
                       out_path, sign_result);
+            remove(tmp_path);
+            return PDF_ENGINE_ERROR_SIGNING_FAILED;
+        }
+        if (!pdf_has_signature(tmp_path)) {
+            LOG_ERROR("Signer reported success but '%s' contains no signature",
+                      out_path);
             remove(tmp_path);
             return PDF_ENGINE_ERROR_SIGNING_FAILED;
         }
@@ -223,7 +282,7 @@ static void generate_one_report(const char* json_obj_str, BatchState* batch) {
         if (status != PDF_ENGINE_SUCCESS) {
             snprintf(detail, sizeof(detail), "%s",
                      status == PDF_ENGINE_ERROR_SIGNING_FAILED
-                         ? "signing failed"
+                         ? "signing failed or produced no signature"
                          : "PDF generation failed");
         } else {
             batch->success_count++;
@@ -258,13 +317,13 @@ static int batch_object_cb(const char* json_obj_str, void* user_ctx) {
     return 0; // never abort the batch over one report's failure
 }
 
-int pdf_engine_generate_and_sign(const char*   json_file_path,
-                                 PdfReportType report_type, const char* out_dir,
-                                 const char* pfx_path, const char* password,
-                                 PdfEngineProgressCb progress_cb,
-                                 void*               progress_ctx) {
+/** @brief Shared implementation behind the two public batch entry points. */
+static int generate_batch(const char* json_file_path, PdfReportType report_type,
+                          const char* out_dir, const char* pfx_path,
+                          const char* password, int require_signature,
+                          PdfEngineProgressCb progress_cb, void* progress_ctx) {
     if (!json_file_path || !*json_file_path || !out_dir || !*out_dir) {
-        LOG_ERROR("pdf_engine_generate_and_sign called with invalid arguments");
+        LOG_ERROR("pdf engine called with invalid arguments");
         return PDF_ENGINE_ERROR_INVALID_ARGS;
     }
 
@@ -280,7 +339,7 @@ int pdf_engine_generate_and_sign(const char*   json_file_path,
     }
 
     PdfSigner* signer = NULL;
-    if (pfx_path && *pfx_path) {
+    if (require_signature) {
         signer = pdf_signer_create(pfx_path, password);
         if (!signer) {
             LOG_ERROR("Failed to initialize signer from PFX file '%s'",
@@ -290,14 +349,15 @@ int pdf_engine_generate_and_sign(const char*   json_file_path,
     }
 
     BatchState batch = {
-        .out_dir        = out_dir,
-        .config         = config,
-        .signer         = signer,
-        .progress_cb    = progress_cb,
-        .progress_ctx   = progress_ctx,
-        .object_index   = 0,
-        .success_count  = 0,
-        .saw_any_object = 0,
+        .out_dir           = out_dir,
+        .config            = config,
+        .signer            = signer,
+        .require_signature = require_signature,
+        .progress_cb       = progress_cb,
+        .progress_ctx      = progress_ctx,
+        .object_index      = 0,
+        .success_count     = 0,
+        .saw_any_object    = 0,
     };
 
     int stream_status =
@@ -317,7 +377,29 @@ int pdf_engine_generate_and_sign(const char*   json_file_path,
         return PDF_ENGINE_ERROR_NO_REPORT_OBJECT;
     }
 
-    LOG_INFO("Batch complete: %d/%ld reports generated into '%s'",
-             batch.success_count, batch.object_index, out_dir);
+    LOG_INFO("Batch complete (%s): %d/%ld reports generated into '%s'",
+             require_signature ? "signed" : "UNSIGNED", batch.success_count,
+             batch.object_index, out_dir);
     return batch.success_count;
+}
+
+int pdf_engine_generate_and_sign(const char*   json_file_path,
+                                 PdfReportType report_type, const char* out_dir,
+                                 const char* pfx_path, const char* password,
+                                 PdfEngineProgressCb progress_cb,
+                                 void*               progress_ctx) {
+    if (!pfx_path || !*pfx_path) {
+        LOG_ERROR("pdf_engine_generate_and_sign: pfx_path is required");
+        return PDF_ENGINE_ERROR_INVALID_ARGS;
+    }
+    return generate_batch(json_file_path, report_type, out_dir, pfx_path,
+                          password, 1, progress_cb, progress_ctx);
+}
+
+int pdf_engine_generate_pdfs(const char*   json_file_path,
+                             PdfReportType report_type, const char* out_dir,
+                             PdfEngineProgressCb progress_cb,
+                             void*               progress_ctx) {
+    return generate_batch(json_file_path, report_type, out_dir, NULL, NULL, 0,
+                          progress_cb, progress_ctx);
 }

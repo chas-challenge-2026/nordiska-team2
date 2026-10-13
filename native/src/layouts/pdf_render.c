@@ -75,6 +75,21 @@ static void draw_logo(RenderCtx* ctx) {
                         CONTENT_TOP + 10.0f - h, w, h);
 }
 
+/** Small grey footer on every page: issuer and page number. */
+static void draw_footer(RenderCtx* ctx) {
+    char text[64];
+    snprintf(text, sizeof(text), "Made by Nordiska Banken  |  Page %d",
+             ctx->page_no);
+
+    const float SAVED_Y = ctx->y;
+    ctx->y              = FOOTER_Y;
+    HPDF_Page_SetRGBFill(ctx->page, 0.4f, 0.4f, 0.4f);
+    render_text_left(ctx, ctx->font_regular, FONT_SIZE_FOOTER, MARGIN_LEFT,
+                     text);
+    HPDF_Page_SetRGBFill(ctx->page, 0.0f, 0.0f, 0.0f);
+    ctx->y = SAVED_Y;
+}
+
 int render_start_new_page(RenderCtx* ctx) {
     HPDF_Page page = HPDF_AddPage(ctx->pdf);
     if (!page) {
@@ -82,7 +97,9 @@ int render_start_new_page(RenderCtx* ctx) {
     }
     HPDF_Page_SetSize(page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
     ctx->page = page;
-    ctx->y    = CONTENT_TOP;
+    ctx->page_no++;
+    ctx->y = CONTENT_TOP;
+    draw_footer(ctx);
     return 0;
 }
 

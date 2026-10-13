@@ -16,9 +16,10 @@
 
 struct PdfSigner {
     std::vector<unsigned char> cert_der; /**< leaf certificate, DER */
-    std::vector<unsigned char> key_der;  /**< private key, DER (PKCS#8) */
+    std::vector<unsigned char> key_der;  /**< private key, DER (traditional
+                                              i2d_PrivateKey format) */
     std::vector<std::vector<unsigned char>>
-        chain_der; /**< intermediate certs, DER */
+        chain_der; /**< intermediate certs, DER (currently not embedded) */
 };
 
 namespace {
@@ -187,6 +188,8 @@ int pdf_signer_sign(PdfSigner *signer, const char *in_path,
         work_path = out_path;
     }
 
+    // This function is called across a C ABI from .NET: nothing may escape
+    // as a C++ exception, or the host process aborts.
     try {
         auto device = std::make_shared<PoDoFo::FileStreamDevice>(
             work_path, PoDoFo::FileMode::Open);
@@ -208,6 +211,9 @@ int pdf_signer_sign(PdfSigner *signer, const char *in_path,
         PoDoFo::SignDocument(doc, *device, cms_signer, field);
     } catch (const std::exception &e) {
         LOG_ERROR("Signing failed for '%s': %s", work_path, e.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Signing failed for '%s': unknown exception", work_path);
         return -1;
     }
 

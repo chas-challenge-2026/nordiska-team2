@@ -96,8 +96,10 @@ static int run(PdfReportType type, const char* json, ProgressLog* log) {
     TEST_ASSERT_NOT_NULL(f);
     fputs(json, f);
     fclose(f);
-    return pdf_engine_generate_and_sign(TEMP_JSON_FILE, type, TEMP_OUT_DIR,
-                                        NULL, NULL, record_progress, log);
+    // Validation behaviour is identical for signed and unsigned runs, so use
+    // the unsigned entry point and keep these tests independent of a PFX.
+    return pdf_engine_generate_pdfs(TEMP_JSON_FILE, type, TEMP_OUT_DIR,
+                                    record_progress, log);
 }
 
 static int file_exists(const char* p) {

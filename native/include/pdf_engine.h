@@ -21,14 +21,15 @@ typedef enum {
 } PdfReportType;
 
 /**
- * @brief Result codes returned by pdf_engine_generate_and_sign() itself
- * (whole-batch, fatal failures), and reported per report through
+ * @brief Result codes returned by the batch functions themselves (whole-batch,
+ * fatal failures), and reported per report through
  * PdfEngineReportResult::status.
  */
 typedef enum {
     PDF_ENGINE_SUCCESS = 0,
     PDF_ENGINE_ERROR_INVALID_ARGS =
-        -1, /**< A required argument was NULL/empty */
+        -1, /**< A required argument was NULL/empty (for
+             * pdf_engine_generate_and_sign this includes pfx_path) */
     PDF_ENGINE_ERROR_NO_REPORT_OBJECT =
         -2, /**< The JSON file's root array had no objects */
     PDF_ENGINE_ERROR_JSON_READ_FAILED =
@@ -39,7 +40,8 @@ typedef enum {
     PDF_ENGINE_ERROR_GENERATION_FAILED =
         -6, /**< PDF layout/rendering failed (per-report) */
     PDF_ENGINE_ERROR_SIGNING_FAILED =
-        -7, /**< A PFX was supplied but signing failed (per-report) */
+        -7, /**< Signing failed, or the output did not contain a signature
+             * (per-report), or the PFX could not be loaded (whole-batch) */
     PDF_ENGINE_ERROR_MISSING_FIELD =
         -8, /**< Input data is incomplete or has a wrong-typed field
              * (per-report). See PdfEngineReportResult::detail. */
@@ -72,60 +74,65 @@ typedef struct {
 
 /**
  * @brief Called once per report object as the batch is streamed, after that
- * report has either been written to disk or failed. Optional - pass NULL to
- * pdf_engine_generate_and_sign() if you don't need per-report visibility.
+ * report has either been written to disk or failed. Optional - pass NULL if
+ * you don't need per-report visibility.
  */
 typedef void (*PdfEngineProgressCb)(const PdfEngineReportResult* result,
                                     void*                        user_ctx);
 
 /**
- * @brief Streams a JSON array of reports and writes one signed PDF per
- * report into `out_dir`.
+ * @brief Streams a JSON array of reports and writes one SIGNED PDF per report
+ * into `out_dir`.
  *
  * `json_file_path` must contain a root-level JSON array of report objects.
- * Objects are read and rendered one at a time via json_stream_array_objects()
- * so memory use stays O(1) in the number of reports, regardless of whether
- * the file holds one report or 10,000 - it's never loaded into memory whole.
+ * Objects are read and rendered one at a time, so memory use stays O(1) in
+ * the number of reports.
+ *
+ * Signing is mandatory: `pfx_path` must be non-empty, otherwise this returns
+ * PDF_ENGINE_ERROR_INVALID_ARGS and writes nothing. A report is only
+ * published if the finished file verifiably contains a signature; if signing
+ * fails or leaves no signature behind, no PDF is written for that report and
+ * it is reported as PDF_ENGINE_ERROR_SIGNING_FAILED.
  *
  * Each report is validated against its layout's required fields before
  * anything is rendered. A report with a missing or wrong-typed required
- * field, or with no usable identifier, is rejected: no PDF is produced for
- * it and it is reported as PDF_ENGINE_ERROR_MISSING_FIELD (or
- * PDF_ENGINE_ERROR_MALFORMED_REPORT) with a detail string naming the field.
+ * field, or with no usable identifier, is rejected (see
+ * PDF_ENGINE_ERROR_MISSING_FIELD / PDF_ENGINE_ERROR_MALFORMED_REPORT).
  *
- * Each valid report is written to `out_dir/<id>.pdf`, where `<id>` is
- * derived from the report's account/customer identifier (sanitized to safe
- * filename characters). `out_dir` is created if it doesn't already exist (a
- * single directory level - its parent must already exist).
+ * Each valid report is written to `out_dir/<id>.pdf`. `out_dir` is created
+ * if it doesn't exist (a single directory level - its parent must exist).
  *
- * A single report failing validation, generation or signing does NOT stop
- * the batch; every other object in the array is still attempted. Pass
- * `progress_cb` to find out which reports, if any, failed and why - the
- * return value alone only tells you how many succeeded, not which ones.
+ * A single report failing does NOT stop the batch. Pass `progress_cb` to
+ * find out which reports failed and why - the return value alone only tells
+ * you how many succeeded.
  *
- * @param[in] json_file_path Path to a JSON file containing a root-level
- * array of report objects.
+ * @param[in] json_file_path Path to a JSON file with a root-level array.
  * @param[in] report_type    Layout type to apply to every report.
  * @param[in] out_dir        Destination directory for the generated PDFs.
- * @param[in] pfx_path       Optional path to a .pfx/.p12 certificate used to
- * sign every generated PDF. Pass NULL (or an empty string) to leave them
- * unsigned.
- * @param[in] password       Optional password for the PFX certificate. Pass
- * NULL if unencrypted or unused.
- * @param[in] progress_cb    Optional callback invoked after each report is
- * attempted. Pass NULL if you don't need per-report results.
+ * @param[in] pfx_path       REQUIRED path to a .pfx/.p12 certificate.
+ * @param[in] password       Password for the PFX. NULL if unencrypted.
+ * @param[in] progress_cb    Optional per-report callback.
  * @param[in] progress_ctx   Opaque pointer passed through to `progress_cb`.
  *
- * @return On success, the number of reports successfully generated (>= 0,
- * and may be 0 if every report failed individually - check via
- * `progress_cb` when that distinction matters). On a fatal, whole-batch
- * failure (bad arguments, unreadable/malformed input file, empty array,
- * unknown report type), a negative PdfEngineResult.
+ * @return On success, the number of reports successfully generated and
+ * signed (>= 0; 0 can mean every report failed individually). On a fatal,
+ * whole-batch failure, a negative PdfEngineResult. Callers must treat
+ * `< 0` as an error.
  */
 PDF_ENGINE_API int pdf_engine_generate_and_sign(
     const char* json_file_path, PdfReportType report_type, const char* out_dir,
     const char* pfx_path, const char* password, PdfEngineProgressCb progress_cb,
     void* progress_ctx);
+
+/**
+ * @brief Same as pdf_engine_generate_and_sign() but produces UNSIGNED PDFs.
+ * Intended for development and testing only.
+ */
+PDF_ENGINE_API int pdf_engine_generate_pdfs(const char*         json_file_path,
+                                            PdfReportType       report_type,
+                                            const char*         out_dir,
+                                            PdfEngineProgressCb progress_cb,
+                                            void*               progress_ctx);
 
 #ifdef __cplusplus
 }

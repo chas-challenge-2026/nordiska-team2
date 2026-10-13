@@ -19,10 +19,14 @@
 #define FONT_SIZE_SUBTITLE 10.0f
 #define FONT_SIZE_SECTION 12.0f
 #define FONT_SIZE_BODY 9.5f
+#define FONT_SIZE_FOOTER 7.0f
 
 #define LINE_HEIGHT_BODY 15.0f
 #define LINE_HEIGHT_SECTION_GAP 22.0f
 #define TABLE_ROW_HEIGHT 16.0f
+
+// Footer baseline; sits below CONTENT_BOTTOM so it never collides with content.
+#define FOOTER_Y 28.0f
 
 // The logo is scaled to fit inside this box, keeping its aspect ratio.
 #define LOGO_MAX_WIDTH 90.0f
@@ -50,6 +54,7 @@ typedef struct {
     HPDF_Font  font_bold;
     HPDF_Image logo; /**< NULL if loading failed; the report still renders */
     float      y;
+    int        page_no; /**< 1-based number of the current page */
 } RenderCtx;
 
 const char* json_get_string(const cJSON* obj, const char* key,
@@ -59,6 +64,7 @@ void        format_sek(double amount, char* buf, size_t buf_len);
 
 /** Loads fonts + logo, creates page 1 and draws the logo on it. */
 int render_ctx_init(RenderCtx* ctx, HPDF_Doc pdf);
+/** Adds a page and draws the footer (issuer + page number) on it. */
 int render_start_new_page(RenderCtx* ctx);
 int render_ensure_space(RenderCtx* ctx, float needed_height);
 

@@ -7,14 +7,17 @@
 
 #define OUT_DIR "data/output_pdfs"
 
-// Optional progress callback to track batch execution cleanly
+// Prints every report's outcome, including the reason for a failure. A bare
+// return code only says how many reports succeeded, not which ones failed.
 static void progress_callback(const PdfEngineReportResult* result,
                               void*                        user_ctx) {
     (void)user_ctx;
     if (result) {
-        printf("[Progress] Report ID: %s | Status: %s\n",
+        printf("[Progress] Report ID: %s | Status: %s%s%s\n",
                result->report_id ? result->report_id : "N/A",
-               result->status == PDF_ENGINE_SUCCESS ? "SUCCESS" : "FAILED");
+               result->status == PDF_ENGINE_SUCCESS ? "SUCCESS" : "FAILED",
+               result->detail && result->detail[0] ? " | " : "",
+               result->detail ? result->detail : "");
     }
 }
 
@@ -44,7 +47,7 @@ int main(void) {
         return 1;
     }
 
-    printf("Batch generation completed successfully! Check '%s/' directory.\n",
-           OUT_DIR);
+    printf("Batch generation completed: %d report(s) signed. Check '%s/'.\n",
+           res, OUT_DIR);
     return 0;
 }

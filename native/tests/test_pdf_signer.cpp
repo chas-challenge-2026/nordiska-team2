@@ -11,6 +11,28 @@
 #define TEST_OUT_PATH "test_output_temp.pdf"
 #define TEST_PASSWORD "secret123"
 
+namespace {
+
+// True if the file contains a PDF signature dictionary. PoDoFo writes
+// /ByteRange into every signature, so this proves the signer left a real
+// signature behind rather than merely returning 0.
+bool file_has_byterange(const char *path) {
+    FILE *f = std::fopen(path, "rb");
+    if (!f) {
+        return false;
+    }
+    std::string data;
+    char buf[65536];
+    size_t n;
+    while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0) {
+        data.append(buf, n);
+    }
+    std::fclose(f);
+    return data.find("/ByteRange") != std::string::npos;
+}
+
+} // namespace
+
 extern "C" {
 void setUp(void) {
     // Generate temporary PFX via OpenSSL
@@ -95,6 +117,24 @@ void test_pdf_signer_sign_success(void) {
         TEST_ASSERT_GREATER_THAN(0, size);
     }
 
+    TEST_ASSERT_TRUE_MESSAGE(file_has_byterange(TEST_OUT_PATH),
+                             "signed PDF must contain a /ByteRange signature");
+
+    pdf_signer_free(signer);
+}
+
+// The engine signs temp files in place (in_path == out_path); make sure that
+// path really produces a signature too.
+void test_pdf_signer_sign_in_place(void) {
+    PdfSigner *signer = pdf_signer_create(TEST_PFX_PATH, TEST_PASSWORD);
+    TEST_ASSERT_NOT_NULL(signer);
+
+    TEST_ASSERT_FALSE(file_has_byterange(TEST_PDF_PATH));
+    TEST_ASSERT_EQUAL_INT(
+        0, pdf_signer_sign(signer, TEST_PDF_PATH, TEST_PDF_PATH));
+    TEST_ASSERT_TRUE_MESSAGE(file_has_byterange(TEST_PDF_PATH),
+                             "in-place signing must leave a signature");
+
     pdf_signer_free(signer);
 }
 
@@ -106,5 +146,6 @@ int main(void) {
     RUN_TEST(test_pdf_signer_create_success);
     RUN_TEST(test_pdf_signer_sign_invalid_arguments);
     RUN_TEST(test_pdf_signer_sign_success);
+    RUN_TEST(test_pdf_signer_sign_in_place);
     return UNITY_END();
 }
