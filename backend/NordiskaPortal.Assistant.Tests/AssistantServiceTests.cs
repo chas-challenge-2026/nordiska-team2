@@ -227,6 +227,19 @@ namespace NordiskaPortal.Assistant.Tests
             Assert.DoesNotContain("JA eller NEJ", body);
         }
 
+        [Fact]
+        public async Task WarmUp_SendsBothPrompts_SoBothGetCached()
+        {
+            var handler = FakeOllamaHandler.Answering("x");
+            var service = CreateService(handler);
+
+            Assert.True(await service.WarmUpAsync(CancellationToken.None));
+
+            Assert.Equal(2, handler.RequestBodies.Count);
+            Assert.Contains("JA eller NEJ", handler.RequestBodies[0]);
+            Assert.Contains("FAKTA", handler.RequestBodies[1]);
+        }
+
         [Theory]
         [InlineData("Hur öppnar jag ett sparkonto?", true)]
         [InlineData("Hur avslutar jag ett konto?", true)]

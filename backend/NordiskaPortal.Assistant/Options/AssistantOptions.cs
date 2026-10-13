@@ -35,5 +35,10 @@ namespace NordiskaPortal.Assistant.Options
 
         // Context window in tokens. The prompt + examples + question fit well within this.
         public int ContextSize { get; set; } = 2048;
+
+        // Threads Ollama computes with. Should equal the container's CPU limit
+        // (OLLAMA_CPUS): more threads than allowed CPUs get throttled.
+        // null = let Ollama decide (fine for a local `ollama serve`).
+        public int? Threads { get; set; }
     }
 }

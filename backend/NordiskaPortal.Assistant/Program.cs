@@ -79,6 +79,12 @@ builder.Services.AddHttpClient<AssistantService>((sp, http) =>
     http.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
     http.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
 });
+// Warm the model up in the background at startup. Skipped in tests: the
+// fake Ollama would receive two extra requests and break request counts.
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<OllamaWarmUp>();
+}  
 builder.Services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = false);
 
 var app = builder.Build();
