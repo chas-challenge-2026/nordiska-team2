@@ -15,6 +15,26 @@ namespace NordiskaPortal.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AuditEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Actor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CustomerId = table.Column<int>(type: "integer", nullable: true),
+                    Action = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    RefId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    CorrelationId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Signature = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
@@ -82,7 +102,8 @@ namespace NordiskaPortal.Api.Migrations
                     AccountNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     InterestRate = table.Column<decimal>(type: "numeric(5,4)", nullable: false),
                     AccountType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -200,12 +221,12 @@ namespace NordiskaPortal.Api.Migrations
 
             migrationBuilder.InsertData(
                 table: "SavingsAccounts",
-                columns: new[] { "Id", "AccountNumber", "AccountType", "CreatedAt", "CustomerId", "InterestRate" },
+                columns: new[] { "Id", "AccountNumber", "AccountType", "ClosedAt", "CreatedAt", "CustomerId", "InterestRate" },
                 values: new object[,]
                 {
-                    { 1, "NKM-10001", "Savings", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
-                    { 2, "NKM-10002", "Savings", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
-                    { 3, "NKM-20001", "Savings", new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
+                    { 1, "NKM-10001", "Savings", null, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
+                    { 2, "NKM-10002", "Savings", null, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
+                    { 3, "NKM-20001", "Savings", null, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
                 });
 
             migrationBuilder.InsertData(
@@ -223,6 +244,11 @@ namespace NordiskaPortal.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuditEntries_CustomerId_Timestamp",
+                table: "AuditEntries",
+                columns: new[] { "CustomerId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Customers_Email",
                 table: "Customers",
                 column: "Email",
@@ -232,6 +258,12 @@ namespace NordiskaPortal.Api.Migrations
                 name: "IX_RefreshTokens_CustomerId",
                 table: "RefreshTokens",
                 column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_AccountNumber",
+                table: "SavingsAccounts",
+                column: "AccountNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SavingsAccounts_CustomerId",
@@ -263,6 +295,9 @@ namespace NordiskaPortal.Api.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuditEntries");
+
             migrationBuilder.DropTable(
                 name: "FaqEntries");
 

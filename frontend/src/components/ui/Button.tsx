@@ -6,7 +6,7 @@ const buttonVariantClasses: Record<buttonVariant, string> = {
     secondary: "bg-brand text-white text-small hover:bg-brand/90 min-w-30 p-2",
     success: "bg-success text-white text-small hover:bg-success/90 hover:border-brand min-w-30 p-2",
     cancel: "bg-cancel text-white text-small hover:bg-cancel/90 min-w-30 p-2",
-    dropDown: "text-brand-text text-small bg-card flex min-w-40 w-1/4 items-center justify-between p-2",
+    dropDown: "text-brand-text text-small bg-card flex min-w-40 w-49 items-center justify-between p-2",
     tile: "bg-card text-foreground text-small hover:border-brand-text p-2",
     quickPick: "bg-card text-brand-text text-small hover:bg-border hover:border-brand py-1 px-3",
     

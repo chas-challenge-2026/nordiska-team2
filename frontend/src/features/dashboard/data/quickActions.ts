@@ -3,7 +3,7 @@ import transferIcon from "../../../assets/svg/transfer-dark.svg";
 import bankIdIcon from "../../../assets/svg/bankid-dark.svg";
 import cardIcon from "../../../assets/svg/credit-dark.svg";
 import walletIcon from "../../../assets/svg/wallet-dark.svg";
-import aiBuddyIcon from "../../../assets/svg/ai-buddy-dark.svg";
+// import aiBuddyIcon from "../../../assets/svg/ai-buddy-dark.svg";
 import type { QuickAction } from "../../../types/quickActions";
 
 export const quickActions: QuickAction[] = [
@@ -25,23 +25,17 @@ export const quickActions: QuickAction[] = [
         icon: walletIcon,
         size: "small",
     },
-    //     {
-    //     id: "download",
-    //     label: "Ladda ner skatterapp.",
-    //     icon: downloadIcon,
-    //     size: "xsmall",
-    // },
         {
-        id: "loanApplication",
-        label: "Ansök om lån",
+        id: "newAccount",
+        label: "Skapa nytt konto",
         icon: cardIcon,
         size: "small",
     },
-        {
-        id: "aiBuddy",
-        label: "Ai Kompis",
-        icon: aiBuddyIcon,
-        size: "small",
-    },
+    //     {
+    //     id: "aiBuddy",
+    //     label: "Ai Kompis",
+    //     icon: aiBuddyIcon,
+    //     size: "small",
+    // },
                         
 ]

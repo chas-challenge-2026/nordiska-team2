@@ -15,7 +15,8 @@ import DeleteSavingsGoalModal from "../dashboard/components/modals/SavingsGoalsM
 import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
 import PageHeader from "../../components/ui/Pageheader";
-
+import CreateAccountModal from "../dashboard/components/modals/NewAccountModal/CreateAccountModal"
+import DeleteAccountModal from "../dashboard/components/modals/NewAccountModal/DeleteAccountModal";
 
 interface LedgerEntry {
   date: string;
@@ -35,11 +36,13 @@ export default function TransactionPage() {
   const [description, setDescription] = useState("");
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isGoalMenuOpen, setIsGoalMenuOpen] = useState(false)
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const { data: goals } = useSavingsGoals();
 
-
+const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
+const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -183,14 +186,14 @@ export default function TransactionPage() {
           </div>
           <div>
             <div className="relative">
-              {/*========== Hantera Konto ==========*/}
+              {/*========== Hantera sparmål ==========*/}
               <Button 
                   label="Hantera sparmål"
                   className="w-full rounded-none sm:rounded-card"
                   variant="dropDown"
-                  onClick={() => setIsMenuOpen((open) => !open)}
+                  onClick={() => setIsGoalMenuOpen((open) => !open)}
                 ><span>▼</span> </Button>
-                {isMenuOpen && (
+                {isGoalMenuOpen && (
                   <ul className="absolute z-10 w-full right-0 mt-0.5
                                   rounded-default border border-border bg-card 
                                   shadow-sm text-small"
@@ -198,7 +201,7 @@ export default function TransactionPage() {
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                setIsMenuOpen(false)
+                                setIsGoalMenuOpen(false)
                                 setIsGoalModalOpen(true)
                               }}
                       >
@@ -208,7 +211,7 @@ export default function TransactionPage() {
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                  setIsMenuOpen(false);
+                                  setIsGoalMenuOpen(false);
                                   setIsDeleteGoalModalOpen(true);
                               }}
                       >
@@ -225,9 +228,9 @@ export default function TransactionPage() {
               label="Hantera konto"
               className="w-full rounded-none sm:rounded-card"
               variant="dropDown"
-              onClick={() => setIsMenuOpen((open) => !open)}
+              onClick={() => setIsAccountMenuOpen((open) => !open)}
             ><span>▼</span> </Button>
-            {isMenuOpen && (
+            {isAccountMenuOpen && (
               <ul className="absolute z-10 w-full right-0 mt-0.5
                               md:rounded-default border border-border bg-card 
                               shadow-sm text-small"
@@ -235,21 +238,21 @@ export default function TransactionPage() {
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsGoalModalOpen(true)
+                            setIsAccountMenuOpen(false)
+                            setIsAccountMenuOpen(true)
                           }}
                   >
-                    Skapa sparmål
+                    Skapa konto
                   </button>
                 </li>
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                              setIsMenuOpen(false);
-                              setIsDeleteGoalModalOpen(true);
+                              setIsAccountMenuOpen(false);
+                              setIsDeleteAccountModalOpen(true);
                           }}
                   >
-                      Ta bort sparmål
+                      Ta bort Konto
                   </button>
                 </li>
               </ul>
@@ -260,20 +263,21 @@ export default function TransactionPage() {
       {/*========== Menuval ========== */}
       <div className="flex flex-cols w-full gap-2">
         <div className=" relative hidden md:block">
+          {/* ========== hantera sparmål ========== */}    
           <Button 
               label="Hantera sparmål"
               variant="dropDown"
-              onClick={() => setIsMenuOpen((open) => !open)}
+              onClick={() => setIsGoalMenuOpen((open) => !open)}
             ><span>▼</span> </Button>
-            {isMenuOpen && (
-              <ul className="absolute z-10 min-w-40 mt-0.5
+            {isGoalMenuOpen && (
+              <ul className="absolute z-10 min-w-40 w-49 mt-0.5
                               rounded-card border border-border bg-card 
                               shadow-sm text-small"
               >
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                            setIsMenuOpen(false)
+                            setIsGoalMenuOpen(false)
                             setIsGoalModalOpen(true)
                           }}
                   >
@@ -283,7 +287,7 @@ export default function TransactionPage() {
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                              setIsMenuOpen(false);
+                              setIsGoalMenuOpen(false);
                               setIsDeleteGoalModalOpen(true);
                           }}
                   >
@@ -295,33 +299,34 @@ export default function TransactionPage() {
         </div>
         <div className=" relative hidden md:block">
           <Button 
-              label="Hantera sparmål"
+              label="Hantera konto"
               variant="dropDown"
-              onClick={() => setIsMenuOpen((open) => !open)}
+              onClick={() => setIsAccountMenuOpen((open) => !open)}
             ><span>▼</span> </Button>
-            {isMenuOpen && (
-              <ul className="absolute z-10 min-w-40 mt-0.5
+            {isAccountMenuOpen && (
+              <ul className="absolute z-10 min-w-40 w-49 mt-0.5
                               rounded-card border border-border bg-card 
                               shadow-sm text-small"
               >
+           {/* ========== Hantera konto ========== */}     
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                            setIsMenuOpen(false)
-                            setIsGoalModalOpen(true)
+                            setIsAccountMenuOpen(false)
+                            setIsCreateAccountModalOpen(true)
                           }}
                   >
-                    Skapa sparmål
+                    Skapa konto
                   </button>
                 </li>
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                              setIsMenuOpen(false);
-                              setIsDeleteGoalModalOpen(true);
+                              setIsAccountMenuOpen(false);
+                              setIsDeleteAccountModalOpen(true);
                           }}
                   >
-                      Ta bort sparmål
+                      Ta bort konto
                   </button>
                 </li>
               </ul>
@@ -510,6 +515,9 @@ export default function TransactionPage() {
       </section>
       <CreateSavingsGoalsModal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} />
       <DeleteSavingsGoalModal isOpen={isDeleteGoalModalOpen} onClose={() => setIsDeleteGoalModalOpen(false)} />
+
+      <CreateAccountModal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} />
+      <DeleteAccountModal isOpen={isDeleteAccountModalOpen} onClose={() => setIsDeleteAccountModalOpen(false)} />
 
     </>
   );

@@ -4,8 +4,7 @@ import type { QuickAction } from "../../../types/quickActions";
 import TransferModal from "./modals/TransferModal";
 import TransactionModal from "./modals/TransactionModal";
 import CreateSavingsGoalsModal from "./modals/SavingsGoalsModal/CreateSavingsGoalsModal";
-// import PayBillsModal from "./modals/PayBillsModal";
-// import LoanApplicationModal from "./modals/LoanApplicationModal";
+import newAccountModal from "./modals/NewAccountModal/CreateAccountModal"
 // import AiBuddyModal from "./modals/AiBuddyModal";
 
 type variantSizes = "xsmall" | "small" | "medium" | "large" ;
@@ -25,7 +24,7 @@ const modalById: Record<string, React.ComponentType<{ isOpen: boolean; onClose: 
     transaction: TransactionModal,
     transfer: TransferModal,
     savingGoals: CreateSavingsGoalsModal,
-    // loanApplication: LoanApplicationModal,
+    newAccount: newAccountModal,
     // aiBuddy: AiBuddyModal,
 };
 
