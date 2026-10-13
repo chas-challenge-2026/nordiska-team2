@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './app/Context/AuthContext'
 import { AlertProvider } from './hooks/AlertProvider'
 import { SettingsProvider } from './app/Context/SettingsContext'
+import "./language"
 
 import { apiClient } from './client'; (window as any).apiClient = apiClient;
 

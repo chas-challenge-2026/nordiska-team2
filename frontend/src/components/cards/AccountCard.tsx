@@ -1,10 +1,6 @@
 import Card from "./Card";
-
-
-const currencyFormatter = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-});
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../language/useFormatters";
 
 type AccountCardProps = {
     name: string;
@@ -21,6 +17,8 @@ export default function AccountCard({
     interest,
     to,
 }: AccountCardProps) {
+    const { t } = useTranslation();
+    const { currency: currencyFormatter } = useFormatters();
     return (
         <Card 
             title={name}
@@ -30,14 +28,14 @@ export default function AccountCard({
             to={to}
         >
             <p className="text-small text-muted">
-                Tillgängligt saldo
+                {t("accountCard.availableBalance")}
             </p>
             <p className="text-title font-bold text-brand-text"> 
                 {currencyFormatter.format(balance)}
             </p>
             {interest !== undefined &&(
                 <p className="text-muted text-small">
-                    Ränta {interest} %
+                    {t("accountCard.interest", { rate: interest })}
                 </p>
             )} 
         </Card>

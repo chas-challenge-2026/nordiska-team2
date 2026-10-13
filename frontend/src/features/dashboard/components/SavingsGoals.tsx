@@ -5,6 +5,8 @@ import Card from "../../../components/cards/Card";
 import SelectOptions from "../../../components/ui/Select";
 import type { OptionType } from "../../../components/ui/Select";
 import type { SavingsGoalsData } from "../data/savingsGoalsData";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../../language/useFormatters";
 
 type SavingOverviewProps = {
     goals: SavingsGoalsData[];
@@ -12,17 +14,15 @@ type SavingOverviewProps = {
     accounts: Account[];
 };
 
-const currencyFormatter = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-});
-
 export default function SavingsGoal({
     goals,
     isLoading,
     accounts,
 }: SavingOverviewProps){
     const [explicitGoalOption, setSelectedGoalOption] = useState<OptionType | null>(null)
+    const { t } = useTranslation();
+  
+    const { currency: currencyFormatter } = useFormatters();
     const goalOptions: OptionType[] = goals.map((goal) => {
         const goalAccount = accounts.find((a) => a.id === goal.accountId);
         return{
@@ -39,9 +39,9 @@ const selectedGoalOption = isExplicitGoalValid
         
     if(isLoading) {
         return(
-            <Card title="Sparmål" headerVariant="secondary">
+            <Card title={t("common.savingsGoal")} headerVariant="secondary">
                 <p className="text-small text-muted">
-                    Laddar sparmål.
+                    {t("dashboard.loadingSavingsGoals")}
                 </p>
             </Card>
         )
@@ -68,7 +68,7 @@ const selectedGoalOption = isExplicitGoalValid
                     ) : ( 
                         <h2 className="min-h-6 text-medium font-semibold">{goal.name}</h2>
                     )}
-                    <p className="text-small opacity-85">Sparmål: <span className="font-semibold">{account?.accountNumber}</span></p> 
+                    <p className="text-small opacity-85">{t("common.savingsGoal")}: <span className="font-semibold">{account?.accountNumber}</span></p>
                 </>
             }
             headerVariant="secondary">
@@ -100,8 +100,8 @@ const selectedGoalOption = isExplicitGoalValid
                 </div>
                 <p className="text-small text-muted">
                     {remaining > 0
-                        ? `${currencyFormatter.format(remaining)} kvar till målet`
-                        : "Målet är uppnått!"}
+                        ? t("dashboard.remainingToGoal", { amount: currencyFormatter.format(remaining) })
+                        : t("dashboard.goalReached")}
                 </p>
                 
             </div>

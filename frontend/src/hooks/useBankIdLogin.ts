@@ -11,6 +11,8 @@ const TIMEOUT_MS = 30000;
 
 export function useBankIdLogin() {
   const [status, setStatus] = useState<BankIdStatus>("idle");
+  // errorMessage är en nyckel i språkfilerna, t.ex. "login.errors.bankIdTimeout".
+  // Den översätts med t() där den visas (LoginPage).
   const [errorMessage, setErrorMessage] = useState("");
   const auth = useAuth();
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ export function useBankIdLogin() {
       poll(orderRef, deadline);
     } catch {
       setStatus("failed");
-      setErrorMessage("Kunde inte starta BankID. Försök igen.");
+      setErrorMessage("login.errors.bankIdStartFailed");
     }
   }
 
@@ -58,7 +60,7 @@ export function useBankIdLogin() {
 
     if (Date.now() > deadline) {
       setStatus("failed");
-      setErrorMessage("BankID-inloggningen tog för lång tid. Försök igen.");
+      setErrorMessage("login.errors.bankIdTimeout");
       return;
     }
 
@@ -84,11 +86,11 @@ export function useBankIdLogin() {
       }
 
       setStatus("failed");
-      setErrorMessage("BankID-inloggningen misslyckades.");
+      setErrorMessage("login.errors.bankIdFailed");
     } catch {
       if (cancelledRef.current) return;
       setStatus("failed");
-      setErrorMessage("Något gick fel vid BankID-inloggningen.");
+      setErrorMessage("login.errors.bankIdError");
     }
   }
 

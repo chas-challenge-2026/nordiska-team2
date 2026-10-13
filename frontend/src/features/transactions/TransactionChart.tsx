@@ -2,6 +2,8 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Lege
 import type { ChartEvent, LegendItem } from "chart.js"
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "../../language/useFormatters";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -13,7 +15,7 @@ type LedgerEntry = {
 
 const WINDOW_SIZE = 5;
 
-function buildSeries(history: LedgerEntry[], page: number, currentBalance: number) {
+function buildSeries(history: LedgerEntry[], page: number, currentBalance: number, locale: string) {
     const byDate = new Map<string, { deposits: number; withdrawals: number; }>();
 
     for(const entry of history) {
@@ -42,7 +44,7 @@ function buildSeries(history: LedgerEntry[], page: number, currentBalance: numbe
     const start = Math.max(0, end - WINDOW_SIZE);
     const dates = allDates.slice(start, end);
 
-    const dateFormatter = new Intl.DateTimeFormat("sv-SE", { 
+    const dateFormatter = new Intl.DateTimeFormat(locale, { 
         day: "numeric", 
         month: "numeric", 
         year: "2-digit"})
@@ -70,13 +72,13 @@ type TransactionChartProps = {
 
 export default function TransactionsChart({ history, currentBalance }: TransactionChartProps) {
     const [page, setPage] = useState(0);
-    const [hidden, setHidden] = useState({ start: false, deposit: false, withdrawal: false })
-
+    const { t } = useTranslation();
+    const { locale } = useFormatters();
     if (history.length === 0)
-        return <p className="text-small text-muted">Inga transaktioner att visa</p>
+        return <p className="text-small text-muted">{t("accountsPage.chart.noData")}</p>
     
-    const { labels, startBalances, netAmounts, netColors, hasNewer, hasOlder } = 
-        buildSeries(history, page, currentBalance);
+    const { labels, startBalances, deposits, withdrawals, hasNewer, hasOlder } = 
+        buildSeries(history, page, currentBalance, locale);
 
     const displayedStartBalances = startBalances.map((v) => (hidden.start ? 0 : v ));
     const displayedNetAmounts = netAmounts.map((amt, i) => {
@@ -90,8 +92,8 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
         labels, 
         datasets: [
             {
-                label: "Startsaldo",
-                data: displayedStartBalances,
+                label: t("accountsPage.chart.startBalance"),
+                data: startBalances,
                 backgroundColor: "#C6C6C6",
                 stack: "day",
                 borderRadius: 4,
@@ -99,10 +101,18 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
 
             },
             {
-                label: "Insättning/uttag (netto)",
-                data: displayedNetAmounts,
-                backgroundColor: netColors,
+                label: t("accountsPage.chart.deposits"),
+                data: deposits,
+                backgroundColor: "#1a5276",
                 stack:"day",
+                borderRadius: 4,
+                maxBarThickness: 34,
+            },
+            {
+                label: t("accountsPage.chart.withdrawals"),
+                data: withdrawals,
+                backgroundColor: "#f5a623",
+                stack: "day",
                 borderRadius: 4,
                 maxBarThickness: 34,
             },
@@ -154,7 +164,7 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
                     disabled={!hasOlder}
                     onClick={() => setPage((p) => p + 1)}
                 >
-                    ← Föregående
+                    {t("accountsPage.chart.previous")}
                 </button>
                 <button
                     type="button"
@@ -162,7 +172,7 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
                     disabled={!hasNewer}
                     onClick={() => setPage((p) => p - 1)}
                 >
-                    Nästa →
+                    {t("accountsPage.chart.next")}
                 </button>
             </div>
         </div>

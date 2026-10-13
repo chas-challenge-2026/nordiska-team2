@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { navigationItems } from "./navigationItems";
 import { useSettings } from "../../../hooks/useSettings";
+import { useTranslation } from "react-i18next";
 
 const mobileItems = navigationItems.filter(
     (item) => item.showInMobileNav,
@@ -8,10 +9,11 @@ const mobileItems = navigationItems.filter(
 
 export default function MobileNavbar() {
     const { theme } = useSettings();
+    const { t } = useTranslation();
 
     return (
         <nav
-            aria-label="Mobil navigation"
+            aria-label={t("nav.mobileLabel")}
             className="fixed inset-x-0 bottom-0 z-50
                        border-t border-border bg-sidebar
                        pb-[env(safe-area-inset-bottom)]
@@ -45,7 +47,7 @@ export default function MobileNavbar() {
                                             className="size-5"
                                         />
                                         <span className="text-center">
-                                            {item.mobileLabel ?? item.name}
+                                            {t(item.mobileLabel ?? item.name)}
                                         </span>
                                     </>
                                 );

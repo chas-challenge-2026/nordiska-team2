@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { NavigationItem } from "./navigationItems";
 
 type NavItemProps = {
@@ -6,6 +7,7 @@ type NavItemProps = {
 };
 
 export default function NavItem({ item }: NavItemProps) {
+    const { t } = useTranslation();
     return (
         <li className={`w-full ${item.startsSection ? "mt-auto" : "mt-1"}`}>
             <NavLink
@@ -38,7 +40,7 @@ export default function NavItem({ item }: NavItemProps) {
                                 isActive ? "block" : "hidden group-hover:block"
                             }`}
                         />
-                        <span className="ml-3">{item.name}</span>
+                        <span className="ml-3">{t(item.name)}</span>
                     </>
                 )}
             </NavLink>

@@ -3,6 +3,7 @@ import Button from "../../../components/ui/Button";
 import type { QuickAction } from "../../../types/quickActions";
 import TransferModal from "./modals/TransferModal";
 import TransactionModal from "./modals/TransactionModal";
+import { useTranslation } from "react-i18next";
 import CreateSavingsGoalsModal from "./modals/SavingsGoalsModal/CreateSavingsGoalsModal";
 import newAccountModal from "./modals/NewAccountModal/CreateAccountModal"
 // import AiBuddyModal from "./modals/AiBuddyModal";
@@ -30,16 +31,17 @@ const modalById: Record<string, React.ComponentType<{ isOpen: boolean; onClose: 
 
 export default function QuickActions({ actions }: QuickActionsProps){
     const [activeModal, setActiveModal] = useState<string | null>(null)
+    const { t } = useTranslation();
     const ActiveModal = activeModal ? modalById[activeModal] : null;
 
     return (
        <>
             <section aria-labelledby="quick-actions-title"
                      className="hidden lg:flex flex-col gap-3">
-                {/* <h2 id="quick-actions-title"
+                <h2 id="quick-actions-title"
                     className="text-medium font-semibold text-foreground">
-                    Snabbt &amp; enkelt
-                </h2> */}
+                    {t("dashboard.quickActionsTitle")}
+                </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
                     {actions.map((action) =>(
@@ -57,7 +59,7 @@ export default function QuickActions({ actions }: QuickActionsProps){
                                         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand
                                         ${variantSizesClasses[action.size ?? "small"]}`}
                             key={action.id}
-                            label={action.label}
+                            label={t(action.label)}
                             onClick={() => setActiveModal(action.id)}
                             icon={
                                 // Ikonrutan fylls med Nordiska-blått vid hovring och ikonen blir vit.
