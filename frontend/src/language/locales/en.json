@@ -78,12 +78,16 @@
         "loadingAccounts": "Loading accounts",
         "accountsError": "Could not load accounts",
         "noAccounts": "You don't have any accounts yet.",
+        "createAccountCard": {
+            "title": "Create account",
+            "subtitle": "Add a new account"
+        },
         "quickActionsTitle": "Quick & easy",
         "quickActions": {
             "transaction": "Deposits and withdrawals",
             "transfer": "Transfer",
             "savingGoals": "Create savings goal",
-            "loanApplication": "Apply for a loan",
+            "newAccount": "Create a new savingaccount",
             "aiBuddy": "AI Buddy"
         },
         "recentActivity": "Recent activity",
@@ -109,7 +113,8 @@
     },
     "accountCard": {
         "availableBalance": "Available balance",
-        "interest": "Interest rate {{rate}}%"
+        "interest": "Interest rate {{rate}}%",
+        "warmingUp": "We're warming things up for a new account here"
     },
     "accountsPage": {
         "loadingAccounts": "Loading accounts...",
@@ -119,6 +124,9 @@
         "manageGoals": "Manage savings goals",
         "createGoal": "Create savings goal",
         "deleteGoal": "Delete savings goal",
+        "manageAccount": "Manage account",
+        "createAccount": "Create account",
+        "deleteAccount": "Delete account",
         "balance": "Balance",
         "noGoalForAccount": "No savings goal for this account.",
         "goalAria": "Savings goal: {{name}}",
@@ -134,7 +142,7 @@
         "depositing": "Depositing...",
         "withdrawMoney": "Withdraw money",
         "withdrawing": "Withdrawing...",
-        "chartTitle": "Deposits and withdrawals",
+        "chartTitle": "Overview",
         "history": "History",
         "loadingHistory": "Loading history...",
         "chart": {
@@ -155,7 +163,10 @@
         "deposit": "Deposit",
         "depositing": "Depositing ...",
         "depositDone": "The deposit is complete.",
-        "withdrawDone": "The withdrawal is complete."
+        "withdrawDone": "The withdrawal is complete.",
+        "descriptionLabel": "Message to the recipient (Optional)",
+        "afterDeposit": "After deposit: {{amount}}",
+        "afterWithdraw": "After withdrawal: {{amount}}"
     },
     "transferModal": {
         "title": "Transfer",
@@ -195,7 +206,26 @@
         "delete": "Delete",
         "deleting": "Deleting..."
     },
+    "createAccountModal": {
+        "title": "Create new account",
+        "description": "A new savings account is created automatically with a new account number and the standard interest rate.",
+        "create": "Create account",
+        "creating": "Creating...",
+        "createFailed": "Could not create the account. Please try again later.",
+        "done": "The account has been created."
+    },
+    "deleteAccountModal": {
+        "title": "Delete account",
+        "question": "Which account do you want to delete?",
+        "deleteFailed": "The account could not be deleted (it must be empty).",
+        "missingAccount": "You must select an account.",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "done": "The account has been deleted."
+    },
     "faq": {
+        "title": "FAQ",
+        "subtitle": "Find answers to your questions here.",
         "searchPlaceholder": "How do I withdraw money?",
         "popularSearches": "Popular searches: withdrawal time · interest statement · tax report 2025",
         "searching": "Searching...",

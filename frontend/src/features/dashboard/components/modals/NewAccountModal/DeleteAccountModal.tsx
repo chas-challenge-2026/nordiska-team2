@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import Button from "../../../../../components/ui/Button";
 import Modal from "../../../../../components/ui/Modal";
 import SelectOptions from "../../../../../components/ui/Select";
 import type { OptionType } from "../../../../../components/ui/Select";
 import { useAccounts } from "../../../../../hooks/useAccounts";
 import { apiClient } from "../../../../../client";
+import { useAlert } from "../../../../../hooks/useAlert";
 
 type DeleteAccountModalProps = {
     isOpen: boolean;
@@ -15,6 +17,8 @@ type DeleteAccountModalProps = {
 export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps) {
     const queryClient = useQueryClient();
     const { data: accounts } = useAccounts();
+    const { showAlert } = useAlert();
+    const { t } = useTranslation();
     const [selectedAccount, setSelectedAccount] = useState<OptionType | null>(null);
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
@@ -27,6 +31,7 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
         mutationFn: (accountId: number) => apiClient.delete(`/accounts/${accountId}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] });
+            showAlert({ type: "success", title: t("common.done"), message: t("deleteAccountModal.done") });
             resetAndClose();
         },
     });
@@ -44,22 +49,22 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
     }
 
     return (
-        <Modal title="Ta bort konto" isOpen={isOpen} onClose={resetAndClose}>
+        <Modal title={t("deleteAccountModal.title")} isOpen={isOpen} onClose={resetAndClose}>
             <div className="flex flex-col gap-1 border border-border rounded-card w-full h-full px-4 py-6 mt-3 mb-10">
-                <p className="mb-2 ml-1">Vilket konto vill du ta bort?</p>
-                <SelectOptions value={selectedAccount} 
-                                onChange={setSelectedAccount} 
-                                options={accountOptions} 
-                                placeholder="Välj konto" />
-                {deleteMutation.isError && 
-                    <p className="text-xsmall text-cancel">Kontot kunde inte tas bort (måste vara tomt).</p>}
-                {hasAttemptedSubmit && !selectedAccount && 
-                    <p className="text-xsmall text-cancel">Du måste välja ett konto.</p>}
+                <p className="mb-2 ml-1">{t("deleteAccountModal.question")}</p>
+                <SelectOptions value={selectedAccount}
+                                onChange={setSelectedAccount}
+                                options={accountOptions}
+                                placeholder={t("common.selectAccount")} />
+                {deleteMutation.isError &&
+                    <p className="text-xsmall text-cancel">{t("deleteAccountModal.deleteFailed")}</p>}
+                {hasAttemptedSubmit && !selectedAccount &&
+                    <p className="text-xsmall text-cancel">{t("deleteAccountModal.missingAccount")}</p>}
             </div>
             <div className="flex justify-end gap-5">
-                <Button label="Avbryt" variant="cancel" onClick={resetAndClose} />
+                <Button label={t("common.cancel")} variant="cancel" onClick={resetAndClose} />
                 <Button
-                    label={deleteMutation.isPending ? "Tar bort..." : "Ta bort"}
+                    label={deleteMutation.isPending ? t("deleteAccountModal.deleting") : t("deleteAccountModal.delete")}
                     variant="secondary"
                     onClick={handleDelete}
                     disabled={!selectedAccount || deleteMutation.isPending}

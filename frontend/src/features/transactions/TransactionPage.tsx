@@ -188,7 +188,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
             <div className="relative">
               {/*========== Hantera sparmål ==========*/}
               <Button 
-                  label="Hantera sparmål"
+                  label={t("accountsPage.manageGoals")}
                   className="w-full rounded-none sm:rounded-card"
                   variant="dropDown"
                   onClick={() => setIsGoalMenuOpen((open) => !open)}
@@ -205,7 +205,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                                 setIsGoalModalOpen(true)
                               }}
                       >
-                        Skapa sparmål
+                        {t("accountsPage.createGoal")}
                       </button>
                     </li>
                     <li>
@@ -215,7 +215,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                                   setIsDeleteGoalModalOpen(true);
                               }}
                       >
-                          Ta bort sparmål
+                          {t("accountsPage.deleteGoal")}
                       </button>
                     </li>
                   </ul>
@@ -225,7 +225,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
           {/*========== Hantera Konto ==========*/}
           <div className="relative">
             <Button 
-              label="Hantera konto"
+              label={t("accountsPage.manageAccount")}
               className="w-full rounded-none sm:rounded-card"
               variant="dropDown"
               onClick={() => setIsAccountMenuOpen((open) => !open)}
@@ -239,10 +239,10 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
                             setIsAccountMenuOpen(false)
-                            setIsAccountMenuOpen(true)
+                            setIsCreateAccountModalOpen(true)
                           }}
                   >
-                    Skapa konto
+                    {t("accountsPage.createAccount")}
                   </button>
                 </li>
                 <li>
@@ -252,7 +252,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                               setIsDeleteAccountModalOpen(true);
                           }}
                   >
-                      Ta bort Konto
+                      {t("accountsPage.deleteAccount")}
                   </button>
                 </li>
               </ul>
@@ -260,21 +260,24 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
           </div>
         </div>
 
-      <div className=" relative hidden md:block">
-         <Button 
+
+        {/* ========== Hantera sparmål ========== */}
+      <div className="hidden md:flex md:flex-row gap-2">
+      <div className="relative">
+         <Button
             label={t("accountsPage.manageGoals")}
             variant="dropDown"
-            onClick={() => setIsMenuOpen((open) => !open)}
+            onClick={() => setIsGoalMenuOpen((open) => !open)}
           ><span>▼</span> </Button>
-          {isMenuOpen && (
-            <ul className="absolute z-10 w-1/4 mt-0.5
-                            rounded-default border border-border bg-card 
+          {isGoalMenuOpen && (
+            <ul className="absolute z-10 w-full mt-0.5
+                            rounded-default border border-border bg-card
                             shadow-sm text-small"
             >
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                          setIsMenuOpen(false)
+                          setIsGoalMenuOpen(false)
                           setIsGoalModalOpen(true)
                         }}
                 >
@@ -284,7 +287,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                            setIsMenuOpen(false);
+                            setIsGoalMenuOpen(false);
                             setIsDeleteGoalModalOpen(true);
                         }}
                 >
@@ -294,7 +297,45 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
             </ul>
           )}
       </div>
-      
+    
+    {/* ========== Hantera konto ========== */}
+
+      <div className="relative">
+         <Button
+            label={t("accountsPage.manageAccount")}
+            variant="dropDown"
+            onClick={() => setIsAccountMenuOpen((open) => !open)}
+          ><span>▼</span> </Button>
+          {isAccountMenuOpen && (
+            <ul className="absolute z-10 w-full mt-0.5
+                            rounded-default border border-border bg-card
+                            shadow-sm text-small"
+            >
+              <li>
+                <button className="w-full text-left hover:bg-background px-2 py-2"
+                        onClick={() => {
+                          setIsAccountMenuOpen(false)
+                          setIsCreateAccountModalOpen(true)
+                        }}
+                >
+                  {t("accountsPage.createAccount")}
+                </button>
+              </li>
+              <li>
+                <button className="w-full text-left hover:bg-background px-2 py-2"
+                        onClick={() => {
+                            setIsAccountMenuOpen(false);
+                            setIsDeleteAccountModalOpen(true);
+                        }}
+                >
+                    {t("accountsPage.deleteAccount")}
+                </button>
+              </li>
+            </ul>
+          )}
+      </div>
+      </div>
+
 
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
     <div className="flex md:gap-3 flex-col md:flex-row">
@@ -306,8 +347,10 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
         >
           <div>
             <p className="mt-2 text-small text-muted">{t("accountCard.availableBalance")}</p>
-            {selectedAccount && <p className="mt-2 text-balance font-bold text-brand">
-              {amountFormatter.format(selectedAccount.balance)}
+            {selectedAccount?.balance !== undefined &&
+              <p className="mt-2 text-balance font-bold text-brand">
+                
+                {amountFormatter.format(selectedAccount.balance)}
               </p>}
           </div>
       </Card>

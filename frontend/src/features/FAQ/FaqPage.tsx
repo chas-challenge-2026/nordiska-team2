@@ -7,6 +7,7 @@ import { useFaqCategories, useFaqCategoryEntries, useFaqPopular } from "../../ho
 import { FaqQuestionCard } from "./FaqQuestionCard";
 import { FaqCategoryModal } from "./FaqCategoryModal";
 import { useTranslation } from "react-i18next";
+import PageHeader from "../../components/ui/Pageheader";
 
 // Behöver dubbelkolla Ivans Seed-data.
 const categoryIcons: Record<string, LucideIcon> = {
@@ -60,9 +61,9 @@ export function FaqPage() {
 
   return (
     <div>
-       <PageHeader 
-          title="Vanliga frågor"
-          subtitle="Här kan du hitta svar på din fråga." />
+       <PageHeader
+          title={t("faq.title")}
+          subtitle={t("faq.subtitle")} />
       <form onSubmit={handleSubmit} className="relative mb-2">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input
@@ -74,10 +75,7 @@ export function FaqPage() {
       </form>
 
       <p className="text-sm text-gray-500 mb-8">
-        {t("faq.popularSearches")} </p>
-        
-      <p className="text-xsmall text-gray-500 mb-8 ml-2">
-        Populära sökord: uttagstid · räntebesked · skatterapport 2025
+        {t("faq.popularSearches")}
       </p>
 
       {isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.searching")}</p>}

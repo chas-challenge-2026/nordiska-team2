@@ -43,7 +43,7 @@ export default function QuickActions({ actions }: QuickActionsProps){
                     {t("dashboard.quickActionsTitle")}
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {actions.map((action) =>(
                         <Button
                             variant="tile"

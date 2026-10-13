@@ -78,12 +78,16 @@
         "loadingAccounts": "Laddar konton",
         "accountsError": "Kunde inte hämta konton",
         "noAccounts": "Du har inga konton än.",
+        "createAccountCard": {
+            "title": "Skapa konto",
+            "subtitle": "Lägg till ett nytt konto"
+        },
         "quickActionsTitle": "Snabbt & enkelt",
         "quickActions": {
             "transaction": "Insättning och uttag",
             "transfer": "Överföring",
             "savingGoals": "Skapa sparmål",
-            "loanApplication": "Ansök om lån",
+            "newAccount": "Skapa nytt sparkonto",
             "aiBuddy": "Ai Kompis"
         },
         "recentActivity": "Senaste händelser",
@@ -109,7 +113,8 @@
     },
     "accountCard": {
         "availableBalance": "Tillgängligt saldo",
-        "interest": "Ränta {{rate}} %"
+        "interest": "Ränta {{rate}} %",
+        "warmingUp": "Här värmer vi upp för ett nytt kommande konto"
     },
     "accountsPage": {
         "loadingAccounts": "Laddar konton...",
@@ -119,6 +124,9 @@
         "manageGoals": "Hantera sparmål",
         "createGoal": "Skapa sparmål",
         "deleteGoal": "Ta bort sparmål",
+        "manageAccount": "Hantera konto",
+        "createAccount": "Skapa konto",
+        "deleteAccount": "Ta bort konto",
         "balance": "Saldo",
         "noGoalForAccount": "Inget sparmål för det här kontot.",
         "goalAria": "Sparmål: {{name}}",
@@ -134,7 +142,7 @@
         "depositing": "Sätter in...",
         "withdrawMoney": "Ta ut pengar",
         "withdrawing": "Tar ut...",
-        "chartTitle": "Insättning och uttag",
+        "chartTitle": "Översikt",
         "history": "Historik",
         "loadingHistory": "Laddar historik...",
         "chart": {
@@ -155,7 +163,10 @@
         "deposit": "Sätt in",
         "depositing": "Sätter in ...",
         "depositDone": "Insättningen är genomförd.",
-        "withdrawDone": "Uttaget är genomfört."
+        "withdrawDone": "Uttaget är genomfört.",
+        "descriptionLabel": "Meddelande till mottagaren (Valfritt)",
+        "afterDeposit": "Efter insättning: {{amount}}",
+        "afterWithdraw": "Efter uttag: {{amount}}"
     },
     "transferModal": {
         "title": "Överföring",
@@ -195,7 +206,26 @@
         "delete": "Ta bort",
         "deleting": "Tar bort..."
     },
+    "createAccountModal": {
+        "title": "Skapa nytt konto",
+        "description": "Ett nytt sparkonto skapas automatiskt med ett nytt kontonummer och standardränta.",
+        "create": "Skapa konto",
+        "creating": "Skapar...",
+        "createFailed": "Kunde inte skapa kontot. Försök igen lite senare.",
+        "done": "Kontot är skapat."
+    },
+    "deleteAccountModal": {
+        "title": "Ta bort konto",
+        "question": "Vilket konto vill du ta bort?",
+        "deleteFailed": "Kontot kunde inte tas bort (måste vara tomt).",
+        "missingAccount": "Du måste välja ett konto.",
+        "delete": "Ta bort",
+        "deleting": "Tar bort...",
+        "done": "Kontot är borttaget."
+    },
     "faq": {
+        "title": "Vanliga frågor",
+        "subtitle": "Här kan du hitta svar på din fråga.",
         "searchPlaceholder": "Hur tar jag ut pengar?",
         "popularSearches": "Populära sökord: uttagstid · räntebesked · skatterapport 2025",
         "searching": "Söker...",
