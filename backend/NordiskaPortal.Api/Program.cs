@@ -34,6 +34,12 @@ builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<FaqCategoryService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+// The polling worker only makes sense against a real database, not the in-memory test host.
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<NotificationBackgroundWorker>();
+}
 builder.Services.AddScoped<BankStatementService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
