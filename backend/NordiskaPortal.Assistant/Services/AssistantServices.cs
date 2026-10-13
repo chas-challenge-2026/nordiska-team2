@@ -91,7 +91,7 @@ namespace NordiskaPortal.Assistant.Services
             "- Gör man många försök på kort tid kan man behöva vänta en minut innan man kan försöka igen.\n" +
             "\n" +
             "OM ASSISTENTEN:\n" +
-            "- Assistenten är en AI och kan svara fel. Den ser inte kundens konton.\n" +
+            "- Assistenten är en AI och kan svara fel. Den ser inte kundens information och kan endast svara på generella frågor om banken.\n" +
             "- Skriv aldrig lösenord, personnummer eller kortuppgifter i chatten.";
 
         // How-to answers, phrased like the questions customers ask. General
@@ -166,7 +166,7 @@ namespace NordiskaPortal.Assistant.Services
                 // --- Step 1: classify ---
                 if (!HasBankKeyword(question))
                 {
-                    var verdict = await ChatAsync(ClassifierPrompt, ClassifierExamples, question,
+                    var verdict = await ChatAsync("classify", ClassifierPrompt, ClassifierExamples, question,
                         temperature: 0, maxTokens: 3, ct);
 
                     if (verdict is null)
@@ -181,7 +181,7 @@ namespace NordiskaPortal.Assistant.Services
                 }
 
                 // --- Step 2: answer ---
-                var answer = await ChatAsync(SystemPrompt, AnswerExamples, question,
+                var answer = await ChatAsync("answer", SystemPrompt, AnswerExamples, question,
                     temperature: 0.1, maxTokens: _options.MaxAnswerTokens, ct);
 
                 if (string.IsNullOrWhiteSpace(answer))
@@ -214,9 +214,24 @@ namespace NordiskaPortal.Assistant.Services
             }
         }
 
+        // Loads the model and fills Ollama's prompt cache for both prompts.
+        // Goes through ChatAsync on purpose: the same options as real questions,
+        // since different load options (num_ctx, num_thread) make Ollama reload.
+        // Returns false if Ollama answered with an error status.
+        public async Task<bool> WarmUpAsync(CancellationToken ct)
+        {
+            var classify = await ChatAsync("warmup-classify", ClassifierPrompt, ClassifierExamples, "Hej",
+                temperature: 0, maxTokens: 1, ct);
+            var answer = await ChatAsync("warmup-answer", SystemPrompt, AnswerExamples, "Hej",
+                temperature: 0, maxTokens: 1, ct);
+
+            return classify is not null && answer is not null;
+        }
+
         // One /api/chat call. Returns the reply text, "" for an empty reply,
         // or null if Ollama answered with an error status.
         private async Task<string?> ChatAsync(
+            string step,
             string systemPrompt,
             IEnumerable<OllamaMessage> examples,
             string question,
@@ -233,7 +248,7 @@ namespace NordiskaPortal.Assistant.Services
                 messages,
                 Stream: false,
                 KeepAlive: _options.KeepAlive,
-                new OllamaOptions(temperature, maxTokens, _options.ContextSize));
+                new OllamaOptions(temperature, maxTokens, _options.ContextSize, _options.Threads));
 
             using var response = await _http.PostAsJsonAsync("api/chat", request, ct);
 
@@ -246,7 +261,23 @@ namespace NordiskaPortal.Assistant.Services
             }
 
             var chat = await response.Content.ReadFromJsonAsync<OllamaChatResponse>(cancellationToken: ct);
+            
+            if (chat is not null)
+                LogTimings(step, chat);
+
             return chat?.Message?.Content ?? "";
+        }
+
+        private void LogTimings(string step, OllamaChatResponse chat)
+        {
+            static long Ms(long nanoseconds) => nanoseconds / 1_000_000;
+            var tokensPerSecond = chat.EvalDuration >= 1_000_000 ? chat.EvalCount / (chat.EvalDuration / 1e9) : 0;
+
+            _logger.LogInformation(
+                "Ollama {Step}: load {LoadMs} ms | prompt {PromptTokens} tok in {PromptMs} ms | " +
+                "output {OutputTokens} tok in {OutputMs} ms ({TokensPerSecond:F1} tok/s) | stop {DoneReason}",
+                step, Ms(chat.LoadDuration), chat.PromptEvalCount, Ms(chat.PromptEvalDuration),
+                chat.EvalCount, Ms(chat.EvalDuration), tokensPerSecond, chat.DoneReason ?? "-");
         }
     }
 }
