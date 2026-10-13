@@ -116,17 +116,17 @@ export default function TransactionModal({
                         setMode={setMode}
                         amount={amount}
                         setAmount={setAmount}
-                        amountLabel={<p className="mb-1 ml-1">{t("common.accountRequired")}</p>}
+                        amountLabel={<p className="mb-1 ml-1">{t("common.amountRequired")}</p>}
                         quickAmountsClassName="flex gap-3 mt-3"
                         description={description}
                         setDescription={setDescription}
-                        descriptionLabel="Meddelande till mottagaren (Valfritt)"
+                        descriptionLabel={t("transactionModal.descriptionLabel")}
                     />
                     {accountData && (
                         <p className="mt-2 ml-1 text-xsmall text-muted">
                             {mode === "deposit"
-                                ? `Efter insättning: ${amountFormatter.format(previewDepositBalance)}`
-                                : `Efter uttag: ${amountFormatter.format(previewWithdrawBalance)}`}
+                                ? t("transactionModal.afterDeposit", { amount: amountFormatter.format(previewDepositBalance) })
+                                : t("transactionModal.afterWithdraw", { amount: amountFormatter.format(previewWithdrawBalance) })}
                         </p>
                     )}
                 </div>

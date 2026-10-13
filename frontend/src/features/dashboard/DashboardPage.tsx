@@ -1,5 +1,6 @@
-// import { useState } from "react";
+import { useState } from "react";
 import AccountOverview from "./components/AccountOverview";
+import CreateAccountModal from "./components/modals/NewAccountModal/CreateAccountModal";
 import RecentTransactions from "./components/RecentTransactions";
 import QuickActions from "./components/QuickActions";
 import PageHeader from "../../components/ui/Pageheader";
@@ -16,6 +17,7 @@ import { useCustomer } from "../../hooks/useCustomer";
 import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
     const { data: transactions, isLoading: transactionsLoading } = useRecentTransactions(accounts);
     const { data: customer } = useCustomer();
@@ -37,9 +39,10 @@ export default function DashboardPage() {
                     title={firstName
                             ? t("dashboard.welcome", { name: firstName })
                             : t("dashboard.welcomeNoName")}
-                     subtitle={t("dashboard.loggedInVia")} />
+                    //  subtitle={t("dashboard.loggedInVia")} 
+                    />
 
-                <AccountOverview accounts={accounts}/>
+                <AccountOverview accounts={accounts} onCreateAccount={() => setIsCreateAccountModalOpen(true)}/>
                 <QuickActions actions={quickActions}/>
                 <RecentTransactions transactions={transactions ?? []} 
                                     isLoading={transactionsLoading} />
@@ -59,6 +62,10 @@ export default function DashboardPage() {
 
             </aside>
             <Footer />
+            <CreateAccountModal
+                isOpen={isCreateAccountModalOpen}
+                onClose={() => setIsCreateAccountModalOpen(false)}
+            />
         </div>
 
     )

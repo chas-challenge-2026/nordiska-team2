@@ -28,7 +28,6 @@ function buildSeries(history: LedgerEntry[], page: number, currentBalance: numbe
 
     const allDates = [...byDate.keys()].sort(); // äldst -> nyast
 
-    // Räknar ut startsaldo per dag genom att gå baklänges från dagens saldo.
     const startBalanceByDate = new Map<string, number>()
     let runningEndBalance = currentBalance;
     for (let i = allDates.length -1; i >=0; i--) {
@@ -72,46 +71,42 @@ type TransactionChartProps = {
 
 export default function TransactionsChart({ history, currentBalance }: TransactionChartProps) {
     const [page, setPage] = useState(0);
+    const [hidden, setHidden] = useState({ start: false, deposit: false, withdrawal: false });
     const { t } = useTranslation();
     const { locale } = useFormatters();
     if (history.length === 0)
         return <p className="text-small text-muted">{t("accountsPage.chart.noData")}</p>
     
-    const { labels, startBalances, deposits, withdrawals, hasNewer, hasOlder } = 
+    const { labels, startBalances, netAmounts, netColors, hasNewer, hasOlder } = 
         buildSeries(history, page, currentBalance, locale);
 
-    const displayedStartBalances = startBalances.map((v) => (hidden.start ? 0 : v ));
+    const displayedStartBalances = startBalances.map((v) => (hidden.start ? 0 : v));
     const displayedNetAmounts = netAmounts.map((amt, i) => {
-        const isDeposit = netColors[i] ==="#1a5276";
+        const isDeposit = netColors[i] === "#1a5276";
         if (isDeposit && hidden.deposit) return 0;
         if (!isDeposit && hidden.withdrawal) return 0;
         return amt;
-    })
+    });
+
+    const depositLabel = t("accountsPage.chart.deposits");
+    const withdrawalLabel = t("accountsPage.chart.withdrawals");
+    const startBalanceLabel = t("accountsPage.chart.startBalance");
 
     const data = {
         labels, 
         datasets: [
             {
-                label: t("accountsPage.chart.startBalance"),
-                data: startBalances,
+                label: startBalanceLabel,
+                data: displayedStartBalances,
                 backgroundColor: "#C6C6C6",
                 stack: "day",
                 borderRadius: 4,
                 maxBarThickness: 34,
-
             },
             {
-                label: t("accountsPage.chart.deposits"),
-                data: deposits,
-                backgroundColor: "#1a5276",
-                stack:"day",
-                borderRadius: 4,
-                maxBarThickness: 34,
-            },
-            {
-                label: t("accountsPage.chart.withdrawals"),
-                data: withdrawals,
-                backgroundColor: "#f5a623",
+                label: `${depositLabel}/${withdrawalLabel}`,
+                data: displayedNetAmounts,
+                backgroundColor: netColors,
                 stack: "day",
                 borderRadius: 4,
                 maxBarThickness: 34,
@@ -128,15 +123,15 @@ export default function TransactionsChart({ history, currentBalance }: Transacti
             legend: { position: "bottom" as const,
                 labels: {
                     generateLabels: () => [
-                    { text: "Startsaldo", fillStyle: "#C6C6C6", strokeStyle: "#C6C6C6" },
-                    { text: "Insättning (netto)", fillStyle: "#1a5276", strokeStyle: "#1a5276" },
-                    { text: "Uttag (netto)", fillStyle: "#f5a623", strokeStyle: "#f5a623" },
-                    ]
+                        { text: startBalanceLabel, fillStyle: "#C6C6C6", strokeStyle: "#C6C6C6", hidden: hidden.start },
+                        { text: depositLabel, fillStyle: "#1a5276", strokeStyle: "#1a5276", hidden: hidden.deposit },
+                        { text: withdrawalLabel, fillStyle: "#f5a623", strokeStyle: "#f5a623", hidden: hidden.withdrawal },
+                    ],
                 },
                 onClick: (_event: ChartEvent, legendItem: LegendItem) => {
-                    if (legendItem.text === "Startsaldo") setHidden((h) => ({ ...h, start: !h.start }));
-                    else if (legendItem.text === "Insättning (netto)") setHidden((h) => ({ ...h, deposit: !h.deposit }));
-                    else if (legendItem.text === "Uttag (netto)") setHidden((h) => ({ ...h, withdrawal: !h.withdrawal }));
+                    if (legendItem.text === startBalanceLabel) setHidden((h) => ({ ...h, start: !h.start }));
+                    else if (legendItem.text === depositLabel) setHidden((h) => ({ ...h, deposit: !h.deposit }));
+                    else if (legendItem.text === withdrawalLabel) setHidden((h) => ({ ...h, withdrawal: !h.withdrawal }));
                 },
                 onHover: (event: ChartEvent) => {
                     if (event.native?.target) {

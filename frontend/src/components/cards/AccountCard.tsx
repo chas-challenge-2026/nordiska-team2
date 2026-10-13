@@ -1,11 +1,12 @@
+import { Lottie } from "lottie-react";
 import Card from "./Card";
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
 
 type AccountCardProps = {
     name: string;
-    accountNumber: string; 
-    balance: number; 
+    accountNumber: string;
+    balance?: number;
     interest?: number;
     to?: string;
 }
@@ -28,10 +29,21 @@ export default function AccountCard({
             to={to}
         >
             <p className="text-small text-muted">
-                {t("accountCard.availableBalance")}
+               {balance !== undefined? t("accountCard.availableBalance") : t("accountCard.warmingUp")}
             </p>
-            <p className="text-title font-bold text-brand-text"> 
-                {currencyFormatter.format(balance)}
+            <p className="text-title font-bold text-brand-text">
+                {balance !== undefined ? (
+                    currencyFormatter.format(balance)
+                ) : (
+                    <span className="inline-block size-8 overflow-hidden align-middle">
+                        <Lottie
+                            src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f9ad/lottie.json"
+                            loop
+                            autoplay
+                            className="size-full"
+                        />
+                    </span>
+                )}
             </p>
             {interest !== undefined &&(
                 <p className="text-muted text-small">
