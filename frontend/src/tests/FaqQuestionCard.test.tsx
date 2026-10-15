@@ -18,12 +18,13 @@ describe("FaqQuestionCard", () => {
 
   it("döljer svaret som standard", () => {
     render(<FaqQuestionCard entry={mockEntry} />);
-    expect(screen.queryByText("Gå till Sparkonto och välj Uttag.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "false");
   });
 
   it("visar svaret efter klick", () => {
     render(<FaqQuestionCard entry={mockEntry} />);
-    fireEvent.click(screen.getByText("Hur tar jag ut pengar?"));
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("button")).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("Gå till Sparkonto och välj Uttag.")).toBeInTheDocument();
   });
 });
