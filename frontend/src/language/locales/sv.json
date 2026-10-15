@@ -217,7 +217,7 @@
     "deleteAccountModal": {
         "title": "Ta bort konto",
         "question": "Vilket konto vill du ta bort?",
-        "deleteFailed": "Kontot kunde inte tas bort (måste vara tomt).",
+        "deleteFailed": "Kontot kunde inte tas bort (får inte innehålla pengar).",
         "missingAccount": "Du måste välja ett konto.",
         "delete": "Ta bort",
         "deleting": "Tar bort...",

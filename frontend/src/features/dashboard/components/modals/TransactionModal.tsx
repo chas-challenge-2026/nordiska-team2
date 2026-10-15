@@ -68,6 +68,7 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
+            queryClient.invalidateQueries({ queryKey: ["savings-goals"] });  
             showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.depositDone") })
             resetAndClose();
         },
@@ -83,6 +84,8 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
+            queryClient.invalidateQueries({ queryKey: ["savings-goals"] }); 
+
             showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.withdrawDone") })
             resetAndClose();
         },

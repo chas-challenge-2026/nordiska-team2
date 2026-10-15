@@ -427,7 +427,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       <div>
         <Card title={t("accountsPage.depositWithdrawTitle")}
               headerVariant="secondary"
-              className="min-h-106"
+              className="min-h-116"
                 >
           <div className="flex flex-col
                           text-small">
@@ -487,7 +487,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
         <Card 
             title={t("accountsPage.chartTitle")}
             headerVariant="secondary"
-            className="hidden md:flex min-h-106"
+            className="hidden md:flex min-h-116"
             >
               <TransactionsChart 
                 history={history ?? []}

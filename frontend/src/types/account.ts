@@ -7,7 +7,7 @@ export type Account = {
     id: number;
     name: string;
     accountNumber: string;
-    balance?: number;
+    balance: number;
     interest?: number;
     to?: string;
     type: AccountType;
