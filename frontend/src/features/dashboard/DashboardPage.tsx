@@ -34,7 +34,7 @@ export default function DashboardPage() {
         <div className="relative grid min-h-full grid-cols-1 
                         lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
-                                min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
+                                min-h-0 gap-3 sm:gap-4 lg:pr-6 lg:col-span-10">
                  <PageHeader
                     title={firstName
                             ? t("dashboard.welcome", { name: firstName })

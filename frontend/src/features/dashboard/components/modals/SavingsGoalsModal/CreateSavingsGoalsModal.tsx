@@ -60,7 +60,7 @@ export default function CreateSavingsGoalsModal({
 
     function handleCreate() {
         setHasAttemptedSubmit(true);
-        if (isMissingName || isAccountMissing) return;
+        if (isMissingName || isMissingAmount || isAmountInvalid || isAccountMissing) return;
         createMutation.mutate();
 
     }

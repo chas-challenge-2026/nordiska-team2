@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NordiskaPortal.Api.Migrations
 {
     [DbContext(typeof(BankContext))]
-    [Migration("20261013062356_InitialCreate")]
+    [Migration("20261013141034_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

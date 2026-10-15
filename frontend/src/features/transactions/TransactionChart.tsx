@@ -50,7 +50,12 @@ function buildSeries(history: LedgerEntry[], page: number, currentBalance: numbe
 
     return {
         labels: dates.map((d) => dateFormatter.format(new Date(d))),
-        startBalances: dates.map((d) => startBalanceByDate.get(d)!),
+        startBalances: dates.map((d) => {
+            const { deposits, withdrawals } = byDate.get(d)!;
+            const net = deposits - withdrawals;
+            const startBalance = startBalanceByDate.get(d)!;
+            return net >= 0 ? startBalance : startBalance - Math.abs(net)
+        }),
         netAmounts: dates.map((d) => {
             const { deposits, withdrawals } = byDate.get(d)!;
             return Math.abs(deposits - withdrawals);

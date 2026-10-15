@@ -217,7 +217,7 @@
     "deleteAccountModal": {
         "title": "Delete account",
         "question": "Which account do you want to delete?",
-        "deleteFailed": "The account could not be deleted (it must be empty).",
+        "deleteFailed": "The account could not be deleted (it cannot contain money).",
         "missingAccount": "You must select an account.",
         "delete": "Delete",
         "deleting": "Deleting...",
