@@ -1,10 +1,11 @@
 using NordiskaPortal.Api.DTOs;
+using NordiskaPortal.Api.Errors;
 
 // Contract for fetching a customer's accounts with computed balances,
 // and for checking account ownership before allowing an operation.
 namespace NordiskaPortal.Api.Services
 {
-    public record AccountResult(bool Success, string? Error, AccountDto? Account);
+    public record AccountResult(bool Success, ApiError? Error, AccountDto? Account);
     public interface IAccountService
     {
         Task<List<AccountDto>> GetAccountsForCustomerAsync(int customerId);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Extensions;
 using NordiskaPortal.Api.Services;
+using NordiskaPortal.Api.Errors;
 
 // All actions require [Authorize] and verify the authenticated customer
 // actually owns the target account before doing anything with it.
@@ -37,7 +38,7 @@ namespace NordiskaPortal.Api.Controllers
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
             var result = await _transactionService.DepositAsync(request.AccountId, request.Amount, request.Description);
-            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
 
         [HttpPost("withdraw")]
@@ -49,7 +50,7 @@ namespace NordiskaPortal.Api.Controllers
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
             var result = await _transactionService.WithdrawAsync(request.AccountId, request.Amount, request.Description);
-            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
 
         [HttpGet("{accountId:int}")]
@@ -86,7 +87,7 @@ namespace NordiskaPortal.Api.Controllers
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
             var result = await _transactionService.TransferAsync(request.FromAccountId, request.ToAccountId, request.Amount, request.Description);
-            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
     }
 }

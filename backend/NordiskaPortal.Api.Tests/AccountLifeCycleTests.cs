@@ -77,7 +77,7 @@ namespace NordiskaPortal.Api.Tests
             await using var db = _fixture.CreateContext();
             var result = await AccountServiceFor(db).OpenAccountAsync(customerId);
 
-            Assert.True(result.Success, result.Error);
+            Assert.True(result.Success, result.Error?.Code);
             var account = result.Account!;
             Assert.Equal(0m, account.Balance);
             Assert.Equal(0.0350m, account.InterestRate);   // the bank's rate, not the caller's
@@ -107,13 +107,13 @@ namespace NordiskaPortal.Api.Tests
             for (var i = 2; i < MaxOpenAccounts; i++)
             {
                 var ok = await service.OpenAccountAsync(customerId);
-                Assert.True(ok.Success, ok.Error);
+                Assert.True(ok.Success, ok.Error?.Code);
             }
 
             var refused = await service.OpenAccountAsync(customerId);
 
             Assert.False(refused.Success);
-            Assert.Contains($"högst {MaxOpenAccounts}", refused.Error);
+            Assert.Equal("too_many_accounts", refused.Error?.Code);
 
             await using var readDb = _fixture.CreateContext();
             Assert.Equal(MaxOpenAccounts,
@@ -136,7 +136,7 @@ namespace NordiskaPortal.Api.Tests
             Assert.True((await service.CloseAccountAsync(customerId, emptyAccount)).Success);
 
             var reopened = await service.OpenAccountAsync(customerId);
-            Assert.True(reopened.Success, reopened.Error);
+            Assert.True(reopened.Success, reopened.Error?.Code);
         }
 
         // Close account
@@ -151,7 +151,7 @@ namespace NordiskaPortal.Api.Tests
                 var result = await AccountServiceFor(db).CloseAccountAsync(customerId, funded);
 
                 Assert.False(result.Success);
-                Assert.Contains("tomt", result.Error);
+                Assert.Equal("account_not_empty", result.Error?.Code);
             }
 
             // A refused close removes nothing: account open, goal kept, no audit.
@@ -177,7 +177,7 @@ namespace NordiskaPortal.Api.Tests
             await using (var db = _fixture.CreateContext())
             {
                 var result = await AccountServiceFor(db).CloseAccountAsync(customerId, b);
-                Assert.True(result.Success, result.Error);
+                Assert.True(result.Success, result.Error?.Code);
             }
 
             // Closed, not deleted.
@@ -206,7 +206,7 @@ namespace NordiskaPortal.Api.Tests
             await using (var db = _fixture.CreateContext())
             {
                 var result = await AccountServiceFor(db).CloseAccountAsync(customerId, closedAccount);
-                Assert.True(result.Success, result.Error);
+                Assert.True(result.Success, result.Error?.Code);
             }
 
             Assert.False(await GoalExistsAsync(linkedToClosed));
@@ -234,7 +234,7 @@ namespace NordiskaPortal.Api.Tests
                 var result = await AccountServiceFor(db).CloseAccountAsync(me, theirEmptyAccount);
 
                 Assert.False(result.Success);
-                Assert.Equal("Kontot kunde inte hittas.", result.Error);
+                Assert.Equal("account_not_found", result.Error?.Code);
             }
 
             Assert.Null((await LoadAccountAsync(theirEmptyAccount)).ClosedAt);
@@ -252,7 +252,7 @@ namespace NordiskaPortal.Api.Tests
 
             var second = await service.CloseAccountAsync(customerId, empty);
             Assert.False(second.Success);
-            Assert.Equal("Kontot kunde inte hittas.", second.Error);
+            Assert.Equal("account_not_found", second.Error?.Code);
 
             // Exactly one close in the audit log, not two.
             Assert.Single((await AuditActionsForAsync(customerId)).Where(a => a == AuditActions.AccountClosed));
@@ -274,7 +274,7 @@ namespace NordiskaPortal.Api.Tests
                 var result = await TransactionServiceFor(db).DepositAsync(closed, 500m);
 
                 Assert.False(result.Success);
-                Assert.Equal("Kontot kunde inte hittas.", result.Error);
+                Assert.Equal("account_not_found", result.Error?.Code);
             }
 
             await using var readDb = _fixture.CreateContext();

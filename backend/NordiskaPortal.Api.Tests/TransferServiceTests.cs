@@ -45,7 +45,7 @@ namespace NordiskaPortal.Api.Tests
             await using var db = _fixture.CreateContext();
             var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 3000m);
 
-            Assert.True(result.Success, result.Error);
+            Assert.True(result.Success, result.Error?.Code);
             Assert.Equal(7000m, await BalanceAsync(a));
             Assert.Equal(3000m, await BalanceAsync(b));
 
@@ -64,7 +64,7 @@ namespace NordiskaPortal.Api.Tests
             await using (var db = _fixture.CreateContext())
             {
                 var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 1000m);
-                Assert.True(result.Success, result.Error);
+                Assert.True(result.Success, result.Error?.Code);
             }
 
             await using var readDb = _fixture.CreateContext();
@@ -89,10 +89,10 @@ namespace NordiskaPortal.Api.Tests
             var service = new TransactionService(db, TestAudit.For(db));
 
             var transfer = await service.TransferAsync(a, b, 3000m);
-            Assert.True(transfer.Success, transfer.Error);
+            Assert.True(transfer.Success, transfer.Error?.Code);
 
             var withdrawal = await service.WithdrawAsync(b, 3000m);
-            Assert.True(withdrawal.Success, withdrawal.Error);
+            Assert.True(withdrawal.Success, withdrawal.Error?.Code);
             Assert.Equal(0m, await BalanceAsync(b));
         }
 
@@ -110,7 +110,7 @@ namespace NordiskaPortal.Api.Tests
             var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(myAccount, theirAccount, 1000m);
 
             Assert.False(result.Success);
-            Assert.Equal("Kontot kunde inte hittas.", result.Error);
+            Assert.Equal("account_not_found", result.Error?.Code);
             Assert.Equal(10000m, await BalanceAsync(myAccount));
             Assert.Equal(0m, await BalanceAsync(theirAccount));
         }
@@ -126,7 +126,7 @@ namespace NordiskaPortal.Api.Tests
             var result = await new TransactionService(db, TestAudit.For(db)).TransferAsync(a, b, 1000m);
 
             Assert.False(result.Success);
-            Assert.Equal("Otillräckligt saldo.", result.Error);
+            Assert.Equal("insufficient_funds", result.Error?.Code);
 
             // Not just "balance unchanged" -- no half-transfer rows at all.
             Assert.Equal(rowsOnABefore, await TransactionCountAsync(a));
@@ -152,13 +152,14 @@ namespace NordiskaPortal.Api.Tests
             Assert.Equal(1, results.Count(r => r.Success));
 
             // The loser can fail two ways depending on exact timing: Postgres
-            // detects the overlap ("samtidig åtkomst"), or the second one runs
-            // after the first committed and sees too little money. Both are
-            // correct outcomes; the balances below are the real guarantee.
+            // detects the overlap (concurrency_conflict), or the second one runs
+            // after the first committed and sees too little money
+            // (insufficient_funds). Both are correct; the balances below are
+            // the real guarantee.
             var failure = results.Single(r => !r.Success);
-            Assert.True(
-                failure.Error!.Contains("samtidig åtkomst") || failure.Error == "Otillräckligt saldo.",
-                $"Unexpected failure message: {failure.Error}");
+            var code = failure.Error?.Code;
+            Assert.True(code is "concurrency_conflict" or "insufficient_funds",
+                $"Unexpected failure code: {code}");
 
             Assert.Equal(3000m, await BalanceAsync(a));
             Assert.Equal(7000m, await BalanceAsync(b));

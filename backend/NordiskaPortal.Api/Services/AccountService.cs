@@ -4,6 +4,7 @@ using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Models;
 using System.Data;
 using System.Security.Cryptography;
+using NordiskaPortal.Api.Errors;
 
 namespace NordiskaPortal.Api.Services
 {
@@ -80,7 +81,7 @@ namespace NordiskaPortal.Api.Services
                 .CountAsync(a => a.CustomerId == customerId && a.ClosedAt == null);
 
             if (openCount >= MaxOpenAccounts)
-                return new AccountResult(false, $"Du kan ha högst {MaxOpenAccounts} öppna konton.", null);
+                return new AccountResult(false, ApiErrors.TooManyAccounts(MaxOpenAccounts), null);
 
             // Random numbers make collisions very unlikely and the unique index makes them impossible. 
             // Discard and try a new number in case it happens.
@@ -137,15 +138,14 @@ namespace NordiskaPortal.Api.Services
                 if (account == null)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new AccountResult(false, "Kontot kunde inte hittas.", null);
+                    return new AccountResult(false, ApiErrors.AccountNotFound, null);
                 }
 
                 var balance = await _transactionService.GetBalanceAsync(accountId);
                 if (balance != 0m)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new AccountResult(false,
-                        "Kontot måste vara tomt innan det kan avslutas. Flytta pengarna till ett annat konto först.", null);
+                    return new AccountResult(false, ApiErrors.AccountNotEmpty, null);
                 }
 
                 // Goals linked to this account are removed with it. 
@@ -170,7 +170,7 @@ namespace NordiskaPortal.Api.Services
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
             {
-                return new AccountResult(false, "Kontot ändrades samtidigt. Försök igen.", null);
+                return new AccountResult(false, ApiErrors.ConcurrencyConflict, null);
             }
         }
     }

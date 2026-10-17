@@ -8,6 +8,9 @@
   <data name="invalid_amount" xml:space="preserve"><value>Beloppet måste vara större än 0.</value></data>
   <data name="account_not_found" xml:space="preserve"><value>Kontot kunde inte hittas.</value></data>
   <data name="insufficient_funds" xml:space="preserve"><value>Otillräckligt saldo.</value></data>
-  <data name="concurrency_conflict" xml:space="preserve"><value>Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.</value></data>
+  <data name="concurrency_conflict" xml:space="preserve"><value>Något ändrades samtidigt. Försök igen.</value></data>
+  <data name="same_account_transfer" xml:space="preserve"><value>Från- och tillkonto måste vara olika.</value></data>
+  <data name="too_many_accounts" xml:space="preserve"><value>Du kan ha högst {max} öppna konton.</value></data>
+  <data name="account_not_empty" xml:space="preserve"><value>Kontot måste ha saldot 0 kr innan det kan avslutas.</value></data>
   <data name="description_too_long" xml:space="preserve"><value>Beskrivningen får vara högst {max} tecken.</value></data>
 </root>

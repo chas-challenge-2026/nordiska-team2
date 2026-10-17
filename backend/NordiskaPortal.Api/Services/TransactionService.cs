@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Models;
+using NordiskaPortal.Api.Errors;
 
 namespace NordiskaPortal.Api.Services
 {
@@ -55,11 +56,11 @@ namespace NordiskaPortal.Api.Services
             */
 
             if (amount <= 0)
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
 
             var account = await _db.SavingsAccounts.FindAsync(accountId);
             if (account == null || account.ClosedAt != null)
-                return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                return new TransactionResult(false, ApiErrors.AccountNotFound, null);
 
             var now = DateTime.UtcNow;
 
@@ -87,7 +88,7 @@ namespace NordiskaPortal.Api.Services
         {
             if (amount <= 0)
             {
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
             }
 
             /*
@@ -113,7 +114,7 @@ namespace NordiskaPortal.Api.Services
                 if (account == null)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                    return new TransactionResult(false, ApiErrors.AccountNotFound, null);
                 }
 
                 var currentBalance = await _db.Transactions
@@ -123,7 +124,7 @@ namespace NordiskaPortal.Api.Services
                 if (currentBalance < amount)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Otillräckligt saldo.", null);
+                    return new TransactionResult(false, ApiErrors.InsufficientFunds, null);
                 }
 
                 var now = DateTime.UtcNow;
@@ -160,7 +161,7 @@ namespace NordiskaPortal.Api.Services
                     Simplified for now and not the full production-grade
                     answer.
                 */
-                return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
+                return new TransactionResult(false, ApiErrors.ConcurrencyConflict, null);
             }
         }
 
@@ -185,10 +186,10 @@ namespace NordiskaPortal.Api.Services
         public async Task<TransactionResult> TransferAsync(int fromAccountId, int toAccountId, decimal amount, string? description = null)
         {
             if (amount <= 0)
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
 
             if (fromAccountId == toAccountId)
-                return new TransactionResult(false, "Från- och tillkonto måste vara olika.", null);
+                return new TransactionResult(false, ApiErrors.SameAccountTransfer, null);
 
             /*
                 Same race as a withdrawal: "is there enough money" reads a derived
@@ -209,7 +210,7 @@ namespace NordiskaPortal.Api.Services
                 if (from == null || to == null || from.CustomerId != to.CustomerId || from.ClosedAt != null || to.ClosedAt != null)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                    return new TransactionResult(false, ApiErrors.AccountNotFound, null);
                 }
 
                 var balance = await _db.Transactions
@@ -219,7 +220,7 @@ namespace NordiskaPortal.Api.Services
                 if (balance < amount)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Otillräckligt saldo.", null);
+                    return new TransactionResult(false, ApiErrors.InsufficientFunds, null);
                 }
 
                 var now = DateTime.UtcNow;
@@ -263,7 +264,7 @@ namespace NordiskaPortal.Api.Services
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
             {
-                return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
+                return new TransactionResult(false, ApiErrors.ConcurrencyConflict, null);
             }
         }
     }
