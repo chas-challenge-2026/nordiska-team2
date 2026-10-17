@@ -16,7 +16,7 @@ import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
-import { transactionLabel } from "../../features/transactions/transactionLabel";
+import { transactionLabel, transactionTypeLabel } from "../../features/transactions/transactionLabel";
 import type { TransactionType } from "../../types/transaction";
 import PageHeader from "../../components/ui/Pageheader";
 import CreateAccountModal from "../dashboard/components/modals/NewAccountModal/CreateAccountModal"
@@ -515,7 +515,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                   <ListItem 
                     key={index}
                     title={transactionLabel(entry, t)}
-                    subtitle={transactionLabel(entry, t)}
+                    subtitle={entry.description ? transactionTypeLabel(entry, t) : undefined}
                     right={
                       <div className="flex flex-col items-end gap-1">
                         <p className={entry.amount >= 0

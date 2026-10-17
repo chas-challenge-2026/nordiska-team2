@@ -8,10 +8,17 @@ type Labelable = {
     counterpartAccountNumber: string | null;
 };
 
-// The customer's own text is shown as-is, in every language. 
-// Otherwise the label comes from the type, in the reader's language. 
-// Call it when rendering and not in a hook,
-// React Query caches hook results, and a label made there would stay in the old language after a switch.
+// What kind of transaction it is, in the reader's language
+// ("Insättning", "Transfer to NKM-10002").
+export function transactionTypeLabel(
+    tx: Pick<Labelable, "type" | "counterpartAccountNumber">,
+    t: TFunction,
+): string {
+    return t(`transactionType.${tx.type}`, { account: tx.counterpartAccountNumber ?? "" });
+}
+
+// The customer's own text as-is; otherwise what kind of transaction it is.
+// Call when rendering, not in a hook (React Query caches hook results).
 export function transactionLabel(tx: Labelable, t: TFunction): string {
-    return tx.description ?? t(`transactionType.${tx.type}`, { account: tx.counterpartAccountNumber ?? "" });
+    return tx.description ?? transactionTypeLabel(tx, t);
 }
