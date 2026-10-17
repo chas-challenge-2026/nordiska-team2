@@ -8,6 +8,7 @@ import type { OptionType } from "../../../../../components/ui/Select";
 import { useAccounts } from "../../../../../hooks/useAccounts";
 import { apiClient } from "../../../../../client";
 import { useAlert } from "../../../../../hooks/useAlert";
+import { apiErrorMessage } from "../../../../../lib/apiErrorMessage";
 
 type DeleteAccountModalProps = {
     isOpen: boolean;
@@ -37,6 +38,7 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
     });
 
     function resetAndClose() {
+        deleteMutation.reset();
         setSelectedAccount(null);
         setHasAttemptedSubmit(false);
         onClose();
@@ -56,8 +58,9 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
                                 onChange={setSelectedAccount}
                                 options={accountOptions}
                                 placeholder={t("common.selectAccount")} />
-                {deleteMutation.isError &&
-                    <p className="text-xsmall text-cancel">{t("deleteAccountModal.deleteFailed")}</p>}
+                {deleteMutation.isError && (
+                    <p role="alert" className="text-xsmall text-cancel">{apiErrorMessage(deleteMutation.error, t)}</p>
+                )}
                 {hasAttemptedSubmit && !selectedAccount &&
                     <p className="text-xsmall text-cancel">{t("deleteAccountModal.missingAccount")}</p>}
             </div>

@@ -263,7 +263,23 @@
         "savedNote": "✓ Dina val sparas automatiskt på den här enheten."
     },
     "transactionType": {
-    "Deposit": "Insättning", "Withdrawal": "Uttag", "Interest": "Ränta", "Tax": "Skatt",
-    "TransferIn": "Överföring från {{account}}", "TransferOut": "Överföring till {{account}}"
+        "Deposit": "Insättning", "Withdrawal": "Uttag", "Interest": "Ränta", "Tax": "Skatt",
+        "TransferIn": "Överföring från {{account}}", "TransferOut": "Överföring till {{account}}"
+    },
+    "errors": {
+        "unknown": "Något gick fel. Försök igen.",
+        "network": "Kunde inte nå servern. Kontrollera din anslutning.",
+        "rate_limited": "För många försök. Vänta en minut och försök igen.",
+        "invalid_amount": "Beloppet måste vara större än 0.",
+        "account_not_found": "Kontot kunde inte hittas.",
+        "insufficient_funds": "Otillräckligt saldo.",
+        "concurrency_conflict": "Något ändrades samtidigt. Försök igen.",
+        "description_too_long": "Beskrivningen får vara högst {{max}} tecken."
+    },
+    "depositWithdraw": {
+        "descriptionPlaceholder": "Beskrivning (valfritt)",
+        "deposit": "Insättning",
+        "withdraw": "Uttag",
+        "presetAmount": "{{amount}} kr"
     }
 }

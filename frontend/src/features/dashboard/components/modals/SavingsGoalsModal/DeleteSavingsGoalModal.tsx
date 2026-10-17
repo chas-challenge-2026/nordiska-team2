@@ -5,6 +5,7 @@ import SelectOptions from "../../../../../components/ui/Select";
 import type { OptionType } from "../../../../../components/ui/Select";
 import { useSavingsGoals, useDeleteSavingsGoals } from "../../../../../hooks/useSavingsGoals";
 import { useTranslation } from "react-i18next";
+import { apiErrorMessage } from "../../../../../lib/apiErrorMessage";
 
 type DeleteSavingsGoalModalProps = {
     isOpen: boolean;
@@ -25,6 +26,7 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);       
 
     function resetAndClose() {
+        deleteMutation.reset();
         setSelectedGoal(null);
         setHasAttemptedSubmit(false);
         onClose();
@@ -57,7 +59,7 @@ export default function DeleteSavingsGoalMoal({ isOpen, onClose }: DeleteSavings
                         <p className="text-xsmall text-muted">{t("deleteGoalModal.noGoals")}</p>
                     )}
                     {deleteMutation.isError && (
-                        <p className="text-xsmall text-cancel">{t("deleteGoalModal.deleteFailed")}</p>
+                         <p role="alert" className="text-xsmall text-cancel">{apiErrorMessage(deleteMutation.error, t)}</p>
                     )}
                     {hasAttemptedSubmit && !selectedGoal && (
                         <p className="text-xsmall text-cancel">{t("deleteGoalModal.missingGoal")}</p>
