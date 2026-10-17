@@ -16,13 +16,19 @@ import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
+import { transactionLabel } from "../../features/transactions/transactionLabel";
+import type { TransactionType } from "../../types/transaction";
 import PageHeader from "../../components/ui/Pageheader";
 import CreateAccountModal from "../dashboard/components/modals/NewAccountModal/CreateAccountModal"
 import DeleteAccountModal from "../dashboard/components/modals/NewAccountModal/DeleteAccountModal";
 
+
+
 interface LedgerEntry {
   date: string;
-  description: string;
+  description: string | null;
+  type: TransactionType;
+  counterpartAccountNumber: string | null;
   amount: number;
 }
 
@@ -405,7 +411,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               ? ( 
                 <> 
                   <p className="mt-2 text-small text-muted">
-                    {history[0].description}</p>
+                    {transactionLabel(history[0], t)}</p>
                     <p className={history[0].amount >= 0 
                       ? "text-success font-bold text-balance"
                       : "text-balance font-bold text-brand"}>
@@ -508,8 +514,8 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 {history?.map((entry, index) => (
                   <ListItem 
                     key={index}
-                    title={entry.description}
-                    subtitle={entry.description}
+                    title={transactionLabel(entry, t)}
+                    subtitle={transactionLabel(entry, t)}
                     right={
                       <div className="flex flex-col items-end gap-1">
                         <p className={entry.amount >= 0

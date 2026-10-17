@@ -261,5 +261,9 @@
         "language": "Språk",
         "languageHint": "Välj vilket språk portalen ska visas på.",
         "savedNote": "✓ Dina val sparas automatiskt på den här enheten."
+    },
+    "transactionType": {
+    "Deposit": "Insättning", "Withdrawal": "Uttag", "Interest": "Ränta", "Tax": "Skatt",
+    "TransferIn": "Överföring från {{account}}", "TransferOut": "Överföring till {{account}}"
     }
 }

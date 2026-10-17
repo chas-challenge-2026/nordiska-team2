@@ -3,6 +3,7 @@ import type { Transaction } from "../../../types/transaction";
 import ListItem from "../../../components/ui/ListItem";
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../../language/useFormatters";
+import { transactionLabel } from "../../transactions/transactionLabel";
 
 type RecentTransactionProps = {
     transactions: Transaction[];
@@ -48,7 +49,7 @@ export default function RecentTransactions({ transactions, isLoading }: RecentTr
                     {latestTransactions.map((transaction) => (
                         <ListItem
                             key={transaction.id}
-                            title={transaction.description}
+                            title={transactionLabel(transaction, t)}
                             subtitle={transaction.account}
                             right={
                                 <div className="flex items-center justify-between 

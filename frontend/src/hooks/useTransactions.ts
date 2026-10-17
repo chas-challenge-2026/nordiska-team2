@@ -1,18 +1,14 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { apiClient } from "../client";
-import type { Transaction } from "../types/transaction"
+import type { Transaction, LedgerEntryDto } from "../types/transaction"
 import type { Account } from "../types/account";
-
-type LedgerEntryDto = {
-    date: string;
-    description: string;
-    amount: number;
-};
 
 function mapEntries(accountId: number, accountLabel: string, entries: LedgerEntryDto[]): Transaction[] {
     return entries.map((entry, index) => ({
         id: `${accountId}-${index}`,
         description: entry.description,
+        type: entry.type,
+        counterpartAccountNumber: entry.counterpartAccountNumber,
         account: accountLabel,
         date: entry.date,
         amount: entry.amount,
