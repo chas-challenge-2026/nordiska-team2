@@ -33,24 +33,11 @@ namespace NordiskaPortal.Api.Services
 
         private static decimal GetSignedAmount(Transaction transaction) => SignedAmountCompiled(transaction);
 
-        // Default description if no default description is passed
-        private static string DefaultDescription(TransactionType type) => type switch
-        {
-            TransactionType.Deposit => "Insättning",
-            TransactionType.Withdrawal => "Uttag",
-            TransactionType.Interest => "Ränta",
-            TransactionType.Tax => "Skatt",
-            TransactionType.TransferIn => "Överföring",
-            TransactionType.TransferOut => "Överföring",
-            _ => "Transaktion"
-        };
-
-        private static string ResolveDescription(string? description, TransactionType type) => string.IsNullOrWhiteSpace(description) ? DefaultDescription(type) : description.Trim();
+        // Only what the customer wrote. 
+        // null = nothing written: the frontend then shows the type ("Insättning" / "Deposit") in the reader's language.
+        private static string? ResolveDescription(string? description) => string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         public async Task<decimal> GetBalanceAsync(int accountId) 
-        { 
-            var transactions = await _db.Transactions
-                                        .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted).ToListAsync(); 
-            
+        {             
             return await _db.Transactions
                             .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
                             .SumAsync(SignedAmountExpr);
@@ -80,7 +67,7 @@ namespace NordiskaPortal.Api.Services
             {
                 AccountId = accountId,
                 Type = TransactionType.Deposit,
-                Description = ResolveDescription(description, TransactionType.Deposit),
+                Description = ResolveDescription(description),
                 Amount = amount,
                 TransactionDate = now,
                 PostingDate = Transaction.CalculatePostingDate(now),
@@ -91,7 +78,7 @@ namespace NordiskaPortal.Api.Services
             _audit.Record(AuditActions.Deposit, account.CustomerId, account.AccountNumber);
             await _db.SaveChangesAsync();
 
-            var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount);
+            var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount, transaction.Type);
             return new TransactionResult(true, null, entry);
         }
 
@@ -144,7 +131,7 @@ namespace NordiskaPortal.Api.Services
                 {
                     AccountId = accountId,
                     Type = TransactionType.Withdrawal,
-                    Description = ResolveDescription(description, TransactionType.Withdrawal),
+                    Description = ResolveDescription(description),
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = Transaction.CalculatePostingDate(now),
@@ -156,7 +143,7 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
+                var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount, withdrawal.Type);
                 return new TransactionResult(true, null, entry);
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
@@ -187,7 +174,9 @@ namespace NordiskaPortal.Api.Services
 
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
-                Description: ResolveDescription(t.Description, t.Type),
+                Description: t.Description,
+                Type: t.Type,
+                CounterpartAccountNumber: t.CounterpartAccountNumber,
                 Amount: GetSignedAmount(t)
             )).ToList();
         }
@@ -235,13 +224,14 @@ namespace NordiskaPortal.Api.Services
 
                 var now = DateTime.UtcNow;
                 var postingDate = Transaction.CalculatePostingDate(now);
-                var custom = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+                var custom = ResolveDescription(description);
 
                 var outgoing = new Transaction
                 {
                     AccountId = from.Id,
                     Type = TransactionType.TransferOut,
-                    Description = custom ?? $"Överföring till {to.AccountNumber}",
+                    Description = custom,
+                    CounterpartAccountNumber = to.AccountNumber,
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = postingDate,
@@ -252,7 +242,8 @@ namespace NordiskaPortal.Api.Services
                 {
                     AccountId = to.Id,
                     Type = TransactionType.TransferIn,
-                    Description = custom ?? $"Överföring från {from.AccountNumber}",
+                    Description = custom,
+                    CounterpartAccountNumber = from.AccountNumber,
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = postingDate,
@@ -267,7 +258,7 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                var entry = new LedgerEntryDto(outgoing.TransactionDate, outgoing.Description, -outgoing.Amount);
+                var entry = new LedgerEntryDto(outgoing.TransactionDate, outgoing.Description, -outgoing.Amount, outgoing.Type, outgoing.CounterpartAccountNumber);
                 return new TransactionResult(true, null, entry);
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
