@@ -1,4 +1,5 @@
 import axios from "axios";
+import i18n from "i18next";
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -49,6 +50,13 @@ async function refreshAccessToken(): Promise<string> {
   }
   return refreshPromise;
 }
+
+// Sends the active language with every request. Read on each call (not once
+// at startup), so a language switch applies to the very next request.
+apiClient.interceptors.request.use((config) => {
+  config.headers["Accept-Language"] = i18n.language;
+  return config;
+});
 
 apiClient.interceptors.response.use(
   (response) => response,
