@@ -17,7 +17,7 @@ namespace NordiskaPortal.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.31")
+                .HasAnnotation("ProductVersion", "8.0.32")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -233,20 +233,20 @@ namespace NordiskaPortal.Api.Migrations
                         new
                         {
                             Id = 8,
-                            Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
-                            Category = "Skatt & Rapporter",
+                            Answer = "Ditt skatteunderlag finns under 'Dokument'.",
+                            Category = "Rapporter",
                             IsPopular = true,
-                            Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" },
-                            Question = "Var hittar jag min årsrapport?"
+                            Keywords = new[] { "skatteunderlag", "skatterapport", "rapport", "deklaration", "årsrapport" },
+                            Question = "Var hittar jag mitt skatteunderlag?"
                         },
                         new
                         {
                             Id = 9,
-                            Answer = "Ränta på sparkonto beskattas som kapitalinkomst med 30 procent.",
-                            Category = "Skatt & Rapporter",
+                            Answer = "Du kan skapa och ladda ner ett kontoutdrag under 'Dokument' genom att välja konto och tidsperiod.",
+                            Category = "Rapporter",
                             IsPopular = false,
-                            Keywords = new[] { "skatt", "kapitalskatt", "ränta", "procent" },
-                            Question = "Hur mycket skatt betalar jag på min ränta?"
+                            Keywords = new[] { "kontoutdrag", "transaktioner", "rapport", "pdf", "ladda ner" },
+                            Question = "Hur laddar jag ner ett kontoutdrag?"
                         },
                         new
                         {
@@ -256,6 +256,150 @@ namespace NordiskaPortal.Api.Migrations
                             IsPopular = true,
                             Keywords = new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" },
                             Question = "Hur loggar jag in?"
+                        });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntryTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("FaqEntryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string[]>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaqEntryId", "Language")
+                        .IsUnique();
+
+                    b.ToTable("FaqEntryTranslations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Answer = "Interest is calculated and added to your savings account at the end of the year (31 December).",
+                            Category = "Interest",
+                            FaqEntryId = 1,
+                            Keywords = new[] { "interest", "payout", "when", "paid", "yearly" },
+                            Language = "en",
+                            Question = "When is interest paid out?"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Answer = "The interest rate varies between accounts. Your current rate is shown on each account under 'My accounts'.",
+                            Category = "Interest",
+                            FaqEntryId = 2,
+                            Keywords = new[] { "interest", "percent", "rate", "current" },
+                            Language = "en",
+                            Question = "How much interest do I get on my savings account?"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Answer = "The interest rate is variable and can change over time. Changes are announced in the app.",
+                            Category = "Interest",
+                            FaqEntryId = 3,
+                            Keywords = new[] { "interest", "fixed", "variable", "change" },
+                            Language = "en",
+                            Question = "Is the interest rate fixed or variable?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Answer = "Interest is calculated on your balance and added to the account at the end of the year.",
+                            Category = "Interest",
+                            FaqEntryId = 4,
+                            Keywords = new[] { "interest", "calculate", "calculated", "calculation", "balance" },
+                            Language = "en",
+                            Question = "How is the interest calculated?"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Answer = "Withdrawals are made in the app under 'My accounts'. A withdrawal is normally booked within two banking days.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 5,
+                            Keywords = new[] { "withdrawal", "withdraw", "take out", "money", "transfer" },
+                            Language = "en",
+                            Question = "How do I make a withdrawal?"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Answer = "You deposit money in the app under 'My accounts' by selecting the account and 'Deposit'.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 6,
+                            Keywords = new[] { "deposit", "add", "money", "account" },
+                            Language = "en",
+                            Question = "How do I deposit money into my account?"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Answer = "Deposits are normally booked within two banking days.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 7,
+                            Keywords = new[] { "deposit", "time", "booked", "banking", "days" },
+                            Language = "en",
+                            Question = "How long does a deposit take?"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Answer = "Your tax report is available under 'Documents'.",
+                            Category = "Reports",
+                            FaqEntryId = 8,
+                            Keywords = new[] { "tax report", "tax statement", "report", "declaration" },
+                            Language = "en",
+                            Question = "Where can I find my tax report?"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Answer = "You can generate and download a bank statement under 'My Reports' by selecting an account and a date range.",
+                            Category = "Reports",
+                            FaqEntryId = 9,
+                            Keywords = new[] { "bank statement", "transactions", "report", "pdf", "download" },
+                            Language = "en",
+                            Question = "How do I download a bank statement?"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Answer = "You log in with your email address and password, or with BankID.",
+                            Category = "Account & Login",
+                            FaqEntryId = 10,
+                            Keywords = new[] { "login", "log in", "logging", "bankid", "password", "forgot" },
+                            Language = "en",
+                            Question = "How do I log in?"
                         });
                 });
 
@@ -445,8 +589,11 @@ namespace NordiskaPortal.Api.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(15,2)");
 
+                    b.Property<string>("CounterpartAccountNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -548,6 +695,17 @@ namespace NordiskaPortal.Api.Migrations
                             TransactionDate = new DateTime(2023, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntryTranslation", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.FaqEntry", "FaqEntry")
+                        .WithMany()
+                        .HasForeignKey("FaqEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FaqEntry");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
