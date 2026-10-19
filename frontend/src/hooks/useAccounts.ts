@@ -10,6 +10,7 @@ type AccountDto = {
     balance: number;
 }
 
+
 function mapAccountDto(dto: AccountDto): Account {
     return {
         id: dto.id,
@@ -17,7 +18,7 @@ function mapAccountDto(dto: AccountDto): Account {
         balance: dto.balance,
         interest: Math.round(dto.interestRate * 10000) / 100, // 0.035 -> 3.5 (%)
         type: dto.accountType.toLowerCase() as Account["type"],
-        name: dto.accountType === "Savings" ? "Privatkonto" : dto.accountType,
+        name: `accountTypes.${dto.accountType.toLowerCase()}`,
     };
 }
 

@@ -105,6 +105,7 @@
         "goalReached": "Målet är uppnått!",
         "search": "Sök",
         "searchPlaceholder": "Sök ..."
+
     },
     "footer": {
         "security": "Säkerhet",
@@ -115,6 +116,9 @@
         "availableBalance": "Tillgängligt saldo",
         "interest": "Ränta {{rate}} %",
         "warmingUp": "Här värmer vi upp för ett nytt kommande konto"
+    },
+     "accountTypes": {
+        "savings": "Privatkonto" 
     },
     "accountsPage": {
         "loadingAccounts": "Laddar konton...",

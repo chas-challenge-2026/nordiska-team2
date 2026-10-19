@@ -340,7 +340,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
     <div className="flex md:gap-3 flex-col md:flex-row">
       <Card 
-        title={selectedAccount?.name ?? t("common.account")}
+        title={selectedAccount ? t(selectedAccount.name) : t("common.account")}
         subtitle={t("accountsPage.balance")} 
         headerVariant="secondary"
         headerClassName="min-h-25"

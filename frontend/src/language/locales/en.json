@@ -116,6 +116,9 @@
         "interest": "Interest rate {{rate}}%",
         "warmingUp": "We're warming things up for a new account here"
     },
+    "accountTypes": {
+        "savings": "Personal account" 
+    },
     "accountsPage": {
         "loadingAccounts": "Loading accounts...",
         "noAccounts": "No accounts found.",

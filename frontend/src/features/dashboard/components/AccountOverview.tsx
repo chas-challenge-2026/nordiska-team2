@@ -20,7 +20,7 @@ export default function AccountOverview({ accounts, onCreateAccount }: AccountOv
                                 {accounts.map((account) => (
                                     <AccountCard
                                         key={account.id}
-                                        name={account.name}
+                                        name={t(account.name)}
                                         accountNumber={account.accountNumber}
                                         balance={account.balance}
                                         interest={account.interest}
