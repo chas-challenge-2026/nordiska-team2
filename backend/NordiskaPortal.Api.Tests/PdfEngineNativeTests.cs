@@ -164,15 +164,26 @@ namespace NordiskaPortal.Api.Tests
             Directory.CreateDirectory(outDir);
             File.WriteAllText(jsonPath, JsonSerializer.Serialize(new[] { CreateValidTaxReport() }));
 
-            string? pfxPath = new[]
+            string pfxPath = Path.Combine(_tempDirectory, "test_signing.pfx");
+            using (var rsa = System.Security.Cryptography.RSA.Create(2048))
             {
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../NordiskaPortal.Api/certificates/nordiska-signing.pfx")),
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../NordiskaPortal.Api/certificates/nordiska-signing.pfx")),
-                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "certificates/nordiska-signing.pfx")),
-                Path.GetFullPath("certificates/nordiska-signing.pfx")
-            }.FirstOrDefault(File.Exists);
+                var req = new System.Security.Cryptography.X509Certificates.CertificateRequest(
+                    "CN=Nordiska Sparbanken Signing",
+                    rsa,
+                    System.Security.Cryptography.HashAlgorithmName.SHA256,
+                    System.Security.Cryptography.RSASignaturePadding.Pkcs1);
 
-            Assert.True(pfxPath != null && File.Exists(pfxPath), "Certificate not found.");
+                req.CertificateExtensions.Add(
+                    new System.Security.Cryptography.X509Certificates.X509KeyUsageExtension(
+                        System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.DigitalSignature | System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.NonRepudiation,
+                        critical: true));
+
+                using var cert = req.CreateSelfSigned(
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    DateTimeOffset.UtcNow.AddYears(1));
+
+                File.WriteAllBytes(pfxPath, cert.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx, "secret123"));
+            }
 
             int result = PdfEngineNative.pdf_engine_generate_and_sign(
                 jsonPath,
