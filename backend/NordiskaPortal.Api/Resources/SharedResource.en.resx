@@ -13,4 +13,5 @@
   <data name="too_many_accounts" xml:space="preserve"><value>You can have at most {max} open accounts.</value></data>
   <data name="account_not_empty" xml:space="preserve"><value>The account balance must be 0 before it can be closed.</value></data>
   <data name="description_too_long" xml:space="preserve"><value>The description can be at most {max} characters.</value></data>
+  <data name="faq_no_answer" xml:space="preserve"><value>Sorry, we couldn't find an answer to your question. Please contact customer service on 08‑123 456 78, weekdays 9–17, and we'll help you further.</value></data>
 </root>

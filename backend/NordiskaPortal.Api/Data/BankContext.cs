@@ -18,6 +18,7 @@ public class BankContext : DbContext
     public DbSet<FaqEntry> FaqEntries { get; set; }
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
     public DbSet<AuditEntry> AuditEntries { get; set; }
+    public DbSet<FaqEntryTranslation> FaqEntryTranslations { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,6 +32,8 @@ public class BankContext : DbContext
         modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
 
         modelBuilder.Entity<TaxReport>().HasIndex(r => new { r.AccountId, r.Year }).IsUnique();
+
+        modelBuilder.Entity<FaqEntryTranslation>().HasIndex(t => new { t.FaqEntryId, t.Language }).IsUnique();
 
         modelBuilder.Entity<Customer>().HasData(
             new Customer
@@ -240,21 +243,21 @@ public class BankContext : DbContext
             // ===== Skatt & Rapporter: 2 entries (ids 8-9) =====
             new FaqEntry
             {
-                Id = 8,
-                Question = "Var hittar jag min årsrapport?",
-                Answer = "Din årsrapport (skatteunderlag) finns under 'Mina rapporter' när den har skapats för aktuellt år.",
-                Category = "Skatt & Rapporter",
-                Keywords = new[] { "årsrapport", "rapport", "skatt", "deklaration" },
-                IsPopular = true
+            Id = 8,
+            Question = "Var hittar jag mitt skatteunderlag?",
+            Answer = "Ditt skatteunderlag finns under 'Dokument'.",
+            Category = "Rapporter",
+            Keywords = new[] { "skatteunderlag", "skatterapport", "rapport", "deklaration", "årsrapport" },
+            IsPopular = true
             },
             new FaqEntry
             {
-                Id = 9,
-                Question = "Hur mycket skatt betalar jag på min ränta?",
-                Answer = "Ränta på sparkonto beskattas som kapitalinkomst med 30 procent.",
-                Category = "Skatt & Rapporter",
-                Keywords = new[] { "skatt", "kapitalskatt", "ränta", "procent" },
-                IsPopular = false
+            Id = 9,
+            Question = "Hur laddar jag ner ett kontoutdrag?",
+            Answer = "Du kan skapa och ladda ner ett kontoutdrag under 'Dokument' genom att välja konto och tidsperiod.",
+            Category = "Rapporter",
+            Keywords = new[] { "kontoutdrag", "transaktioner", "rapport", "pdf", "ladda ner" },
+            IsPopular = false
             },
 
             // ===== Konto & Inlogg: 1 entry (id 10) =====
@@ -266,6 +269,117 @@ public class BankContext : DbContext
                 Category = "Konto & Inlogg",
                 Keywords = new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" },
                 IsPopular = true
+            }
+        );
+
+        // English version
+        modelBuilder.Entity<FaqEntryTranslation>().HasData(
+            // ===== Interest (entries 1-4) =====
+            new FaqEntryTranslation
+            {
+                Id = 1,
+                FaqEntryId = 1,
+                Language = "en",
+                Question = "When is interest paid out?",
+                Answer = "Interest is calculated and added to your savings account at the end of the year (31 December).",
+                Category = "Interest",
+                Keywords = new[] { "interest", "payout", "when", "paid", "yearly" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 2,
+                FaqEntryId = 2,
+                Language = "en",
+                Question = "How much interest do I get on my savings account?",
+                Answer = "The interest rate varies between accounts. Your current rate is shown on each account under 'My accounts'.",
+                Category = "Interest",
+                Keywords = new[] { "interest", "percent", "rate", "current" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 3,
+                FaqEntryId = 3,
+                Language = "en",
+                Question = "Is the interest rate fixed or variable?",
+                Answer = "The interest rate is variable and can change over time. Changes are announced in the app.",
+                Category = "Interest",
+                Keywords = new[] { "interest", "fixed", "variable", "change" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 4,
+                FaqEntryId = 4,
+                Language = "en",
+                Question = "How is the interest calculated?",
+                Answer = "Interest is calculated on your balance and added to the account at the end of the year.",
+                Category = "Interest",
+                Keywords = new[] { "interest", "calculate", "calculated", "calculation", "balance" }
+            },
+
+            // ===== Deposits & Withdrawals (entries 5-7) =====
+            new FaqEntryTranslation
+            {
+                Id = 5,
+                FaqEntryId = 5,
+                Language = "en",
+                Question = "How do I make a withdrawal?",
+                Answer = "Withdrawals are made in the app under 'My accounts'. A withdrawal is normally booked within two banking days.",
+                Category = "Deposits & Withdrawals",
+                Keywords = new[] { "withdrawal", "withdraw", "take out", "money", "transfer" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 6,
+                FaqEntryId = 6,
+                Language = "en",
+                Question = "How do I deposit money into my account?",
+                Answer = "You deposit money in the app under 'My accounts' by selecting the account and 'Deposit'.",
+                Category = "Deposits & Withdrawals",
+                Keywords = new[] { "deposit", "add", "money", "account" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 7,
+                FaqEntryId = 7,
+                Language = "en",
+                Question = "How long does a deposit take?",
+                Answer = "Deposits are normally booked within two banking days.",
+                Category = "Deposits & Withdrawals",
+                Keywords = new[] { "deposit", "time", "booked", "banking", "days" }
+            },
+
+            // ===== Tax & Reports (entries 8-9) =====
+            new FaqEntryTranslation
+            {
+                Id = 8,
+                FaqEntryId = 8,
+                Language = "en",
+                Question = "Where can I find my tax report?",
+                Answer = "Your tax report is available under 'Documents'.",
+                Category = "Reports",
+                Keywords = new[] { "tax report", "tax statement", "report", "declaration" }
+            },
+            new FaqEntryTranslation
+            {
+                Id = 9,
+                FaqEntryId = 9,
+                Language = "en",
+                Question = "How do I download a bank statement?",
+                Answer = "You can generate and download a bank statement under 'Documents' by selecting an account and a time interval.",
+                Category = "Reports",
+                Keywords = new[] { "bank statement", "transactions", "report", "pdf", "download" }
+            },
+
+            // ===== Account & Login (entry 10) =====
+            new FaqEntryTranslation
+            {
+                Id = 10,
+                FaqEntryId = 10,
+                Language = "en",
+                Question = "How do I log in?",
+                Answer = "You log in with your email address and password, or with BankID.",
+                Category = "Account & Login",
+                Keywords = new[] { "login", "log in", "logging", "bankid", "password", "forgot" }
             }
         );
 

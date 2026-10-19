@@ -1,33 +1,31 @@
 ﻿using System.Globalization;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.DTOs;
-using NordiskaPortal.Api.Models;
 
 namespace NordiskaPortal.Api.Services
 {
     public class FaqCategoryService
     {
-        private readonly BankContext _db;
+        private readonly FaqTranslationService _translations;
 
-        public FaqCategoryService(BankContext db)
+        public FaqCategoryService(FaqTranslationService translations)
         {
-            _db = db;
+            _translations = translations;
         }
 
-        // One card per distinct category, with how many entries it holds.
+        // One card per category. The id comes from the default-language
+        // category, so it is the same in every language. Only the label is
+        // translated. Ordered by id so the cards never reshuffle on a
+        // language switch.
         public async Task<List<FaqCategoryResponse>> GetCategoriesAsync()
         {
-            var groups = await _db.FaqEntries
-                .Where(e => e.Category != "")
-                .GroupBy(e => e.Category)
-                .Select(g => new { Label = g.Key, Count = g.Count() })
-                .ToListAsync();
+            var entries = await _translations.GetEntriesAsync();
 
-            return groups
-                .Select(g => new FaqCategoryResponse(ToSlug(g.Label), g.Label, g.Count))
-                .OrderBy(c => c.Label)
+            return entries
+                .Where(e => e.BaseCategory != "")
+                .GroupBy(e => ToSlug(e.BaseCategory))
+                .Select(g => new FaqCategoryResponse(g.Key, g.First().Category, g.Count()))
+                .OrderBy(c => c.Id, StringComparer.Ordinal)
                 .ToList();
         }
 
@@ -37,13 +35,10 @@ namespace NordiskaPortal.Api.Services
         {
             var wanted = categoryId.Trim().ToLowerInvariant();
 
-            var entries = await _db.FaqEntries
-                .Where(e => e.Category != "")
-                .OrderBy(e => e.Id)
-                .ToListAsync();
+            var entries = await _translations.GetEntriesAsync();
 
             var matching = entries
-                .Where(e => ToSlug(e.Category) == wanted)
+                .Where(e => e.BaseCategory != "" && ToSlug(e.BaseCategory) == wanted)
                 .ToList();
 
             if (matching.Count == 0)
@@ -55,22 +50,18 @@ namespace NordiskaPortal.Api.Services
         // Entries flagged as popular, for the start page.
         public async Task<List<FaqEntryResponse>> GetPopularAsync()
         {
-            var popular = await _db.FaqEntries
-                .Where(e => e.IsPopular)
-                .OrderBy(e => e.Id)
-                .ToListAsync();
+            var entries = await _translations.GetEntriesAsync();
 
-            return popular.Select(ToResponse).ToList();
+            return entries.Where(e => e.IsPopular).Select(ToResponse).ToList();
         }
 
-        static FaqEntryResponse ToResponse(FaqEntry entry)
+        static FaqEntryResponse ToResponse(LocalizedFaqEntry entry)
         {
             return new FaqEntryResponse(entry.Id, entry.Question, entry.Answer, entry.Category);
         }
 
         // Lowercases, strips accents, drops symbols like '&', and joins the
         // remaining words with single hyphens so the result is URL-safe.
-        // "Konto & Inlogg" becomes "konto-inlogg".
         static string ToSlug(string text)
         {
             var decomposed = text.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
