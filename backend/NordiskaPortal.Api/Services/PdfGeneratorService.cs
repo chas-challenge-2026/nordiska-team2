@@ -1,23 +1,39 @@
-﻿using System.Text.Json;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using NordiskaPortal.Api.Interop;
 
 namespace NordiskaPortal.Api.Services
 {
+    public class PdfGenerationResult
+    {
+        public bool Success => ErrorCode == PdfEngineResult.Success && PdfBytes != null && PdfBytes.Length > 0;
+        public byte[]? PdfBytes { get; set; }
+        public PdfEngineResult ErrorCode { get; set; } = PdfEngineResult.Success;
+        public string? ErrorMessage { get; set; }
+        public string? ReportId { get; set; }
+    }
+
     public class PdfGeneratorService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<PdfGeneratorService>? _logger;
 
-        public PdfGeneratorService(IConfiguration configuration)
+        public PdfGenerationResult? LastResult { get; private set; }
+        public PdfEngineResult? LastErrorCode => LastResult?.ErrorCode;
+        public string? LastErrorMessage => LastResult?.ErrorMessage;
+
+        public PdfGeneratorService(IConfiguration configuration, ILogger<PdfGeneratorService>? logger = null)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
-        /// Generates a single report's PDF and returns its bytes directly.
-        /// Uses an isolated temp folder per call so concurrent generations
-        /// never collide or pick up the wrong file.
+        /// Generates a single report's PDF and returns full result details including error codes.
         /// </summary>
-        public byte[]? GenerateSingleReportPdf(object report, PdfReportType reportType, string? pfxPath, string? password)
+        public PdfGenerationResult GenerateSingleReport(object report, PdfReportType reportType, string? pfxPath, string? password)
         {
             string tempBaseDir = _configuration["PdfTemp:Directory"] ?? "json-temp";
             string callId = Guid.NewGuid().ToString("N");
@@ -30,32 +46,150 @@ namespace NordiskaPortal.Api.Services
 
             File.WriteAllText(tempJsonPath, JsonSerializer.Serialize(new[] { report }));
 
+            if (string.IsNullOrEmpty(pfxPath))
+            {
+                var configPath = _configuration["PdfSigning:CertificatePath"];
+                if (!string.IsNullOrEmpty(configPath))
+                {
+                    password ??= _configuration["PdfSigning:Password"] ?? "secret123";
+                    string resolved = Path.IsPathRooted(configPath)
+                        ? configPath
+                        : Path.Combine(AppContext.BaseDirectory, configPath);
+
+                    EnsureCertificateExists(resolved, password);
+                    pfxPath = resolved;
+                }
+            }
+            else if (!Path.IsPathRooted(pfxPath))
+            {
+                string candidate = Path.Combine(AppContext.BaseDirectory, pfxPath);
+                if (File.Exists(candidate))
+                {
+                    pfxPath = candidate;
+                }
+            }
+
+            var result = new PdfGenerationResult();
+
             try
             {
-                int result = PdfEngineNative.pdf_engine_generate_and_sign(
+                PdfEngineProgressCb progressCb = (ref PdfEngineReportResult reportResult, IntPtr _) =>
+                {
+                    if (reportResult.Status != 0)
+                    {
+                        result.ErrorCode = (PdfEngineResult)reportResult.Status;
+                        result.ReportId = Marshal.PtrToStringUTF8(reportResult.ReportId);
+                        result.ErrorMessage = Marshal.PtrToStringUTF8(reportResult.Detail);
+                    }
+                };
+
+                int nativeResult = PdfEngineNative.pdf_engine_generate_and_sign(
                     tempJsonPath,
                     reportType,
                     tempOutDir,
                     pfxPath,
                     password,
-                    IntPtr.Zero,
+                    progressCb,
                     IntPtr.Zero
                 );
 
-                if (result <= 0)
-                    return null;
+                GC.KeepAlive(progressCb);
 
-                var pdfFile = new DirectoryInfo(tempOutDir).GetFiles("*.pdf").FirstOrDefault();
-                if (pdfFile == null)
-                    return null;
-
-                return File.ReadAllBytes(pdfFile.FullName);
+                if (nativeResult < 0)
+                {
+                    result.ErrorCode = (PdfEngineResult)nativeResult;
+                    result.ErrorMessage ??= $"PDF engine fatal batch failure: {result.ErrorCode} ({nativeResult})";
+                    _logger?.LogError("PDF engine fatal failure with code {ErrorCode} ({NativeResult})", result.ErrorCode, nativeResult);
+                }
+                else if (nativeResult == 0)
+                {
+                    if (result.ErrorCode == PdfEngineResult.Success)
+                    {
+                        result.ErrorCode = PdfEngineResult.ErrorNoReportObject;
+                        result.ErrorMessage ??= "No report generated.";
+                    }
+                    _logger?.LogWarning("PDF engine generated 0 reports. Code: {ErrorCode}, Detail: {ErrorMessage}", result.ErrorCode, result.ErrorMessage);
+                }
+                else
+                {
+                    var pdfFile = new DirectoryInfo(tempOutDir).GetFiles("*.pdf").FirstOrDefault();
+                    if (pdfFile == null)
+                    {
+                        result.ErrorCode = PdfEngineResult.ErrorGenerationFailed;
+                        result.ErrorMessage = "PDF reported generated by native engine but file was not found on disk.";
+                        _logger?.LogError("PDF missing from disk in {TempOutDir}", tempOutDir);
+                    }
+                    else
+                    {
+                        result.PdfBytes = File.ReadAllBytes(pdfFile.FullName);
+                        result.ErrorCode = PdfEngineResult.Success;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorCode = PdfEngineResult.ErrorGenerationFailed;
+                result.ErrorMessage = ex.Message;
+                _logger?.LogError(ex, "Unexpected exception during PDF generation");
             }
             finally
             {
                 File.Delete(tempJsonPath);
                 Directory.Delete(tempOutDir, recursive: true);
             }
+
+            LastResult = result;
+            return result;
+        }
+
+        /// <summary>
+        /// Generates a single report's PDF and returns its bytes directly.
+        /// Uses an isolated temp folder per call so concurrent generations
+        /// never collide or pick up the wrong file.
+        /// </summary>
+        public byte[]? GenerateSingleReportPdf(object report, PdfReportType reportType, string? pfxPath, string? password)
+        {
+            var result = GenerateSingleReport(report, reportType, pfxPath, password);
+            return result.Success ? result.PdfBytes : null;
+        }
+
+        private static string EnsureCertificateExists(string path, string password)
+        {
+            if (File.Exists(path))
+                return path;
+
+            try
+            {
+                var dir = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
+                using var rsa = RSA.Create(2048);
+                var req = new CertificateRequest(
+                    "CN=Nordiska Sparbanken Signing",
+                    rsa,
+                    HashAlgorithmName.SHA256,
+                    RSASignaturePadding.Pkcs1);
+
+                req.CertificateExtensions.Add(
+                    new X509KeyUsageExtension(
+                        X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation,
+                        critical: true));
+
+                using var cert = req.CreateSelfSigned(
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    DateTimeOffset.UtcNow.AddYears(1));
+
+                byte[] pfxBytes = cert.Export(X509ContentType.Pfx, password);
+                File.WriteAllBytes(path, pfxBytes);
+            }
+            catch
+            {
+                // If creation fails, proceed so the native engine reports any error cleanly
+            }
+
+            return path;
         }
     }
 }
+

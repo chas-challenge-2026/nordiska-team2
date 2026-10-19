@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Models;
 
 namespace NordiskaPortal.Api.Data;
@@ -73,7 +73,7 @@ public class BankContext : DbContext
                 Id = 2,
                 CustomerId = 1,
                 AccountNumber = "NKM-10002",
-                InterestRate = 0.0280m,
+                InterestRate = 0.0350m,
                 AccountType = "Savings",
                 CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
             },

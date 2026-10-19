@@ -32,7 +32,7 @@ INSERT INTO customers (name, email, password_md5) VALUES
 
 INSERT INTO savings_accounts (customer_id, account_number, balance, interest_rate) VALUES
 (1, 'NKM-10001', 125000.00, 0.0350),
-(1, 'NKM-10002', 45000.00, 0.0280),
+(1, 'NKM-10002', 45000.00, 0.0350),
 (2, 'NKM-20001', 89500.00, 0.0350);
 
 INSERT INTO transactions (account_id, type, amount, balance_after) VALUES

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -267,7 +267,7 @@ namespace NordiskaPortal.Api.Migrations
                 values: new object[,]
                 {
                     { 1, "NKM-10001", "Savings", null, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
-                    { 2, "NKM-10002", "Savings", null, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
+                    { 2, "NKM-10002", "Savings", null, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
                     { 3, "NKM-20001", "Savings", null, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
                 });
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NordiskaPortal.Api.Interop;
 using NordiskaPortal.Api.Services;
 using NordiskaPortal.Api.DTOs;
@@ -35,11 +35,18 @@ namespace NordiskaPortal.Api.Controllers
             if (statement == null)
                 return NotFound(new { message = "Account not found." });
 
-            byte[]? pdfBytes = _pdfGeneratorService.GenerateSingleReportPdf(statement, PdfReportType.BankStatement, null, null);
-            if (pdfBytes == null)
-                return StatusCode(500, new { message = "PDF generation failed." });
+            var pdfResult = _pdfGeneratorService.GenerateSingleReport(statement, PdfReportType.BankStatement, null, null);
+            if (!pdfResult.Success)
+            {
+                return StatusCode(500, new
+                {
+                    message = "PDF generation failed.",
+                    errorCode = pdfResult.ErrorCode.ToString(),
+                    detail = pdfResult.ErrorMessage
+                });
+            }
 
-            return File(pdfBytes, "application/pdf", $"{statement.Metadata.StatementId}.pdf");
+            return File(pdfResult.PdfBytes!, "application/pdf", $"{statement.Metadata.StatementId}.pdf");
         }
     }
 }
