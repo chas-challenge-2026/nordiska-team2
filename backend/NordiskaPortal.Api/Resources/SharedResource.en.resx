@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="invalid_amount" xml:space="preserve"><value>The amount must be greater than 0.</value></data>
+  <data name="account_not_found" xml:space="preserve"><value>The account could not be found.</value></data>
+  <data name="insufficient_funds" xml:space="preserve"><value>Insufficient funds.</value></data>
+  <data name="concurrency_conflict" xml:space="preserve"><value>Something changed at the same time. Please try again.</value></data>
+  <data name="same_account_transfer" xml:space="preserve"><value>The from and to accounts must be different.</value></data>
+  <data name="too_many_accounts" xml:space="preserve"><value>You can have at most {max} open accounts.</value></data>
+  <data name="account_not_empty" xml:space="preserve"><value>The account balance must be 0 before it can be closed.</value></data>
+  <data name="description_too_long" xml:space="preserve"><value>The description can be at most {max} characters.</value></data>
+</root>

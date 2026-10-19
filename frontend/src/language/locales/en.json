@@ -261,5 +261,25 @@
         "language": "Language",
         "languageHint": "Choose which language the portal is shown in.",
         "savedNote": "✓ Your choices are saved automatically on this device."
+    },
+    "transactionType": {
+        "Deposit": "Deposit", "Withdrawal": "Withdrawal", "Interest": "Interest", "Tax": "Tax",
+        "TransferIn": "Transfer from {{account}}", "TransferOut": "Transfer to {{account}}"
+    },
+    "errors": {
+        "unknown": "Something went wrong. Please try again.",
+        "network": "Could not reach the server. Check your connection.",
+        "rate_limited": "Too many attempts. Please wait a minute and try again.",
+        "invalid_amount": "The amount must be greater than 0.",
+        "account_not_found": "The account could not be found.",
+        "insufficient_funds": "Insufficient funds.",
+        "concurrency_conflict": "Something changed at the same time. Please try again.",
+        "description_too_long": "The description can be at most {{max}} characters."
+    },
+    "depositWithdraw": {
+        "descriptionPlaceholder": "Description (optional)",
+        "deposit": "Deposit",
+        "withdraw": "Withdraw",
+        "presetAmount": "SEK {{amount}}"
     }
 }

@@ -4,14 +4,9 @@ import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
+import type { LedgerEntryDto as LedgerEntry } from "../../types/transaction";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-
-type LedgerEntry = {
-    date: string;
-    description: string;
-    amount: number;
-};
 
 const WINDOW_SIZE = 5;
 

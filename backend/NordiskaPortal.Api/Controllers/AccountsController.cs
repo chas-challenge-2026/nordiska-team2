@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NordiskaPortal.Api.Extensions;
 using NordiskaPortal.Api.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using NordiskaPortal.Api.Errors;
 
 // Returns a customer's accounts + balances for the dashboard.
 namespace NordiskaPortal.Api.Controllers
@@ -56,7 +57,7 @@ namespace NordiskaPortal.Api.Controllers
             var result = await _accountService.OpenAccountAsync(User.GetCustomerId());
             return result.Success
                 ? StatusCode(StatusCodes.Status201Created, result.Account)
-                : BadRequest(new { error = result.Error });
+                : new ApiErrorResult(result.Error!);
         }
 
         // DELETE /api/accounts/{id} - Closes an empty account. (never deletes, must keep ledger history)
@@ -70,7 +71,7 @@ namespace NordiskaPortal.Api.Controllers
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
             var result = await _accountService.CloseAccountAsync(customerId, accountId);
-            return result.Success ? NoContent() : BadRequest(new { error = result.Error });
+            return result.Success ? NoContent() : new ApiErrorResult(result.Error!);
         }
     }
 }

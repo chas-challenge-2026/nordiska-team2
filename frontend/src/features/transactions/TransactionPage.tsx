@@ -16,13 +16,18 @@ import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import confetti from "canvas-confetti"
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "../../language/useFormatters";
+import { transactionLabel, transactionTypeLabel } from "../../features/transactions/transactionLabel";
+import type { TransactionType } from "../../types/transaction";
 import PageHeader from "../../components/ui/Pageheader";
 import CreateAccountModal from "../dashboard/components/modals/NewAccountModal/CreateAccountModal"
 import DeleteAccountModal from "../dashboard/components/modals/NewAccountModal/DeleteAccountModal";
+import { apiErrorMessage } from "../../lib/apiErrorMessage"
 
 interface LedgerEntry {
   date: string;
-  description: string;
+  description: string | null;
+  type: TransactionType;
+  counterpartAccountNumber: string | null;
   amount: number;
 }
 
@@ -138,6 +143,18 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     },
   });
 
+  // The mutation for the tab the user is on, so the error shown always
+  // belongs to what they just tried (each mutation remembers its last error).
+  const activeMutation = mode === "deposit" ? depositMutation : withdrawMutation;
+
+  // Switching account starts fresh: an error from another account's
+  // attempt shouldn't stay on screen.
+  function selectAccount(option: OptionType | null) {
+    setExplicitAccountId(option ? Number(option.value) : null);
+    depositMutation.reset();
+    withdrawMutation.reset();
+  }
+
   const location = useLocation();
   useEffect(() => {
     if (!accountsLoading && accounts && location.hash === "#recenttransactions") {
@@ -166,7 +183,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
           <p className="text-xsmall text-muted mb-1">{t("common.selectAccount")}</p>
           <SelectOptions 
             value={selectedOption}
-            onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
+            onChange={selectAccount}
             options={accountOptions}
             className="w-100 self-end text-small"
           />
@@ -176,10 +193,10 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       {/*========== Mobilversion ==========*/}
       <div className="flex flex-col md:hidden gap-0.3 sm:gap-3 ">
           <div>
-            <p className="text-xsmall text-muted mb-1 hidden">Välj konto</p>
+            <p className="text-xsmall text-muted mb-1 hidden">{t("common.selectAccount")}</p>
             <SelectOptions 
               value={selectedOption}
-              onChange={(option) => setExplicitAccountId(option ? Number(option.value): null)}
+              onChange={selectAccount}
               options={accountOptions}
               className="w-full self-end text-small rounded-none sm:rounded-card"
             />
@@ -405,7 +422,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               ? ( 
                 <> 
                   <p className="mt-2 text-small text-muted">
-                    {history[0].description}</p>
+                    {transactionLabel(history[0], t)}</p>
                     <p className={history[0].amount >= 0 
                       ? "text-success font-bold text-balance"
                       : "text-balance font-bold text-brand"}>
@@ -474,7 +491,11 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 
               {(depositMutation.isError || withdrawMutation.isError) && (
                 <p>
-                  {t("common.genericError")}
+                {activeMutation.isError && (
+                  <p role="alert" className="mt-3 text-xsmall text-cancel">
+                    {apiErrorMessage(activeMutation.error, t)}
+                  </p>
+                )}
                 </p>
               )}
             </div>
@@ -508,8 +529,8 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 {history?.map((entry, index) => (
                   <ListItem 
                     key={index}
-                    title={entry.description}
-                    subtitle={entry.description}
+                    title={transactionLabel(entry, t)}
+                    subtitle={entry.description ? transactionTypeLabel(entry, t) : undefined}
                     right={
                       <div className="flex flex-col items-end gap-1">
                         <p className={entry.amount >= 0

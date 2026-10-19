@@ -9,6 +9,7 @@ import type { OptionType } from "../../../../../components/ui/Select";
 import { useAlert } from "../../../../../hooks/useAlert";
 import { apiClient } from "../../../../../client";
 import { useTranslation } from "react-i18next";
+import { apiErrorMessage } from "../../../../../lib/apiErrorMessage";
 
 type CreateSavingsGoalsProps = {
     isOpen: boolean;
@@ -41,6 +42,7 @@ export default function CreateSavingsGoalsModal({
     const isAccountMissing = account === null;
 
     function resetAndClose() {
+        createMutation.reset();
         setName("");
         setTargetAmount("");
         setAccount(null);
@@ -108,7 +110,7 @@ export default function CreateSavingsGoalsModal({
                 )}
 
                 {createMutation.isError && (
-                    <p className="text-xsmall text-cancel">{t("common.genericError")}</p>
+                    <p className="text-xsmall text-cancel">{apiErrorMessage(createMutation.error, t)}</p>
                 )}
             </div>
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Models;
+using NordiskaPortal.Api.Errors;
 
 namespace NordiskaPortal.Api.Services
 {
@@ -33,24 +34,11 @@ namespace NordiskaPortal.Api.Services
 
         private static decimal GetSignedAmount(Transaction transaction) => SignedAmountCompiled(transaction);
 
-        // Default description if no default description is passed
-        private static string DefaultDescription(TransactionType type) => type switch
-        {
-            TransactionType.Deposit => "Insättning",
-            TransactionType.Withdrawal => "Uttag",
-            TransactionType.Interest => "Ränta",
-            TransactionType.Tax => "Skatt",
-            TransactionType.TransferIn => "Överföring",
-            TransactionType.TransferOut => "Överföring",
-            _ => "Transaktion"
-        };
-
-        private static string ResolveDescription(string? description, TransactionType type) => string.IsNullOrWhiteSpace(description) ? DefaultDescription(type) : description.Trim();
+        // Only what the customer wrote. 
+        // null = nothing written: the frontend then shows the type ("Insättning" / "Deposit") in the reader's language.
+        private static string? ResolveDescription(string? description) => string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         public async Task<decimal> GetBalanceAsync(int accountId) 
-        { 
-            var transactions = await _db.Transactions
-                                        .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted).ToListAsync(); 
-            
+        {             
             return await _db.Transactions
                             .Where(t => t.AccountId == accountId && t.Status == TransactionStatus.Posted)
                             .SumAsync(SignedAmountExpr);
@@ -68,11 +56,11 @@ namespace NordiskaPortal.Api.Services
             */
 
             if (amount <= 0)
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
 
             var account = await _db.SavingsAccounts.FindAsync(accountId);
             if (account == null || account.ClosedAt != null)
-                return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                return new TransactionResult(false, ApiErrors.AccountNotFound, null);
 
             var now = DateTime.UtcNow;
 
@@ -80,7 +68,7 @@ namespace NordiskaPortal.Api.Services
             {
                 AccountId = accountId,
                 Type = TransactionType.Deposit,
-                Description = ResolveDescription(description, TransactionType.Deposit),
+                Description = ResolveDescription(description),
                 Amount = amount,
                 TransactionDate = now,
                 PostingDate = Transaction.CalculatePostingDate(now),
@@ -91,7 +79,7 @@ namespace NordiskaPortal.Api.Services
             _audit.Record(AuditActions.Deposit, account.CustomerId, account.AccountNumber);
             await _db.SaveChangesAsync();
 
-            var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount);
+            var entry = new LedgerEntryDto(transaction.TransactionDate, transaction.Description, transaction.Amount, transaction.Type);
             return new TransactionResult(true, null, entry);
         }
 
@@ -100,7 +88,7 @@ namespace NordiskaPortal.Api.Services
         {
             if (amount <= 0)
             {
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
             }
 
             /*
@@ -126,7 +114,7 @@ namespace NordiskaPortal.Api.Services
                 if (account == null)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                    return new TransactionResult(false, ApiErrors.AccountNotFound, null);
                 }
 
                 var currentBalance = await _db.Transactions
@@ -136,7 +124,7 @@ namespace NordiskaPortal.Api.Services
                 if (currentBalance < amount)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Otillräckligt saldo.", null);
+                    return new TransactionResult(false, ApiErrors.InsufficientFunds, null);
                 }
 
                 var now = DateTime.UtcNow;
@@ -144,7 +132,7 @@ namespace NordiskaPortal.Api.Services
                 {
                     AccountId = accountId,
                     Type = TransactionType.Withdrawal,
-                    Description = ResolveDescription(description, TransactionType.Withdrawal),
+                    Description = ResolveDescription(description),
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = Transaction.CalculatePostingDate(now),
@@ -156,7 +144,7 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount);
+                var entry = new LedgerEntryDto(withdrawal.TransactionDate, withdrawal.Description, -withdrawal.Amount, withdrawal.Type);
                 return new TransactionResult(true, null, entry);
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
@@ -173,7 +161,7 @@ namespace NordiskaPortal.Api.Services
                     Simplified for now and not the full production-grade
                     answer.
                 */
-                return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
+                return new TransactionResult(false, ApiErrors.ConcurrencyConflict, null);
             }
         }
 
@@ -187,7 +175,9 @@ namespace NordiskaPortal.Api.Services
 
             return transactions.Select(t => new LedgerEntryDto(
                 Date: t.TransactionDate,
-                Description: ResolveDescription(t.Description, t.Type),
+                Description: t.Description,
+                Type: t.Type,
+                CounterpartAccountNumber: t.CounterpartAccountNumber,
                 Amount: GetSignedAmount(t)
             )).ToList();
         }
@@ -196,10 +186,10 @@ namespace NordiskaPortal.Api.Services
         public async Task<TransactionResult> TransferAsync(int fromAccountId, int toAccountId, decimal amount, string? description = null)
         {
             if (amount <= 0)
-                return new TransactionResult(false, "Beloppet måste vara större än 0.", null);
+                return new TransactionResult(false, ApiErrors.InvalidAmount, null);
 
             if (fromAccountId == toAccountId)
-                return new TransactionResult(false, "Från- och tillkonto måste vara olika.", null);
+                return new TransactionResult(false, ApiErrors.SameAccountTransfer, null);
 
             /*
                 Same race as a withdrawal: "is there enough money" reads a derived
@@ -220,7 +210,7 @@ namespace NordiskaPortal.Api.Services
                 if (from == null || to == null || from.CustomerId != to.CustomerId || from.ClosedAt != null || to.ClosedAt != null)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Kontot kunde inte hittas.", null);
+                    return new TransactionResult(false, ApiErrors.AccountNotFound, null);
                 }
 
                 var balance = await _db.Transactions
@@ -230,18 +220,19 @@ namespace NordiskaPortal.Api.Services
                 if (balance < amount)
                 {
                     await dbTransaction.RollbackAsync();
-                    return new TransactionResult(false, "Otillräckligt saldo.", null);
+                    return new TransactionResult(false, ApiErrors.InsufficientFunds, null);
                 }
 
                 var now = DateTime.UtcNow;
                 var postingDate = Transaction.CalculatePostingDate(now);
-                var custom = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+                var custom = ResolveDescription(description);
 
                 var outgoing = new Transaction
                 {
                     AccountId = from.Id,
                     Type = TransactionType.TransferOut,
-                    Description = custom ?? $"Överföring till {to.AccountNumber}",
+                    Description = custom,
+                    CounterpartAccountNumber = to.AccountNumber,
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = postingDate,
@@ -252,7 +243,8 @@ namespace NordiskaPortal.Api.Services
                 {
                     AccountId = to.Id,
                     Type = TransactionType.TransferIn,
-                    Description = custom ?? $"Överföring från {from.AccountNumber}",
+                    Description = custom,
+                    CounterpartAccountNumber = from.AccountNumber,
                     Amount = amount,
                     TransactionDate = now,
                     PostingDate = postingDate,
@@ -267,12 +259,12 @@ namespace NordiskaPortal.Api.Services
                 await _db.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                var entry = new LedgerEntryDto(outgoing.TransactionDate, outgoing.Description, -outgoing.Amount);
+                var entry = new LedgerEntryDto(outgoing.TransactionDate, outgoing.Description, -outgoing.Amount, outgoing.Type, outgoing.CounterpartAccountNumber);
                 return new TransactionResult(true, null, entry);
             }
             catch (Exception ex) when (PostgresErrors.IsSerializationFailure(ex))
             {
-                return new TransactionResult(false, "Transaktionen misslyckades på grund av samtidig åtkomst. Försök igen.", null);
+                return new TransactionResult(false, ApiErrors.ConcurrencyConflict, null);
             }
         }
     }

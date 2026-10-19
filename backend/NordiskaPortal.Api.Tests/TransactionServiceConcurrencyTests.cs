@@ -53,7 +53,7 @@ namespace NordiskaPortal.Api.Tests
             // rather than the second request simply seeing an already-reduced
             // balance from a sequential (non-overlapping) execution.
             var failure = results.First(r => !r.Success);
-            Assert.Contains("samtidig åtkomst", failure.Error);
+            Assert.Contains("concurrency_conflict", failure.Error?.Code);
 
             // Regardless of which specific message won the race, the balance
             // itself must reflect exactly one withdrawal — this is the actual

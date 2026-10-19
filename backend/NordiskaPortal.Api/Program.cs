@@ -2,16 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using System.Text;
 using System.Threading.RateLimiting;
 using Scalar.AspNetCore;
+using System.Globalization;
 using FluentValidation;
 
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Filters;
 using NordiskaPortal.Api.Services;
 using NordiskaPortal.Api.Middleware;
-
+using NordiskaPortal.Api.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,8 @@ builder.Services.AddScoped<FaqCategoryService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<BankStatementService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.Configure<LanguageSettings>(builder.Configuration.GetSection(LanguageSettings.SectionName));
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
@@ -149,6 +153,18 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.
+
+// Language per request, from the Accept-Language header the frontend sends.
+// Only the UI culture (which text) follows the user; the formatting culture
+// stays fixed, so numbers and dates never change format with the language.
+var languages = app.Services.GetRequiredService<IOptions<LanguageSettings>>().Value;
+app.UseRequestLocalization(o =>
+{
+    o.SetDefaultCulture(languages.DefaultLanguage);
+    o.SupportedCultures = new List<CultureInfo> { new(languages.DefaultLanguage) };
+    o.SupportedUICultures = languages.SupportedLanguages.Select(l => new CultureInfo(l)).ToList();
+    o.ApplyCurrentCultureToResponseHeaders = true;   // answers with Content-Language, handy for checking
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

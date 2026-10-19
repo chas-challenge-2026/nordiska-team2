@@ -9,6 +9,7 @@ import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
 import { apiClient } from "../../../../client";
 import { useTranslation } from "react-i18next";
+import { apiErrorMessage } from "../../../../lib/apiErrorMessage";
 
 type TransactionModalProps = {
     isOpen: boolean;
@@ -50,6 +51,8 @@ export default function TransactionModal({
     const previewWithdrawBalance = (accountData?.balance ?? 0) - (Number.isNaN(amountValue) ? 0 : amountValue);
 
     function resetAndClose() {
+        depositMutation.reset();
+        withdrawMutation.reset();
         setSelectedAccount(null);
         setAmount("");
         setMode("deposit");
@@ -90,6 +93,10 @@ export default function TransactionModal({
             resetAndClose();
         },
     });
+
+    // The mutation for the tab the user is on, so the error shown always
+    // belongs to what they just tried (each mutation remembers its last error).
+    const activeMutation = mode === "deposit" ? depositMutation : withdrawMutation;
 
     function handleSubmit() {
         setHasAttemptedSubmit(true);
@@ -143,8 +150,8 @@ export default function TransactionModal({
                 {hasAttemptedSubmit && isMissingFields && (
                     <p className="text-xsmall text-cancel">{t("common.missingRequired")}</p>
                 )}
-                {(depositMutation.isError || withdrawMutation.isError) && (
-                    <p className="text-xsmall text-cancel">{t("common.genericError")}</p>
+                {activeMutation.isError && (
+                    <p className="text-xsmall text-cancel">{apiErrorMessage(activeMutation.error, t)}</p>
                 )}
             </div>
 

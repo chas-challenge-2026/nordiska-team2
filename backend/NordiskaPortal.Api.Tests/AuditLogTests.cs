@@ -42,7 +42,7 @@ namespace NordiskaPortal.Api.Tests
 
             await using var db = _fixture.CreateContext();
             var result = await new TransactionService(db, AuditServiceTests.For(db)).DepositAsync(account, 500m);
-            Assert.True(result.Success, result.Error);
+            Assert.True(result.Success, result.Error?.Code);
 
             var entry = Assert.Single(await EntriesForAsync(customerId));
             Assert.Equal(AuditActions.Deposit, entry.Action);
@@ -70,7 +70,7 @@ namespace NordiskaPortal.Api.Tests
 
             await using var db = _fixture.CreateContext();
             var result = await new TransactionService(db, AuditServiceTests.For(db)).TransferAsync(a, b, 400m);
-            Assert.True(result.Success, result.Error);
+            Assert.True(result.Success, result.Error?.Code);
 
             // One business event = one audit row, even though the transfer
             // wrote two ledger rows.

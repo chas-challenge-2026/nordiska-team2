@@ -10,6 +10,7 @@ import { useAccounts } from "../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../components/ui/Select";
 import { useAlert } from "../../../../hooks/useAlert";
 import { useTranslation } from "react-i18next";
+import { apiErrorMessage } from "../../../../lib/apiErrorMessage";
 
 type TransferProps = {
     isOpen: boolean;
@@ -47,7 +48,7 @@ export default function TransferModal({
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(toAccount!.value)] })
             queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
 
-            showAlert({ type: "success", title: "Klart", message: "Överföring lyckades."});
+            showAlert({ type: "success", title: t("common.done"), message: t("transferModal.done") });
             resetAndClose();   
         }
     })
@@ -61,6 +62,7 @@ export default function TransferModal({
     const isValid = !isMissingFields && !sameAccount && !isAmountInvalid && !insufficientFunds;
       
     function resetAndClose() {
+        transferMutation.reset();
         setFromAccount(null);
         setToAccount(null);
         setAmount("")
@@ -78,7 +80,7 @@ export default function TransferModal({
     return(
         <Modal title={t("transferModal.title")}
                 isOpen ={isOpen}
-                onClose={onClose}
+                onClose={resetAndClose}
         >
             <div className="flex flex-col gap-3 border border-border rounded-card
                         w-full h-full px-3 pt-3 pb-7"
@@ -131,8 +133,8 @@ export default function TransferModal({
                     <p>{t("common.missingRequired")}</p>
                 )}
                 {transferMutation.isError && (
-                    <p>Ett fel uppstod. Försök igen.</p>
-            )}
+                    <p role="alert" className="text-xsmall text-cancel">{apiErrorMessage(transferMutation.error, t)}</p>
+                )}
             </div>
 
             <div className="flex justify-end gap-3 mt-5">
@@ -140,7 +142,7 @@ export default function TransferModal({
                 <Button
                     label={t("common.cancel")}
                     variant="cancel"
-                    onClick={onClose}
+                    onClick={resetAndClose}
 
                 />
                 <Button
