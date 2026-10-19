@@ -5,9 +5,12 @@
 
 #ifdef _WIN32
 #    include <direct.h>
+#    include <sys/stat.h> /* struct _stat / _S_IFDIR used below */
+#    include <windows.h>
 #else
 #    include <sys/stat.h>
 #    include <sys/types.h>
+#    include <unistd.h>
 #endif
 
 /**
@@ -95,4 +98,38 @@ int ensure_directory_exists(const char* path) {
 
     free(temp);
     return result;
+}
+
+int replace_file(const char* tmp_path, const char* out_path) {
+#ifdef _WIN32
+    /* Plain rename() on Windows fails if out_path already exists.
+     * MoveFileExA with MOVEFILE_REPLACE_EXISTING gives POSIX rename()
+     * semantics. MOVEFILE_WRITE_THROUGH waits for the move to hit disk
+     * before returning, matching the "safe to assume it's there" use
+     * we're making of the return value. */
+    if (MoveFileExA(tmp_path, out_path,
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        return 0;
+    }
+    return -1;
+#else
+    return rename(tmp_path, out_path);
+#endif
+}
+
+void sanitize_filename_component(const char* raw, char* out, size_t out_cap) {
+    size_t out_len = 0;
+    for (const char* p = raw;
+         raw != NULL && *p != '\0' && out_len + 1 < out_cap; p++) {
+        char c    = *p;
+        int  safe = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+                   (c >= '0' && c <= '9') || c == '-' || c == '_';
+        if (safe) {
+            out[out_len] = c;
+        } else {
+            out[out_len] = '_';
+        }
+        out_len++;
+    }
+    out[out_len] = '\0';
 }

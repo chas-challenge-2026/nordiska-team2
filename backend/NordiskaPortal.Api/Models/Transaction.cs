@@ -15,7 +15,9 @@ namespace NordiskaPortal.Api.Models
         Deposit,
         Withdrawal,
         Interest,
-        Tax
+        Tax,
+        TransferIn,
+        TransferOut
     }
 
     public class Transaction
@@ -32,12 +34,19 @@ namespace NordiskaPortal.Api.Models
 
         [Required]
         [MaxLength(20)]
-        // "Deposit" or "Withdrawal"
+        // "Deposit", "Withdrawal, Interest, Tax"
         public TransactionType Type { get; set; }
 
-        // Description which can be typed in any language, eg: Årsränta 2026
+        // Only what the customer wrote, in any language, e.g. "Årsränta 2026".
+        // null = nothing written; the frontend shows the type in the reader's language.
         [MaxLength(100)]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
+
+        // Transfers only: the other account's number, stored as data (not text),
+        // so the frontend can show the label in any language.
+        // null for deposits, withdrawals, interest and tax.
+        [MaxLength(20)]
+        public string? CounterpartAccountNumber { get; set; }
 
         [Column(TypeName = "decimal(15,2)")]
         public decimal Amount { get; set; }

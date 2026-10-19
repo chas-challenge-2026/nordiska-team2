@@ -1,5 +1,8 @@
 # Nordiska Sparbanken — Koduppgift
 
+[![NuGet](https://img.shields.io/nuget/v/Nordiska.PdfEngine.Native)](https://www.nuget.org/packages/Nordiska.PdfEngine.Native)
+[![NuGet (pre)](https://img.shields.io/nuget/vpre/Nordiska.PdfEngine.Native)](https://www.nuget.org/packages/Nordiska.PdfEngine.Native/absoluteLatest)
+
 Detta repo innehåller v1 av Nordiska Sparbankens kundportal. Koden är **avsiktligt skriven som spaghetti** — det är en pedagogisk utgångspunkt. Din uppgift är att refaktorera den till v2.
 
 ## Snabbstart

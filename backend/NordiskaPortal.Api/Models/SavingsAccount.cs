@@ -25,6 +25,10 @@ namespace NordiskaPortal.Api.Models
         [MaxLength(20)]
         public string AccountType { get; set; } = "Savings";
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Null = open. 
+        // Accounts are closed, never deleted because the ledger history must remain (transactions are immutable) and audit rows refer to the account number.
+        public DateTime? ClosedAt { get; set; }
     }
 }

@@ -17,10 +17,56 @@ namespace NordiskaPortal.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.31")
+                .HasAnnotation("ProductVersion", "8.0.32")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.AuditEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<string>("RefId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId", "Timestamp");
+
+                    b.ToTable("AuditEntries");
+                });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.Customer", b =>
                 {
@@ -87,6 +133,276 @@ namespace NordiskaPortal.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("boolean");
+
+                    b.Property<string[]>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FaqEntries");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Answer = "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).",
+                            Category = "Ränta",
+                            IsPopular = true,
+                            Keywords = new[] { "ränta", "utbetalning", "när", "betalas", "årlig" },
+                            Question = "När betalas räntan ut?"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Answer = "Räntan varierar mellan konton. Din aktuella ränta visas på varje konto under 'Mina konton'.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "procent", "räntesats", "aktuell" },
+                            Question = "Hur mycket ränta får jag på mitt sparkonto?"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Answer = "Räntan är rörlig och kan ändras över tid. Ändringar meddelas i appen.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "fast", "rörlig", "ändras" },
+                            Question = "Är räntan fast eller rörlig?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Answer = "Räntan beräknas på ditt saldo och sätts in på kontot vid årets slut.",
+                            Category = "Ränta",
+                            IsPopular = false,
+                            Keywords = new[] { "ränta", "beräknas", "beräkning", "saldo" },
+                            Question = "Hur beräknas räntan?"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Answer = "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.",
+                            Category = "Insättning & Uttag",
+                            IsPopular = true,
+                            Keywords = new[] { "uttag", "ta ut", "pengar", "överföring" },
+                            Question = "Hur gör jag ett uttag?"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Answer = "Du sätter in pengar via appen under 'Mina konton' genom att välja kontot och 'Insättning'.",
+                            Category = "Insättning & Uttag",
+                            IsPopular = false,
+                            Keywords = new[] { "insättning", "sätta in", "pengar", "konto" },
+                            Question = "Hur sätter jag in pengar på mitt konto?"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Answer = "Insättningar bokförs normalt inom två bankdagar.",
+                            Category = "Insättning & Uttag",
+                            IsPopular = false,
+                            Keywords = new[] { "insättning", "tid", "bokförs", "bankdagar" },
+                            Question = "Hur lång tid tar en insättning?"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Answer = "Ditt skatteunderlag finns under 'Dokument'.",
+                            Category = "Rapporter",
+                            IsPopular = true,
+                            Keywords = new[] { "skatteunderlag", "skatterapport", "rapport", "deklaration", "årsrapport" },
+                            Question = "Var hittar jag mitt skatteunderlag?"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Answer = "Du kan skapa och ladda ner ett kontoutdrag under 'Dokument' genom att välja konto och tidsperiod.",
+                            Category = "Rapporter",
+                            IsPopular = false,
+                            Keywords = new[] { "kontoutdrag", "transaktioner", "rapport", "pdf", "ladda ner" },
+                            Question = "Hur laddar jag ner ett kontoutdrag?"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Answer = "Du loggar in med din e-postadress och ditt lösenord, eller med BankID.",
+                            Category = "Konto & Inlogg",
+                            IsPopular = true,
+                            Keywords = new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" },
+                            Question = "Hur loggar jag in?"
+                        });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntryTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("FaqEntryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string[]>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaqEntryId", "Language")
+                        .IsUnique();
+
+                    b.ToTable("FaqEntryTranslations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Answer = "Interest is calculated and added to your savings account at the end of the year (31 December).",
+                            Category = "Interest",
+                            FaqEntryId = 1,
+                            Keywords = new[] { "interest", "payout", "when", "paid", "yearly" },
+                            Language = "en",
+                            Question = "When is interest paid out?"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Answer = "The interest rate varies between accounts. Your current rate is shown on each account under 'My accounts'.",
+                            Category = "Interest",
+                            FaqEntryId = 2,
+                            Keywords = new[] { "interest", "percent", "rate", "current" },
+                            Language = "en",
+                            Question = "How much interest do I get on my savings account?"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Answer = "The interest rate is variable and can change over time. Changes are announced in the app.",
+                            Category = "Interest",
+                            FaqEntryId = 3,
+                            Keywords = new[] { "interest", "fixed", "variable", "change" },
+                            Language = "en",
+                            Question = "Is the interest rate fixed or variable?"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Answer = "Interest is calculated on your balance and added to the account at the end of the year.",
+                            Category = "Interest",
+                            FaqEntryId = 4,
+                            Keywords = new[] { "interest", "calculate", "calculated", "calculation", "balance" },
+                            Language = "en",
+                            Question = "How is the interest calculated?"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Answer = "Withdrawals are made in the app under 'My accounts'. A withdrawal is normally booked within two banking days.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 5,
+                            Keywords = new[] { "withdrawal", "withdraw", "take out", "money", "transfer" },
+                            Language = "en",
+                            Question = "How do I make a withdrawal?"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Answer = "You deposit money in the app under 'My accounts' by selecting the account and 'Deposit'.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 6,
+                            Keywords = new[] { "deposit", "add", "money", "account" },
+                            Language = "en",
+                            Question = "How do I deposit money into my account?"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Answer = "Deposits are normally booked within two banking days.",
+                            Category = "Deposits & Withdrawals",
+                            FaqEntryId = 7,
+                            Keywords = new[] { "deposit", "time", "booked", "banking", "days" },
+                            Language = "en",
+                            Question = "How long does a deposit take?"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Answer = "Your tax report is available under 'Documents'.",
+                            Category = "Reports",
+                            FaqEntryId = 8,
+                            Keywords = new[] { "tax report", "tax statement", "report", "declaration" },
+                            Language = "en",
+                            Question = "Where can I find my tax report?"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Answer = "You can generate and download a bank statement under 'My Reports' by selecting an account and a date range.",
+                            Category = "Reports",
+                            FaqEntryId = 9,
+                            Keywords = new[] { "bank statement", "transactions", "report", "pdf", "download" },
+                            Language = "en",
+                            Question = "How do I download a bank statement?"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Answer = "You log in with your email address and password, or with BankID.",
+                            Category = "Account & Login",
+                            FaqEntryId = 10,
+                            Keywords = new[] { "login", "log in", "logging", "bankid", "password", "forgot" },
+                            Language = "en",
+                            Question = "How do I log in?"
+                        });
+                });
+
             modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -137,6 +453,9 @@ namespace NordiskaPortal.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -147,6 +466,9 @@ namespace NordiskaPortal.Api.Migrations
                         .HasColumnType("decimal(5,4)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountNumber")
+                        .IsUnique();
 
                     b.HasIndex("CustomerId");
 
@@ -180,6 +502,43 @@ namespace NordiskaPortal.Api.Migrations
                             CustomerId = 2,
                             InterestRate = 0.0350m
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsGoal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("TargetAmount")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("SavingsGoals");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.TaxReport", b =>
@@ -230,8 +589,11 @@ namespace NordiskaPortal.Api.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(15,2)");
 
+                    b.Property<string>("CounterpartAccountNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -261,7 +623,7 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 1,
                             AccountId = 1,
                             Amount = 125000.00m,
-                            Description = "Insättning",
+                            Description = "Lön",
                             PostingDate = new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -272,7 +634,7 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 2,
                             AccountId = 2,
                             Amount = 45000.00m,
-                            Description = "Insättning",
+                            Description = "Swish",
                             PostingDate = new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -283,12 +645,67 @@ namespace NordiskaPortal.Api.Migrations
                             Id = 3,
                             AccountId = 3,
                             Amount = 89500.00m,
-                            Description = "Insättning",
+                            Description = "Lön",
                             PostingDate = new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             TransactionDate = new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
                             Type = "Deposit"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AccountId = 1,
+                            Amount = 89500.00m,
+                            Description = "Swish",
+                            PostingDate = new DateTime(2025, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            TransactionDate = new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Type = "Deposit"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AccountId = 1,
+                            Amount = 40500.00m,
+                            Description = "Lön",
+                            PostingDate = new DateTime(2025, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            TransactionDate = new DateTime(2025, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Type = "Deposit"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            AccountId = 1,
+                            Amount = 20000.00m,
+                            Description = "Semester",
+                            PostingDate = new DateTime(2025, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            TransactionDate = new DateTime(2025, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Type = "Withdrawal"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            AccountId = 1,
+                            Amount = 50000.00m,
+                            Description = "Lön",
+                            PostingDate = new DateTime(2023, 1, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            TransactionDate = new DateTime(2023, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Type = "Deposit"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.FaqEntryTranslation", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.FaqEntry", "FaqEntry")
+                        .WithMany()
+                        .HasForeignKey("FaqEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FaqEntry");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
@@ -309,6 +726,23 @@ namespace NordiskaPortal.Api.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.SavingsGoal", b =>
+                {
+                    b.HasOne("NordiskaPortal.Api.Models.SavingsAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.HasOne("NordiskaPortal.Api.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Customer");
                 });

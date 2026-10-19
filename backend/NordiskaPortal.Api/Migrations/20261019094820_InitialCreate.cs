@@ -1,0 +1,374 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
+
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
+namespace NordiskaPortal.Api.Migrations
+{
+    /// <inheritdoc />
+    public partial class InitialCreate : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "AuditEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Actor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CustomerId = table.Column<int>(type: "integer", nullable: true),
+                    Action = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    RefId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    CorrelationId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Signature = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PersonalId = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FaqEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Question = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Answer = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Keywords = table.Column<string[]>(type: "text[]", nullable: false),
+                    IsPopular = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FaqEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    TokenHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SavingsAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    AccountNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    InterestRate = table.Column<decimal>(type: "numeric(5,4)", nullable: false),
+                    AccountType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavingsAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavingsAccounts_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FaqEntryTranslations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FaqEntryId = table.Column<int>(type: "integer", nullable: false),
+                    Language = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Question = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Answer = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Keywords = table.Column<string[]>(type: "text[]", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FaqEntryTranslations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FaqEntryTranslations_FaqEntries_FaqEntryId",
+                        column: x => x.FaqEntryId,
+                        principalTable: "FaqEntries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SavingsGoals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: true),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    TargetAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SavingsGoals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SavingsGoals_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SavingsGoals_SavingsAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "SavingsAccounts",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaxReports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    ReportId = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    PdfData = table.Column<byte[]>(type: "bytea", nullable: false),
+                    GeneratedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaxReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaxReports_SavingsAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "SavingsAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Transactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountId = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CounterpartAccountNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Amount = table.Column<decimal>(type: "numeric(15,2)", nullable: false),
+                    TransactionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PostingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transactions_SavingsAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "SavingsAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "Id", "Address", "CreatedAt", "Email", "Name", "PasswordHash", "PersonalId" },
+                values: new object[,]
+                {
+                    { 1, "Storgatan 1, 111 22 Stockholm", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "anna@example.com", "Anna Lindqvist", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19850505-1234" },
+                    { 2, "Kungsgatan 5, 411 19 Göteborg", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "erik@example.com", "Erik Johansson", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19991212-5678" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "FaqEntries",
+                columns: new[] { "Id", "Answer", "Category", "IsPopular", "Keywords", "Question" },
+                values: new object[,]
+                {
+                    { 1, "Räntan beräknas och sätts in på ditt sparkonto vid årets slut (den 31 december).", "Ränta", true, new[] { "ränta", "utbetalning", "när", "betalas", "årlig" }, "När betalas räntan ut?" },
+                    { 2, "Räntan varierar mellan konton. Din aktuella ränta visas på varje konto under 'Mina konton'.", "Ränta", false, new[] { "ränta", "procent", "räntesats", "aktuell" }, "Hur mycket ränta får jag på mitt sparkonto?" },
+                    { 3, "Räntan är rörlig och kan ändras över tid. Ändringar meddelas i appen.", "Ränta", false, new[] { "ränta", "fast", "rörlig", "ändras" }, "Är räntan fast eller rörlig?" },
+                    { 4, "Räntan beräknas på ditt saldo och sätts in på kontot vid årets slut.", "Ränta", false, new[] { "ränta", "beräknas", "beräkning", "saldo" }, "Hur beräknas räntan?" },
+                    { 5, "Uttag görs via appen under 'Mina konton'. Uttaget bokförs normalt inom två bankdagar.", "Insättning & Uttag", true, new[] { "uttag", "ta ut", "pengar", "överföring" }, "Hur gör jag ett uttag?" },
+                    { 6, "Du sätter in pengar via appen under 'Mina konton' genom att välja kontot och 'Insättning'.", "Insättning & Uttag", false, new[] { "insättning", "sätta in", "pengar", "konto" }, "Hur sätter jag in pengar på mitt konto?" },
+                    { 7, "Insättningar bokförs normalt inom två bankdagar.", "Insättning & Uttag", false, new[] { "insättning", "tid", "bokförs", "bankdagar" }, "Hur lång tid tar en insättning?" },
+                    { 8, "Ditt skatteunderlag finns under 'Dokument'.", "Rapporter", true, new[] { "skatteunderlag", "skatterapport", "rapport", "deklaration", "årsrapport" }, "Var hittar jag mitt skatteunderlag?" },
+                    { 9, "Du kan skapa och ladda ner ett kontoutdrag under 'Dokument' genom att välja konto och tidsperiod.", "Rapporter", false, new[] { "kontoutdrag", "transaktioner", "rapport", "pdf", "ladda ner" }, "Hur laddar jag ner ett kontoutdrag?" },
+                    { 10, "Du loggar in med din e-postadress och ditt lösenord, eller med BankID.", "Konto & Inlogg", true, new[] { "logga in", "inloggning", "bankid", "lösenord", "glömt" }, "Hur loggar jag in?" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "FaqEntryTranslations",
+                columns: new[] { "Id", "Answer", "Category", "FaqEntryId", "Keywords", "Language", "Question" },
+                values: new object[,]
+                {
+                    { 1, "Interest is calculated and added to your savings account at the end of the year (31 December).", "Interest", 1, new[] { "interest", "payout", "when", "paid", "yearly" }, "en", "When is interest paid out?" },
+                    { 2, "The interest rate varies between accounts. Your current rate is shown on each account under 'My accounts'.", "Interest", 2, new[] { "interest", "percent", "rate", "current" }, "en", "How much interest do I get on my savings account?" },
+                    { 3, "The interest rate is variable and can change over time. Changes are announced in the app.", "Interest", 3, new[] { "interest", "fixed", "variable", "change" }, "en", "Is the interest rate fixed or variable?" },
+                    { 4, "Interest is calculated on your balance and added to the account at the end of the year.", "Interest", 4, new[] { "interest", "calculate", "calculated", "calculation", "balance" }, "en", "How is the interest calculated?" },
+                    { 5, "Withdrawals are made in the app under 'My accounts'. A withdrawal is normally booked within two banking days.", "Deposits & Withdrawals", 5, new[] { "withdrawal", "withdraw", "take out", "money", "transfer" }, "en", "How do I make a withdrawal?" },
+                    { 6, "You deposit money in the app under 'My accounts' by selecting the account and 'Deposit'.", "Deposits & Withdrawals", 6, new[] { "deposit", "add", "money", "account" }, "en", "How do I deposit money into my account?" },
+                    { 7, "Deposits are normally booked within two banking days.", "Deposits & Withdrawals", 7, new[] { "deposit", "time", "booked", "banking", "days" }, "en", "How long does a deposit take?" },
+                    { 8, "Your tax report is available under 'Documents'.", "Reports", 8, new[] { "tax report", "tax statement", "report", "declaration" }, "en", "Where can I find my tax report?" },
+                    { 9, "You can generate and download a bank statement under 'My Reports' by selecting an account and a date range.", "Reports", 9, new[] { "bank statement", "transactions", "report", "pdf", "download" }, "en", "How do I download a bank statement?" },
+                    { 10, "You log in with your email address and password, or with BankID.", "Account & Login", 10, new[] { "login", "log in", "logging", "bankid", "password", "forgot" }, "en", "How do I log in?" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SavingsAccounts",
+                columns: new[] { "Id", "AccountNumber", "AccountType", "ClosedAt", "CreatedAt", "CustomerId", "InterestRate" },
+                values: new object[,]
+                {
+                    { 1, "NKM-10001", "Savings", null, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0350m },
+                    { 2, "NKM-10002", "Savings", null, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), 1, 0.0280m },
+                    { 3, "NKM-20001", "Savings", null, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), 2, 0.0350m }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Transactions",
+                columns: new[] { "Id", "AccountId", "Amount", "CounterpartAccountNumber", "Description", "PostingDate", "Status", "TransactionDate", "Type" },
+                values: new object[,]
+                {
+                    { 1, 1, 125000.00m, null, "Lön", new DateTime(2026, 1, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 2, 2, 45000.00m, null, "Swish", new DateTime(2026, 2, 4, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 3, 3, 89500.00m, null, "Lön", new DateTime(2026, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2026, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 4, 1, 89500.00m, null, "Swish", new DateTime(2025, 3, 5, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 5, 1, 40500.00m, null, "Lön", new DateTime(2025, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" },
+                    { 6, 1, 20000.00m, null, "Semester", new DateTime(2025, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc), "Withdrawal" },
+                    { 7, 1, 50000.00m, null, "Lön", new DateTime(2023, 1, 17, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2023, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc), "Deposit" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditEntries_CustomerId_Timestamp",
+                table: "AuditEntries",
+                columns: new[] { "CustomerId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Customers_Email",
+                table: "Customers",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FaqEntryTranslations_FaqEntryId_Language",
+                table: "FaqEntryTranslations",
+                columns: new[] { "FaqEntryId", "Language" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_CustomerId",
+                table: "RefreshTokens",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_AccountNumber",
+                table: "SavingsAccounts",
+                column: "AccountNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_CustomerId",
+                table: "SavingsAccounts",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsGoals_AccountId",
+                table: "SavingsGoals",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsGoals_CustomerId",
+                table: "SavingsGoals",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaxReports_AccountId_Year",
+                table: "TaxReports",
+                columns: new[] { "AccountId", "Year" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_AccountId",
+                table: "Transactions",
+                column: "AccountId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "AuditEntries");
+
+            migrationBuilder.DropTable(
+                name: "FaqEntryTranslations");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "SavingsGoals");
+
+            migrationBuilder.DropTable(
+                name: "TaxReports");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "FaqEntries");
+
+            migrationBuilder.DropTable(
+                name: "SavingsAccounts");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
+        }
+    }
+}

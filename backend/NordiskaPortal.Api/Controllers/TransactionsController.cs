@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Extensions;
 using NordiskaPortal.Api.Services;
+using NordiskaPortal.Api.Errors;
 
 // All actions require [Authorize] and verify the authenticated customer
 // actually owns the target account before doing anything with it.
@@ -36,8 +37,8 @@ namespace NordiskaPortal.Api.Controllers
             if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.AccountId))
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
-            var result = await _transactionService.DepositAsync(request.AccountId, request.Amount);
-            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+            var result = await _transactionService.DepositAsync(request.AccountId, request.Amount, request.Description);
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
 
         [HttpPost("withdraw")]
@@ -48,8 +49,8 @@ namespace NordiskaPortal.Api.Controllers
             if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.AccountId))
                 return NotFound(new { error = "Kontot kunde inte hittas." });
 
-            var result = await _transactionService.WithdrawAsync(request.AccountId, request.Amount);
-            return result.Success ? Ok(result.Entry) : BadRequest(new { error = result.Error });
+            var result = await _transactionService.WithdrawAsync(request.AccountId, request.Amount, request.Description);
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
 
         [HttpGet("{accountId:int}")]
@@ -72,6 +73,21 @@ namespace NordiskaPortal.Api.Controllers
 
             var balance = await _transactionService.GetBalanceAsync(accountId);
             return Ok(new { accountId, balance });
+        }
+
+        [HttpPost("transfer")]
+        [EnableRateLimiting("SensitiveEndpoints")]
+        public async Task<IActionResult> Transfer(TransferRequest request)
+        {
+            var customerId = User.GetCustomerId();
+
+            // Both accounts must be the caller's. One shared 404 for either failure.
+            if (!await _accountService.CustomerOwnsAccountAsync(customerId, request.FromAccountId) ||
+                !await _accountService.CustomerOwnsAccountAsync(customerId, request.ToAccountId))
+                return NotFound(new { error = "Kontot kunde inte hittas." });
+
+            var result = await _transactionService.TransferAsync(request.FromAccountId, request.ToAccountId, request.Amount, request.Description);
+            return result.Success ? Ok(result.Entry) : new ApiErrorResult(result.Error!);
         }
     }
 }

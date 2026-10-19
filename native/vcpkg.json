@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "pdf-engine",
+  "version": "0.1.0",
+  "description": "Native PDF generation and signing engine",
+  "dependencies": [
+    "openssl",
+    "cjson",
+    "libharu",
+    "podofo",
+    "zlib"
+  ]
+}

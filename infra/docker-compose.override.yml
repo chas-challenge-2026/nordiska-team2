@@ -1,11 +1,14 @@
 services:
   app:
+    platform: linux/amd64
     volumes:
       - ./pdf-output:/app/output
     ports:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Cors__AllowedOrigins__0=http://localhost:5173
+
   db:
     ports:
       - "5433:5432"

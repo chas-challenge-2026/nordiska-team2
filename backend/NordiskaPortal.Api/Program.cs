@@ -2,23 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using System.Text;
 using System.Threading.RateLimiting;
 using Scalar.AspNetCore;
+using System.Globalization;
 using FluentValidation;
 
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Filters;
 using NordiskaPortal.Api.Services;
 using NordiskaPortal.Api.Middleware;
-
+using NordiskaPortal.Api.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers(options => 
-{ 
-    options.Filters.Add<ValidationFilter>(); 
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
 });
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
@@ -27,19 +29,44 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<PdfGeneratorService>();
 builder.Services.AddScoped<TaxReportService>();
+builder.Services.AddScoped<TaxReportBackfillService>();
+builder.Services.AddScoped<FaqService>();
+builder.Services.AddScoped<FaqTranslationService>();
+builder.Services.AddSingleton<IBankIdService, BankIdService>();
+builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<FaqCategoryService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<BankStatementService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.Configure<LanguageSettings>(builder.Configuration.GetSection(LanguageSettings.SectionName));
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
 // Swagger (Used for OpenAPI JSON generator for Scalar. No swagger UI.)
 builder.Services.AddSwaggerGen();
 
 // Database
+// connStr is allowed to be null here: under the WebApplicationFactory test
+// host there is no real connection string, and the test setup replaces
+// this registration entirely with an in-memory provider anyway.
 var connStr = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? throw new InvalidOperationException("No database connection string configured.");
+    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
-builder.Services.AddDbContext<BankContext>(options => options.UseNpgsql(connStr));
+builder.Services.AddDbContext<BankContext>(options =>
+{
+    if (!string.IsNullOrEmpty(connStr))
+        options.UseNpgsql(connStr);
+});
 
 // Health checks
-builder.Services.AddHealthChecks().AddNpgSql(connStr);
+if (!string.IsNullOrEmpty(connStr))
+{
+    builder.Services.AddHealthChecks().AddNpgSql(connStr);
+}
+else
+{
+    builder.Services.AddHealthChecks();
+}
 
 // CORS
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -59,7 +86,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddPolicy("SensitiveEndpoints", httpContext => 
+    options.AddPolicy("SensitiveEndpoints", httpContext =>
     {
         var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
@@ -83,12 +110,15 @@ builder.Services.AddRateLimiter(options =>
 
 // JSON Web Token (JWT)
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"your-key\"");
+    ?? (builder.Environment.IsEnvironment("Testing")
+        ? "test-only-signing-key-not-used-in-production-32chars"
+        : throw new InvalidOperationException(
+            "Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"<your key>\""));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.MapInboundClaims = false; 
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -108,7 +138,34 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
 
+// Migrations and the tax report backfill only make sense against a real
+// database, so they're skipped under the WebApplicationFactory test host
+// (see TaxReportControllerTests.cs, which sets UseEnvironment("Testing")).
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BankContext>();
+        db.Database.Migrate();
+
+        var backfillService = scope.ServiceProvider.GetRequiredService<TaxReportBackfillService>();
+        await backfillService.SeedAsync();
+    }
+}
+
 app.UseExceptionHandler(); // Important to be on TOP to wrap everything below.
+
+// Language per request, from the Accept-Language header the frontend sends.
+// Only the UI culture (which text) follows the user; the formatting culture
+// stays fixed, so numbers and dates never change format with the language.
+var languages = app.Services.GetRequiredService<IOptions<LanguageSettings>>().Value;
+app.UseRequestLocalization(o =>
+{
+    o.SetDefaultCulture(languages.DefaultLanguage);
+    o.SupportedCultures = new List<CultureInfo> { new(languages.DefaultLanguage) };
+    o.SupportedUICultures = languages.SupportedLanguages.Select(l => new CultureInfo(l)).ToList();
+    o.ApplyCurrentCultureToResponseHeaders = true;   // answers with Content-Language, handy for checking
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -125,7 +182,11 @@ app.UseCors("AllowFrontend");   // CORS
 app.UseRateLimiter();           // Rate Limiter
 app.UseAuthentication();        // Authentication, Keep above Authorization
 app.UseAuthorization();         // Authorization
+app.UseMiddleware<AuditSafetyNetMiddleware>();
 app.MapHealthChecks("/health"); // Health check endpoint
 app.MapControllers().RequireRateLimiting("sliding");
 
 app.Run();
+
+//For Tests
+public partial class Program { }

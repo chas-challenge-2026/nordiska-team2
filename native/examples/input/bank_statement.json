@@ -1,0 +1,71 @@
+[
+	{
+		"metadata": {
+			"statement_id": "STMT-2026-03-00001",
+			"report_type": "ACCOUNT_STATEMENT",
+			"period_start": "2026-03-01",
+			"period_end": "2026-03-31",
+			"generation_date": "2026-04-01T02:00:00Z"
+		},
+		"customer": {
+			"customer_id": "1001",
+			"personal_id": "1981702041001",
+			"full_name": "Johan Andersson",
+			"address": "Kungsgatan 2, 111 22 Stockholm"
+		},
+		"account": {
+			"account_number": "9150-000000001",
+			"account_type": "Sparkonto Plus",
+			"interest_rate_pct": 3.5
+		},
+		"summary": {
+			"opening_balance_sek": 50000.0,
+			"closing_balance_sek": 72033.5,
+			"total_deposits_sek": 32146.0,
+			"total_withdrawals_sek": 10112.5,
+			"transaction_count": 5
+		},
+		"transactions": [
+			{
+				"id": "TX-200101",
+				"date": "2026-03-03",
+				"type": "withdrawal",
+				"description": "Hyra",
+				"amount_sek": -8500.0,
+				"balance_after_sek": 41500.0
+			},
+			{
+				"id": "TX-200102",
+				"date": "2026-03-10",
+				"type": "withdrawal",
+				"description": "ICA Maxi",
+				"amount_sek": -642.5,
+				"balance_after_sek": 40857.5
+			},
+			{
+				"id": "TX-200103",
+				"date": "2026-03-15",
+				"type": "deposit",
+				"description": "Lön",
+				"amount_sek": 32000.0,
+				"balance_after_sek": 72857.5
+			},
+			{
+				"id": "TX-200104",
+				"date": "2026-03-22",
+				"type": "withdrawal",
+				"description": "SL månadskort",
+				"amount_sek": -970.0,
+				"balance_after_sek": 71887.5
+			},
+			{
+				"id": "TX-200105",
+				"date": "2026-03-28",
+				"type": "deposit",
+				"description": "Ränta",
+				"amount_sek": 146.0,
+				"balance_after_sek": 72033.5
+			}
+		]
+	}
+]

@@ -34,7 +34,7 @@ cd "$SCRIPT_DIR/.."
 rm -rf Migrations
 
 echo "Generating a fresh InitialCreate migration..."
-dotnet ef migrations add InitialCreate
+    dotnet ef migrations add InitialCreate
 
 echo "Stopping and removing the local database volume..."
 cd "$SCRIPT_DIR/../../../infra"

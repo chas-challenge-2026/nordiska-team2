@@ -75,41 +75,6 @@ public class TaxReportController : ControllerBase
         _db = db;
     }
 
-    [HttpPost("admin/generate/{accountId:int}/{year:int}")]
-    public async Task<IActionResult> AdminGenerateReport(int accountId, int year)
-    {
-        if (year >= DateTime.UtcNow.Year)
-            return BadRequest(new { message = "Cannot generate a report for the current or a future year." });
-
-        bool alreadyExists = await _db.TaxReports
-            .AnyAsync(r => r.AccountId == accountId && r.Year == year);
-
-        if (alreadyExists)
-            return Conflict(new { message = "A report for this account and year already exists." });
-
-        var reportData = await _taxReportService.BuildReportAsync(accountId, year);
-        if (reportData == null)
-            return NotFound(new { message = "Account not found." });
-
-        byte[]? pdfBytes = _pdfGeneratorService.GenerateSingleReportPdf(reportData, null, null);
-        if (pdfBytes == null)
-            return StatusCode(500, new { message = "PDF generation failed." });
-
-        var record = new TaxReport
-        {
-            AccountId = accountId,
-            Year = year,
-            ReportId = reportData.Metadata.ReportId,
-            PdfData = pdfBytes,
-            GeneratedAt = DateTime.UtcNow
-        };
-
-        _db.TaxReports.Add(record);
-        await _db.SaveChangesAsync();
-
-        return Ok(new { message = "Report generated and stored.", reportId = record.ReportId, year = record.Year });
-    }
-
     [HttpGet("{accountId:int}/available-years")]
     public async Task<IActionResult> GetAvailableYears(int accountId)
     {

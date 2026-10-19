@@ -1,68 +1,71 @@
-// import { useState } from "react";
+import { useState } from "react";
 import AccountOverview from "./components/AccountOverview";
+import CreateAccountModal from "./components/modals/NewAccountModal/CreateAccountModal";
 import RecentTransactions from "./components/RecentTransactions";
-import { transactions } from "./data/transactions";
 import QuickActions from "./components/QuickActions";
+import PageHeader from "../../components/ui/Pageheader";
 import { quickActions } from "./data/quickActions";
-
 import FinancialOverview from "./components/FinancialOverview"
-import { financialOverview } from "./data/financialOverview";
-import SavingsGoal from "./components/SavingsGoal";
-import { savingsGoal } from "./data/savingsGoal";
+import SavingsGoal from "./components/SavingsGoals";
+import { useSavingsGoals } from "../../hooks/useSavingsGoals";
 import FaqOverview from "./components/Faq";
-import SearchBar from "./components/searchbar";
 import Footer from "./components/Footer";
 import { useAccounts } from "../../hooks/useAccounts"; // RIKTIG DATA
 import Alert from "../../components/ui/Alert"; // RIKTIG DATA
-
-// import { accounts as mockAccounts } from "./data/accounts"; // TILLFÄLLIGT
-
-
-
+import { useRecentTransactions } from "../../hooks/useTransactions";
+import { useCustomer } from "../../hooks/useCustomer";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardPage() {
-     const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
-    //  const accounts = mockAccounts; // TILLFÄLLIGT
-    // const userName = useCurrentCustomerName(); //TILLFÄLLIGT från useAccounts.ts
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
+    const { data: accounts, isLoading, isError } = useAccounts(); // RIKTIG DATA
+    const { data: transactions, isLoading: transactionsLoading } = useRecentTransactions(accounts);
+    const { data: customer } = useCustomer();
+    const firstName = customer?.name.split(" ") [0]
+    const { data: goals, isLoading: goalsLoading } = useSavingsGoals();
+    const { t } = useTranslation();
 
-    if (isLoading) return <Alert type="info" message="Laddar konton" /> // RIKTIG DATA
-    if (isError) return <Alert type="error" message="Kunde inte hämta konton" /> // RIKTIG DATA
+    if (isLoading) return <Alert type="info" message={t("dashboard.loadingAccounts")} /> // RIKTIG DATA
+    if (isError) return <Alert type="error" message={t("dashboard.accountsError")} /> // RIKTIG DATA
     if (!accounts) return null;
 
 
     return ( 
-        <div className="grid min-h-full grid-cols-1 lg:grid-cols-[repeat(14,minmax(0,1fr))]">
+        <div className="relative grid min-h-full grid-cols-1 
+                        lg:grid-cols-[repeat(14,minmax(0,1fr))]">
             <section className="flex flex-1 flex-col 
-                            min-h-0 gap-3 sm:gap-4 sm:pr-6 lg:col-span-10">
-                <header>
-                    <h1 className="text-xl sm:text-title">
-                        Välkommen tillbaka!
-                    </h1>
-                    <p className="text-muted text-small">
-                        Inloggad via BankID
-                    </p>
-                </header>
+                                min-h-0 gap-3 sm:gap-4 lg:pr-6 lg:col-span-10">
+                 <PageHeader
+                    title={firstName
+                            ? t("dashboard.welcome", { name: firstName })
+                            : t("dashboard.welcomeNoName")}
+                    //  subtitle={t("dashboard.loggedInVia")} 
+                    />
 
-                <AccountOverview accounts={accounts}/>
+                <AccountOverview accounts={accounts} onCreateAccount={() => setIsCreateAccountModalOpen(true)}/>
                 <QuickActions actions={quickActions}/>
-                <RecentTransactions transactions={transactions} />
+                <RecentTransactions transactions={transactions ?? []} 
+                                    isLoading={transactionsLoading} />
                 
-                <Footer />
+                
             </section>
 
-            <aside className=" flex flex-col gap-4 min-w-0 w-full 
+            <aside className="flex flex-col gap-4 min-w-0 w-full 
                                 lg:col-span-4 mt-3 lg:mt-0">
-                        <SearchBar />
                         <FinancialOverview 
                             accounts={accounts}
-                            financial={financialOverview}
                             />
-                        <SavingsGoal 
-                            accounts={accounts}
-                            goal={savingsGoal.goal} />
+
+                        <SavingsGoal
+                            goals={goals ?? []} isLoading={goalsLoading} accounts={accounts}/>
                         <FaqOverview />
 
             </aside>
+            <Footer />
+            <CreateAccountModal
+                isOpen={isCreateAccountModalOpen}
+                onClose={() => setIsCreateAccountModalOpen(false)}
+            />
         </div>
 
     )

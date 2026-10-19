@@ -26,6 +26,8 @@ namespace NordiskaPortal.Api.Services
             var startDate = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             var endDate = startDate.AddYears(1);
 
+            decimal startingBalance = await GetBalanceAsOfAsync(accountId, startDate);
+
             var transactions = await _db.Transactions
                 .Where(t =>
                     t.AccountId == accountId &&
@@ -36,7 +38,7 @@ namespace NordiskaPortal.Api.Services
                 .ThenBy(t => t.Id)
                 .ToListAsync();
 
-            decimal balance = 0m;
+            decimal balance = startingBalance;
 
             decimal totalDeposits = 0m;
             decimal totalWithdrawals = 0m;
@@ -48,7 +50,6 @@ namespace NordiskaPortal.Api.Services
             foreach (var transaction in transactions)
             {
                 decimal signedAmount = GetSignedAmount(transaction);
-
                 balance += signedAmount;
 
                 switch (transaction.Type)
@@ -56,15 +57,12 @@ namespace NordiskaPortal.Api.Services
                     case TransactionType.Deposit:
                         totalDeposits += transaction.Amount;
                         break;
-
                     case TransactionType.Withdrawal:
                         totalWithdrawals += transaction.Amount;
                         break;
-
                     case TransactionType.Interest:
                         totalInterest += transaction.Amount;
                         break;
-
                     case TransactionType.Tax:
                         totalTax += transaction.Amount;
                         break;
@@ -104,7 +102,7 @@ namespace NordiskaPortal.Api.Services
             );
 
             var summary = new TaxReportSummaryDto(
-                StartingBalanceSek: 0m,
+                StartingBalanceSek: startingBalance,
                 EndingBalanceSek: balance,
                 TotalDepositsSek: totalDeposits,
                 TotalWithdrawalsSek: totalWithdrawals,
@@ -121,7 +119,25 @@ namespace NordiskaPortal.Api.Services
             );
         }
 
-        private static decimal GetSignedAmount(Transaction transaction)
+        /// <summary>
+        /// Sums every posted transaction strictly before <paramref name="cutoffUtc"/>,
+        /// giving the account's balance at that moment. Used as a year's
+        /// starting balance, which is by definition the previous year's
+        /// ending balance.
+        /// </summary>
+        internal async Task<decimal> GetBalanceAsOfAsync(int accountId, DateTime cutoffUtc)
+        {
+            var priorTransactions = await _db.Transactions
+                .Where(t =>
+                    t.AccountId == accountId &&
+                    t.Status == TransactionStatus.Posted &&
+                    t.TransactionDate < cutoffUtc)
+                .ToListAsync();
+
+            return priorTransactions.Sum(GetSignedAmount);
+        }
+
+        internal static decimal GetSignedAmount(Transaction transaction)
         {
             return transaction.Type switch
             {
@@ -133,21 +149,19 @@ namespace NordiskaPortal.Api.Services
             };
         }
 
-        private static string GetTransactionTypeName(
-            TransactionType type)
+        internal static string GetTransactionTypeName(TransactionType type)
         {
             return type switch
             {
-                TransactionType.Deposit => "deposit",
-                TransactionType.Withdrawal => "withdrawal",
-                TransactionType.Interest => "interest",
-                TransactionType.Tax => "tax",
-                _ => type.ToString().ToLowerInvariant()
+                TransactionType.Deposit => "Deposit",
+                TransactionType.Withdrawal => "Withdrawal",
+                TransactionType.Interest => "Interest",
+                TransactionType.Tax => "Tax",
+                _ => char.ToUpper(type.ToString()[0]) + type.ToString().Substring(1).ToLowerInvariant()
             };
         }
 
-        private static string GetTransactionDescription(
-            Transaction transaction)
+        internal static string GetTransactionDescription(Transaction transaction)
         {
             if (!string.IsNullOrWhiteSpace(transaction.Description))
                 return transaction.Description;
@@ -160,6 +174,43 @@ namespace NordiskaPortal.Api.Services
                 TransactionType.Tax => "Skatt",
                 _ => transaction.Type.ToString()
             };
+        }
+
+        public async Task ApplyYearEndInterestAsync(int accountId, int year)
+        {
+            bool alreadyApplied = await _db.Transactions.AnyAsync(t =>
+                t.AccountId == accountId &&
+                t.Type == TransactionType.Interest &&
+                t.TransactionDate.Year == year);
+
+            if (alreadyApplied)
+                return;
+
+            var account = await _db.SavingsAccounts.FindAsync(accountId);
+            if (account == null)
+                return;
+
+            var yearStart = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            decimal startingBalance = await GetBalanceAsOfAsync(accountId, yearStart);
+
+            decimal interest = Math.Round(startingBalance * account.InterestRate, 2);
+            if (interest <= 0m)
+                return;
+
+            var interestDate = new DateTime(year, 12, 31, 0, 0, 0, DateTimeKind.Utc);
+
+            _db.Transactions.Add(new Transaction
+            {
+                AccountId = accountId,
+                Type = TransactionType.Interest,
+                Description = $"Årsränta {year} ({account.InterestRate:P2})",
+                Amount = interest,
+                TransactionDate = interestDate,
+                PostingDate = Transaction.CalculatePostingDate(interestDate),
+                Status = TransactionStatus.Posted
+            });
+
+            await _db.SaveChangesAsync();
         }
     }
 }

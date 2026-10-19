@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../client";
 
 export function useAvailableTaxReportYears(accountId: number) {
@@ -9,19 +9,6 @@ export function useAvailableTaxReportYears(accountId: number) {
             return response.data
         },
         enabled: Number.isFinite(accountId),
-    })
-}
-
-// POST admin/generate/{accountId}/{year}
-export function useGenerateTaxReport(accountId: number) {
-    const queryClient = useQueryClient();
-    return useMutation ({
-        mutationFn: async (year: number) => {
-            return apiClient.post(`/tax-reports/admin/generate/${accountId}/${year}`)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tax-report-years", accountId] }); // GET
-        },
     })
 }
 

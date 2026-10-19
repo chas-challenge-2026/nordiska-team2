@@ -6,11 +6,14 @@
     llvmPackages.clang-tools
     llvmPackages.bintools
     valgrind
+    gdb
     conan
     pkg-config
+    zlib
 
     #C libs
     libharu
+    podofo
     openssl
     cjson
     pkgsStatic.cjson
@@ -24,17 +27,25 @@
 
   languages.c.enable = true;
 
+  languages.python = {
+    enable = true;
+    package = pkgs.python3.withPackages (ps: [
+      ps.pillow
+    ]);
+  };
+
   git-hooks.hooks = {
     clang-format = {
       enable = true;
       types_or = ["c" "c++"];
       files = "^native/";
+      package = pkgs.llvmPackages.clang-tools;
     };
 
     lint = {
       enable = true;
       name = "clang-tidy static analysis";
-      entry = "sh -c 'cd native && devenv shell -- just lint'";
+      entry = "bash -c 'cd native && devenv shell -- just lint'";
       pass_filenames = false;
       stages = ["pre-push"];
     };
@@ -42,7 +53,7 @@
     test = {
       enable = true;
       name = "run unit tests";
-      entry = "sh -c 'cd native && devenv shell -- just test'";
+      entry = "bash -c 'cd native && devenv shell -- just test'";
       pass_filenames = false;
       stages = ["pre-push"];
     };

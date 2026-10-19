@@ -1,6 +1,3 @@
-// STAND IN VERSION.
-// TODO: IMPLEMENTED IVANS VERSION.
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,5 +20,7 @@ namespace NordiskaPortal.Api.Models
         public string Category { get; set; } = string.Empty;
 
         public string[] Keywords { get; set; } = Array.Empty<string>();
+
+        public bool IsPopular { get; set; }
     }
 }

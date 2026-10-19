@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 
 type LinkButtonProps =  LinkProps & {
-    variant?: "primary" | "secondary"
-    size?: "xsmall" | "small" | "medium" | "large"
+    variant?: "primary" | "secondary",
+    size?: "xsmall" | "small" | "medium" | "large",
     icon?: ReactNode;
 }
 
 const variantClasses = {
-    primary: "bg-white text-brand hover:bg-border hover:border-brand",
+    primary: "bg-card text-brand-text hover:bg-border hover:border-brand",
     secondary: "bg-brand text-white hover:opacity-90",
 }
 

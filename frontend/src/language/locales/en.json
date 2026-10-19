@@ -1,0 +1,285 @@
+{
+    "common": {
+        "cancel": "Cancel",
+        "close": "Close",
+        "loading": "Loading...",
+        "done": "Done!",
+        "genericError": "Something went wrong. Please try again.",
+        "requiredFieldsNote": "* Required fields.",
+        "missingRequired": "Please fill in all required fields.",
+        "account": "Account",
+        "accountRequired": "Account*",
+        "amount": "Amount",
+        "amountRequired": "Amount*",
+        "selectAccount": "Select account",
+        "savingsGoal": "Savings goal",
+        "noActivityYet": "No activity yet."
+    },
+    "language": {
+        "choose": "Choose language",
+        "names": {
+            "sv": "Svenska",
+            "en": "English"
+        }
+    },
+    "nav": {
+        "mobileLabel": "Mobile navigation",
+        "overview": "Overview",
+        "accounts": "Accounts",
+        "documents": "Documents",
+        "faq": "FAQ",
+        "faqShort": "FAQ",
+        "settings": "Settings",
+        "settingsShort": "Settings",
+        "logout": "Log out"
+    },
+    "login": {
+        "heroTitle": "Tomorrow's bank",
+        "heroTitleEnd": "– for everyone",
+        "heroSubtitle": "Where finance meets technology",
+        "features": {
+            "savingsGoal": "Personal savings goals",
+            "depositWithdraw": "Deposits and withdrawals",
+            "faq": "FAQ assistant",
+            "taxReports": "Tax reports"
+        },
+        "welcome": "Welcome!",
+        "subtitle": "Log in to see your accounts and savings goals.",
+        "tabEmail": "Email",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Log in",
+        "submitting": "Logging in...",
+        "personalId": "Personal identity number",
+        "personalIdPlaceholder": "YYYYMMDD-XXXX",
+        "bankIdSubmit": "Log in with BankID",
+        "bankIdOtherDevice": "BankID on another device",
+        "bankIdWaiting": "Waiting for BankID...",
+        "cancel": "Cancel",
+        "errors": {
+            "missingFields": "Please enter both email and password",
+            "invalidCredentials": "Wrong email or password, please try again!",
+            "missingPersonalId": "Please enter your personal identity number",
+            "bankIdStartFailed": "Could not start BankID. Please try again.",
+            "bankIdTimeout": "The BankID login took too long. Please try again.",
+            "bankIdFailed": "The BankID login failed.",
+            "bankIdError": "Something went wrong during the BankID login."
+        }
+    },
+    "bankIdPin": {
+        "enterPin": "Enter PIN",
+        "identify": "Identify",
+        "demoNote": "Demo only - the code is not checked"
+    },
+    "dashboard": {
+        "welcome": "Welcome back, {{name}}!",
+        "welcomeNoName": "Welcome back!",
+        "loggedInVia": "Logged in with (mock) BankID",
+        "loadingAccounts": "Loading accounts",
+        "accountsError": "Could not load accounts",
+        "noAccounts": "You don't have any accounts yet.",
+        "createAccountCard": {
+            "title": "Create account",
+            "subtitle": "Add a new account"
+        },
+        "quickActionsTitle": "Quick & easy",
+        "quickActions": {
+            "transaction": "Deposits and withdrawals",
+            "transfer": "Transfer",
+            "savingGoals": "Create savings goal",
+            "newAccount": "Create a new savingaccount",
+            "aiBuddy": "AI Buddy"
+        },
+        "recentActivity": "Recent activity",
+        "showAll": "Show all",
+        "loadingActivity": "Loading activity...",
+        "financialOverview": "Financial overview",
+        "totalBalance": "Total balance",
+        "seeFinancialOverview": "See your financial overview →",
+        "noBalance": "No balance to show",
+        "balanceChartLabel": "Balance (SEK)",
+        "needHelp": "Need help?",
+        "mostCommonQuestions": "Most common questions",
+        "loadingSavingsGoals": "Loading savings goals.",
+        "remainingToGoal": "{{amount}} left to reach the goal",
+        "goalReached": "Goal reached!",
+        "search": "Search",
+        "searchPlaceholder": "Search ..."
+    },
+    "footer": {
+        "security": "Security",
+        "privacy": "Privacy",
+        "terms": "Terms"
+    },
+    "accountCard": {
+        "availableBalance": "Available balance",
+        "interest": "Interest rate {{rate}}%",
+        "warmingUp": "We're warming things up for a new account here"
+    },
+    "accountsPage": {
+        "loadingAccounts": "Loading accounts...",
+        "noAccounts": "No accounts found.",
+        "title": "Account management",
+        "subtitle": "Deposit, withdraw and transfer money between accounts, and follow your savings goals.",
+        "manageGoals": "Manage savings goals",
+        "createGoal": "Create savings goal",
+        "deleteGoal": "Delete savings goal",
+        "manageAccount": "Manage account",
+        "createAccount": "Create account",
+        "deleteAccount": "Delete account",
+        "balance": "Balance",
+        "noGoalForAccount": "No savings goal for this account.",
+        "goalAria": "Savings goal: {{name}}",
+        "latestActivity": "Latest activity",
+        "latestActivitySubtitle": "Deposit/Withdrawal/Transfer",
+        "depositWithdrawTitle": "Deposit/Withdrawal",
+        "deposit": "Deposit",
+        "withdraw": "Withdrawal",
+        "afterDeposit": "After deposit: {{amount}}",
+        "afterWithdraw": "After withdrawal: {{amount}}",
+        "presetAmount": "SEK {{amount}}",
+        "depositMoney": "Deposit money",
+        "depositing": "Depositing...",
+        "withdrawMoney": "Withdraw money",
+        "withdrawing": "Withdrawing...",
+        "chartTitle": "Overview",
+        "history": "History",
+        "loadingHistory": "Loading history...",
+        "chart": {
+            "noData": "No transactions to show",
+            "startBalance": "Opening balance",
+            "deposits": "Deposits",
+            "withdrawals": "Withdrawals",
+            "previous": "← Previous",
+            "next": "Next →"
+        }
+    },
+    "transactionModal": {
+        "title": "Deposit/Withdrawal",
+        "amountPositive": "The amount must be a number greater than 0.",
+        "insufficientFunds": "Insufficient balance for withdrawal.",
+        "withdraw": "Withdraw",
+        "withdrawing": "Withdrawing ...",
+        "deposit": "Deposit",
+        "depositing": "Depositing ...",
+        "depositDone": "The deposit is complete.",
+        "withdrawDone": "The withdrawal is complete.",
+        "descriptionLabel": "Message to the recipient (Optional)",
+        "afterDeposit": "After deposit: {{amount}}",
+        "afterWithdraw": "After withdrawal: {{amount}}"
+    },
+    "transferModal": {
+        "title": "Transfer",
+        "fromAccount": "From account",
+        "fromAccountRequired": "From account*",
+        "toAccount": "To account",
+        "toAccountRequired": "To account*",
+        "insufficientFunds": "Insufficient balance in the account.",
+        "amountNumber": "The amount must be a number.",
+        "messageLabel": "OCR/Message to the recipient",
+        "messagePlaceholder": "OCR/Message",
+        "sameAccount": "You can't transfer to and from the same account.",
+        "send": "Send",
+        "done": "The transfer is complete."
+    },
+    "createGoalModal": {
+        "title": "New savings goal",
+        "nameRequired": "Name*",
+        "namePlaceholder": "E.g. Trip to Japan",
+        "missingName": "Please enter a name for the savings goal.",
+        "targetRequired": "Target amount*",
+        "missingTarget": "Please enter a target amount.",
+        "targetPositive": "The target amount must be a number greater than 0.",
+        "linkAccountRequired": "Link to account*",
+        "missingAccount": "Please select an account.",
+        "create": "Create savings goal",
+        "creating": "Creating ...",
+        "done": "The savings goal has been created."
+    },
+    "deleteGoalModal": {
+        "title": "Delete savings goal",
+        "question": "Which savings goal do you want to delete?",
+        "selectGoal": "Select savings goal",
+        "noGoals": "No savings goals to delete.",
+        "deleteFailed": "Could not delete the savings goal.",
+        "missingGoal": "Please select a savings goal.",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+    },
+    "createAccountModal": {
+        "title": "Create new account",
+        "description": "A new savings account is created automatically with a new account number and the standard interest rate.",
+        "create": "Create account",
+        "creating": "Creating...",
+        "createFailed": "Could not create the account. Please try again later.",
+        "done": "The account has been created."
+    },
+    "deleteAccountModal": {
+        "title": "Delete account",
+        "question": "Which account do you want to delete?",
+        "deleteFailed": "The account could not be deleted (it cannot contain money).",
+        "missingAccount": "You must select an account.",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "done": "The account has been deleted."
+    },
+    "faq": {
+        "title": "FAQ",
+        "subtitle": "Find answers to your questions here.",
+        "searchPlaceholder": "How do I withdraw money?",
+        "popularSearches": "Popular searches: withdrawal time · interest statement · tax report 2025",
+        "searching": "Searching...",
+        "searchFailed": "The search failed, please try again!",
+        "loadingCategories": "Loading categories...",
+        "categoriesError": "Could not load categories.",
+        "questionCount_one": "{{count}} question",
+        "questionCount_other": "{{count}} questions",
+        "searchResults": "Search results",
+        "popularNow": "Popular questions right now",
+        "loadingQuestions": "Loading questions...",
+        "questionsError": "Could not load the questions.",
+        "noQuestions": "No questions in this category yet."
+    },
+    "taxReports": {
+        "error": "Could not load tax reports.",
+        "title": "Tax reports",
+        "available": "Available tax reports",
+        "reportFor": "Tax report for {{year}}",
+        "contains": "Contains financial information",
+        "download": "Download",
+        "none": "No reports were found for this account."
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Customize how the portal looks and which language it is shown in.",
+        "appearance": "Appearance",
+        "appearanceHint": "Choose a light or dark theme.",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "selected": "Selected",
+        "language": "Language",
+        "languageHint": "Choose which language the portal is shown in.",
+        "savedNote": "✓ Your choices are saved automatically on this device."
+    },
+    "transactionType": {
+        "Deposit": "Deposit", "Withdrawal": "Withdrawal", "Interest": "Interest", "Tax": "Tax",
+        "TransferIn": "Transfer from {{account}}", "TransferOut": "Transfer to {{account}}"
+    },
+    "errors": {
+        "unknown": "Something went wrong. Please try again.",
+        "network": "Could not reach the server. Check your connection.",
+        "rate_limited": "Too many attempts. Please wait a minute and try again.",
+        "invalid_amount": "The amount must be greater than 0.",
+        "account_not_found": "The account could not be found.",
+        "insufficient_funds": "Insufficient funds.",
+        "concurrency_conflict": "Something changed at the same time. Please try again.",
+        "description_too_long": "The description can be at most {{max}} characters."
+    },
+    "depositWithdraw": {
+        "descriptionPlaceholder": "Description (optional)",
+        "deposit": "Deposit",
+        "withdraw": "Withdraw",
+        "presetAmount": "SEK {{amount}}"
+    }
+}
