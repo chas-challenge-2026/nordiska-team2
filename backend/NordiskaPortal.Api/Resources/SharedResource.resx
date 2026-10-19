@@ -13,4 +13,5 @@
   <data name="too_many_accounts" xml:space="preserve"><value>Du kan ha högst {max} öppna konton.</value></data>
   <data name="account_not_empty" xml:space="preserve"><value>Kontot måste ha saldot 0 kr innan det kan avslutas.</value></data>
   <data name="description_too_long" xml:space="preserve"><value>Beskrivningen får vara högst {max} tecken.</value></data>
+  <data name="faq_no_answer" xml:space="preserve"><value>Vi kunde tyvärr inte hitta något svar på din fråga. Kontakta gärna kundservice på 08‑123 456 78, vardagar 9–17, så hjälper vi dig vidare.</value></data>
 </root>

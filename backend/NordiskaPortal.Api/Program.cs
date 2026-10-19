@@ -31,6 +31,7 @@ builder.Services.AddScoped<PdfGeneratorService>();
 builder.Services.AddScoped<TaxReportService>();
 builder.Services.AddScoped<TaxReportBackfillService>();
 builder.Services.AddScoped<FaqService>();
+builder.Services.AddScoped<FaqTranslationService>();
 builder.Services.AddSingleton<IBankIdService, BankIdService>();
 builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
