@@ -227,7 +227,7 @@ export default function LoginPage() {
             )}
 
             <p className="mx-3 mt-5 pt-5 text-small border-t-2 border-border">
-                Vill du bli ny kund? Snart kommer du kunna registrera dig som ny kund hos oss.
+                {t("login.newCustomerText")}
             </p>
             </div>
 

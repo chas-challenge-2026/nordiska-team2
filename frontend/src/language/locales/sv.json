@@ -64,7 +64,8 @@
             "bankIdTimeout": "BankID-inloggningen tog för lång tid. Försök igen.",
             "bankIdFailed": "BankID-inloggningen misslyckades.",
             "bankIdError": "Något gick fel vid BankID-inloggningen."
-        }
+        },
+        "newCustomerText": "Vill du bli ny kund? Snart kommer du kunna registrera dig som ny kund hos oss."
     },
     "bankIdPin": {
         "enterPin": "Ange pin",

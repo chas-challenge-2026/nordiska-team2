@@ -448,17 +448,6 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     ? t("accountsPage.afterDeposit", { amount: amountFormatter.format(previewDepositBalance) })
                     : t("accountsPage.afterWithdraw", { amount: amountFormatter.format(previewWithdrawBalance) }) }
                 </p>
-              <div className="flex gap-3 mt-2">
-                {[100, 500, 1000].map((present) => (
-                  <Button 
-                    key={present}
-                    label={t("accountsPage.presetAmount", { amount: present })}
-                    variant="primary"
-                    onClick={() => setAmount(String(present))} 
-                    />
-                ))}
-              </div>
-
 
               <Button
                 variant="secondary"
