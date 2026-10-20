@@ -64,7 +64,8 @@
             "bankIdTimeout": "The BankID login took too long. Please try again.",
             "bankIdFailed": "The BankID login failed.",
             "bankIdError": "Something went wrong during the BankID login."
-        }
+        },
+        "newCustomerText": "Do you want to become a new customer? We'll soon be opening up registration for new customers."
     },
     "bankIdPin": {
         "enterPin": "Enter PIN",
@@ -115,6 +116,9 @@
         "availableBalance": "Available balance",
         "interest": "Interest rate {{rate}}%",
         "warmingUp": "We're warming things up for a new account here"
+    },
+    "accountTypes": {
+        "savings": "Personal account" 
     },
     "accountsPage": {
         "loadingAccounts": "Loading accounts...",

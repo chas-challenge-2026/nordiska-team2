@@ -357,7 +357,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
     <div className="flex md:gap-3 flex-col md:flex-row">
       <Card 
-        title={selectedAccount?.name ?? t("common.account")}
+        title={selectedAccount ? t(selectedAccount.name) : t("common.account")}
         subtitle={t("accountsPage.balance")} 
         headerVariant="secondary"
         headerClassName="min-h-25"
@@ -465,17 +465,6 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     ? t("accountsPage.afterDeposit", { amount: amountFormatter.format(previewDepositBalance) })
                     : t("accountsPage.afterWithdraw", { amount: amountFormatter.format(previewWithdrawBalance) }) }
                 </p>
-              <div className="flex gap-3 mt-2">
-                {[100, 500, 1000].map((present) => (
-                  <Button 
-                    key={present}
-                    label={t("accountsPage.presetAmount", { amount: present })}
-                    variant="primary"
-                    onClick={() => setAmount(String(present))} 
-                    />
-                ))}
-              </div>
-
 
               <Button
                 variant="secondary"
