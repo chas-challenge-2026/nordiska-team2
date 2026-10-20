@@ -23,12 +23,11 @@ export default function SavingsGoal({
     const { t } = useTranslation();
   
     const { currency: currencyFormatter } = useFormatters();
-    const goalOptions: OptionType[] = goals.map((goal) => {
-        const goalAccount = accounts.find((a) => a.id === goal.accountId);
-        return{
+    const goalOptions = goals.map((goal) => ({
         value: String(goal.id),
-        label: `${goalAccount?.accountNumber ?? ""} ${goal.name}`,
-    }})
+        label: goal.name,
+        accountNumber: accounts.find((a) => a.id === goal.accountId)?.accountNumber ?? "",
+    }))
 
 const isExplicitGoalValid = explicitGoalOption && goals.some((g) => String(g.id) === explicitGoalOption.value);
 const selectedGoalOption = isExplicitGoalValid 
@@ -64,6 +63,8 @@ const selectedGoalOption = isExplicitGoalValid
                             value={selectedGoalOption}
                             onChange= {setSelectedGoalOption}
                             options={goalOptions}
+                            formatOptionLabel={(option, { context }) =>
+                                context === "menu" ? `${option.label} - ${(option as typeof goalOptions[number]).accountNumber}` : option.label}
                             className="-ml-1 w-full border-none text-medium font-semibold" />
                     ) : ( 
                         <h2 className="min-h-6 text-medium font-semibold">{goal.name}</h2>
