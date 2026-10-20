@@ -43,7 +43,7 @@ export default function TransactionPage() {
   const [description, setDescription] = useState("");
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
-  const [isGoalMenuOpen, setIsGoalMenuOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState<"goal" | "account" | null>(null)
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const { data: goals } = useSavingsGoals();
   const { t } = useTranslation();
@@ -51,7 +51,6 @@ export default function TransactionPage() {
 
 const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
 const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -208,9 +207,9 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                   label={t("accountsPage.manageGoals")}
                   className="w-full rounded-none sm:rounded-card"
                   variant="dropDown"
-                  onClick={() => setIsGoalMenuOpen((open) => !open)}
+                  onClick={() => setOpenMenu((menu) => (menu === "goal" ? null : "goal"))}
                 ><span>▼</span> </Button>
-                {isGoalMenuOpen && (
+                {openMenu === "goal" && (
                   <ul className="absolute z-10 w-full right-0 mt-0.5
                                   rounded-default border border-border bg-card 
                                   shadow-sm text-small"
@@ -218,7 +217,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                setIsGoalMenuOpen(false)
+                                setOpenMenu(null)
                                 setIsGoalModalOpen(true)
                               }}
                       >
@@ -228,7 +227,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                  setIsGoalMenuOpen(false);
+                                  setOpenMenu(null);
                                   setIsDeleteGoalModalOpen(true);
                               }}
                       >
@@ -245,9 +244,9 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               label={t("accountsPage.manageAccount")}
               className="w-full rounded-none sm:rounded-card"
               variant="dropDown"
-              onClick={() => setIsAccountMenuOpen((open) => !open)}
+              onClick={() => setOpenMenu((menu) => (menu === "account" ? null : "account"))}
             ><span>▼</span> </Button>
-            {isAccountMenuOpen && (
+            {openMenu === "account" && (
               <ul className="absolute z-10 w-full right-0 mt-0.5
                               md:rounded-default border border-border bg-card 
                               shadow-sm text-small"
@@ -255,7 +254,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                            setIsAccountMenuOpen(false)
+                            setOpenMenu(null)
                             setIsCreateAccountModalOpen(true)
                           }}
                   >
@@ -265,7 +264,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                              setIsAccountMenuOpen(false);
+                              setOpenMenu(null);
                               setIsDeleteAccountModalOpen(true);
                           }}
                   >
@@ -284,9 +283,9 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
          <Button
             label={t("accountsPage.manageGoals")}
             variant="dropDown"
-            onClick={() => setIsGoalMenuOpen((open) => !open)}
+            onClick={() => setOpenMenu((menu) => (menu === "goal" ? null : "goal"))}
           ><span>▼</span> </Button>
-          {isGoalMenuOpen && (
+          {openMenu === "goal" && (
             <ul className="absolute z-10 w-full mt-0.5
                             rounded-default border border-border bg-card
                             shadow-sm text-small"
@@ -294,7 +293,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                          setIsGoalMenuOpen(false)
+                          setOpenMenu(null)
                           setIsGoalModalOpen(true)
                         }}
                 >
@@ -304,7 +303,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                            setIsGoalMenuOpen(false);
+                            setOpenMenu(null);
                             setIsDeleteGoalModalOpen(true);
                         }}
                 >
@@ -321,9 +320,9 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
          <Button
             label={t("accountsPage.manageAccount")}
             variant="dropDown"
-            onClick={() => setIsAccountMenuOpen((open) => !open)}
+            onClick={() => setOpenMenu((menu) => (menu === "account" ? null : "account"))}
           ><span>▼</span> </Button>
-          {isAccountMenuOpen && (
+          {openMenu === "account" && (
             <ul className="absolute z-10 w-full mt-0.5
                             rounded-default border border-border bg-card
                             shadow-sm text-small"
@@ -331,7 +330,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                          setIsAccountMenuOpen(false)
+                          setOpenMenu(null)
                           setIsCreateAccountModalOpen(true)
                         }}
                 >
@@ -341,7 +340,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                            setIsAccountMenuOpen(false);
+                            setOpenMenu(null);
                             setIsDeleteAccountModalOpen(true);
                         }}
                 >
