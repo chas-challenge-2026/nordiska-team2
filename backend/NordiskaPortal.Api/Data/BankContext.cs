@@ -50,7 +50,7 @@ public class BankContext : DbContext
             {
                 Id = 2,
                 Name = "Erik Johansson",
-                PersonalId = "19991212-5678",
+                PersonalId = "19421231-9240",
                 Address = "Kungsgatan 5, 411 19 Göteborg",
                 Email = "erik@example.com",
                 PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",

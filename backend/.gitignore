@@ -30,3 +30,6 @@ coverage.*
 
 # EF Core migrations bundle (if you ever generate one)
 efbundle
+
+*.p12
+*.pfx

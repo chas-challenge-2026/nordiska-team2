@@ -148,6 +148,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// BankID
+var bankIdOptions = builder.Configuration.GetSection(BankIdOptions.SectionName).Get<BankIdOptions>()
+                    ?? new BankIdOptions();
+
+if (bankIdOptions.UseRealApi)
+{
+    // Stops the app at startup with a clear message if the certificates are missing or wrong.
+    var bankIdCerts = BankIdCertificates.Load(bankIdOptions, builder.Environment.ContentRootPath);
+    builder.Services.AddSingleton(bankIdCerts);
+    builder.Services
+        .AddHttpClient<IBankIdApiClient, BankIdApiClient>(c => c.BaseAddress = new Uri(bankIdOptions.BaseUrl))
+        .ConfigurePrimaryHttpMessageHandler(sp => BankIdHttpHandler.Create(bankIdCerts, sp.GetRequiredService<ILoggerFactory>().CreateLogger("BankIdTls")));
+    builder.Services.AddScoped<IBankIdService, RealBankIdService>();
+}
+else
+{
+    builder.Services.AddScoped<IBankIdService, MockBankIdService>();
+}
+
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();

@@ -11,6 +11,10 @@ public sealed record BankIdOrder(
 {
     // Mock only: set by the dev-only approve endpoint, standing in for the user's phone.
     public string? ApprovedPersonalId { get; init; }
+
+    // Real service only: when BankID was last asked, and what it answered.
+    public DateTimeOffset? LastCollectedAt { get; init; }
+    public string? LastHintCode { get; init; }
 }
 
 public sealed class BankIdOrderStore

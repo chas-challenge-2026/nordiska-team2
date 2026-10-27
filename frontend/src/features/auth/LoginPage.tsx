@@ -4,10 +4,11 @@ import { apiClient } from "../../client"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "../../hooks/useAuth"
 import { useNavigate } from "react-router-dom"
-import { useBankIdLogin } from "../../hooks/useBankIdLogin"
 import heroImage from "../../assets/images/loginPage.png"
 import checkIcon from "../../assets/svg/check-accent.svg"
-import BankIdPinModal from "../../components/DemoBankIdPinModal"
+import { useBankIdLogin, bankIdAutoStartUrl, openBankIdApp, BANKID_SCAN_WINDOW_SECONDS } from "../../hooks/useBankIdLogin"
+import BankIdQrCode from "../../components/bankid/BankIdQrCode"
+import BankIdMockApprover from "../../components/bankid/BankIdMockApprover"
 import BlobBackground from "../../components/ui/BlobBackground"
 import { useTranslation } from "react-i18next"
 import LanguageSwitcher from "../../components/ui/LanguageSwitcher"
@@ -24,27 +25,24 @@ export default function LoginPage() {
     const auth = useAuth()
     const navigate = useNavigate()
 
-    // --- BankID (new) ---
-    const [personalId, setPersonalId] = useState('')
-    const [personalIdError, setPersonalIdError] = useState('')
-    const [showPinModal, setShowPinModal] = useState(false)
+    // --- BankID ---
     const bankId = useBankIdLogin()
+    const [bankIdDevice, setBankIdDevice] = useState<"this" | "other">("other")
+    const isBankIdMock = import.meta.env.VITE_BANKID_MOCK === "true"
 
-    function handleBankIdSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        if (personalId === '') {
-            setPersonalIdError('login.errors.missingPersonalId')
-            return
+    async function startBankId(device: "this" | "other") {
+        setBankIdDevice(device)
+        const autoStartToken = await bankId.start()
+        // Same device: open the BankID app straight away. The "Öppna BankID-appen" link stays as a fallback.
+        if (device === "this" && autoStartToken) {
+            openBankIdApp(autoStartToken)
         }
-        setPersonalIdError('')
-        setShowPinModal(true)
     }
 
-    // The pin is deliberately not passed anywhere, only for visual demo.
-    function handlePinConfirm() {
-        setShowPinModal(false)
-        bankId.start(personalId)
-    }
+    // Recomputed on every render; the QR code updates every second, which drives the re-render.
+    const secondsLeft = bankId.startedAt === null
+        ? BANKID_SCAN_WINDOW_SECONDS
+        : Math.max(0, BANKID_SCAN_WINDOW_SECONDS - Math.floor((Date.now() - bankId.startedAt) / 1000))
     // --- end BankID ---
     
 
@@ -140,7 +138,7 @@ export default function LoginPage() {
                             type="button"
                             className={`relative z-10 flex-1 md:p-2 p-3 transition-colors text-small
                                         ${mode === "email" ? "text-brand" : "text-muted bg-toggle"}`}
-                            onClick={() => setMode("email")}>
+                            onClick={() => { setMode("email"); bankId.cancel() }}>
                                 {t("login.tabEmail")}
                         </button>
                         <button
@@ -183,46 +181,60 @@ export default function LoginPage() {
             )}
 
             {mode === "bankId" && (
-                <div className="text-small px-5 pb-5">
-                    <form onSubmit={handleBankIdSubmit} className="space-y-4 ">
-                        <div>
-                            <p className="text-xsmall ml-1 text-muted font-bold">
-                                {t("login.personalId")}
-                            </p>
-                            <input
-                                type="text"
-                                placeholder={t("login.personalIdPlaceholder")}
-                                value={personalId}
-                                onChange={(e) => setPersonalId(e.target.value)}
-                                className="border border-border rounded-card px-3 py-2 w-full bg-card/70 transition duration-300 focus:outline-none focus:border-brand-text focus:ring-4 focus:ring-brand/15"
-                            />
-                        </div>
+                <div className="text-small space-y-4 px-5 pb-5">
+                    {(bankId.status === "idle" || bankId.status === "failed") && (
                         <div className="flex flex-col gap-3">
                             <button
-                                type="submit"
-                                disabled={bankId.status === 'pending'}
-                                className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white rounded-card px-4 py-3 w-full disabled:opacity-50 mt-3"
+                                type="button"
+                                onClick={() => startBankId("this")}
+                                className="bg-brand hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/25 transition duration-300 text-white rounded-card px-4 py-3 w-full mt-3"
                             >
-                                {bankId.status === 'pending' ? t("login.bankIdWaiting") : t("login.bankIdSubmit")}
+                                {t("login.bankIdSubmit")}
                             </button>
-                             <button
-                                type="submit"
-                                disabled={bankId.status === 'pending'}
-                                className="bg-background hover:bg-white text-brand border border-border rounded-card px-4 py-3 w-full disabled:opacity-50"
+                            <button
+                                type="button"
+                                onClick={() => startBankId("other")}
+                                className="bg-background hover:bg-white text-brand border border-border rounded-card px-4 py-3 w-full"
                             >
-                                {bankId.status === 'pending' ? t("login.bankIdWaiting") : t("login.bankIdOtherDevice")}
+                                {t("login.bankIdOtherDevice")}
                             </button>
-                            {bankId.status === 'pending' && (
-                                <button type="button" onClick={bankId.cancel} className="border border-border rounded-card px-4 py-2">
-                                    {t("login.cancel")}
-                                </button>
+                            {bankId.errorMessage && <p className="text-center text-sm">{t(bankId.errorMessage)}</p>}
+                        </div>
+                    )}
+
+                    {bankId.status === "starting" && <p className="text-center">{t("login.bankIdWaiting")}</p>}
+
+                    {bankId.status === "pending" && (
+                        <div className="flex flex-col gap-3">
+                            {bankIdDevice === "other" && bankId.qrData && (
+                                <>
+                                    <BankIdQrCode value={bankId.qrData} />
+                                    <p className="text-center">{t("login.bankId.scanInstruction")}</p>
+                                    <p className="text-center text-xsmall text-muted">
+                                        {t("login.bankId.secondsLeft", { count: secondsLeft })}
+                                    </p>
+                                </>
                             )}
+
+                            {bankIdDevice === "this" && bankId.autoStartToken && (
+                                // A link the user taps, rather than opening the app automatically: some phones
+                                // only follow app links that come straight from a tap.
+                                <a
+                                    href={bankIdAutoStartUrl(bankId.autoStartToken)}
+                                    referrerPolicy="origin"
+                                    className="bg-brand text-white text-center rounded-card px-4 py-3 w-full"
+                                >
+                                    {t("login.bankId.openApp")}
+                                </a>
+                            )}
+
+                            {isBankIdMock && <BankIdMockApprover onApprove={bankId.simulateApproval} />}
+
+                            <button type="button" onClick={bankId.cancel} className="border border-border rounded-card px-4 py-2">
+                                {t("login.cancel")}
+                            </button>
                         </div>
-                        <div className="flex justify-center text-sm">
-                            {personalIdError && <p>{t(personalIdError)}</p>}
-                            {bankId.errorMessage && <p>{t(bankId.errorMessage)}</p>}
-                        </div>
-                                        </form>
+                    )}
                 </div>
             )}
 
@@ -230,13 +242,6 @@ export default function LoginPage() {
                 {t("login.newCustomerText")}
             </p>
             </div>
-
-            {showPinModal && (
-                <BankIdPinModal
-                    onConfirm={handlePinConfirm}
-                    onCancel={() => setShowPinModal(false)}
-                />
-            )}
             {/* end BankID */}
 
                 </Card>

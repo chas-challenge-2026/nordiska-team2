@@ -1,104 +1,176 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "../client";
-import { useAuth } from "./useAuth";
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { apiClient } from "../client"
+import { useAuth } from "./useAuth"
 
-type BankIdStatus = "idle" | "pending" | "complete" | "failed";
+// BankID login: start an order, poll its status once per second, finish on complete or failed.
+// Works the same against the mock and real BankID, since both backends answer the same contract.
 
-const POLL_INTERVAL_MS = 1000;
-const TIMEOUT_MS = 30000;
+export type BankIdFlowStatus = "idle" | "starting" | "pending" | "complete" | "failed"
+
+// How long the user has to scan before BankID gives up on the order (per BankID's QR documentation).
+export const BANKID_SCAN_WINDOW_SECONDS = 30
+const POLL_INTERVAL_MS = 1000
+
+interface StartResponse {
+    orderRef: string
+    autoStartToken: string
+}
+
+interface StatusResponse {
+    status: "pending" | "complete" | "failed"
+    hintCode?: string | null
+    qrData?: string | null
+    accessToken?: string
+}
+
+// Failure hint code -> translation key. Unknown codes get a generic message.
+function failureMessage(hintCode: string | null): string {
+    switch (hintCode) {
+        case "startFailed": return "login.bankId.errors.startFailed"
+        case "expiredTransaction": return "login.bankId.errors.expired"
+        case "userCancel": return "login.bankId.errors.userCancel"
+        case "certificateErr": return "login.bankId.errors.certificate"
+        case "notACustomer": return "login.bankId.errors.notACustomer"
+        default: return "login.bankId.errors.generic"
+    }
+}
+
+// Same-device start: universal link on phones and tablets, the bankid:// scheme on computers.
+export function bankIdAutoStartUrl(autoStartToken: string): string {
+    const ua = navigator.userAgent
+    const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(ua) ||
+        (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua)) // iPadOS reports itself as a Mac
+    return isMobile
+        ? `https://app.bankid.com/?autostarttoken=${autoStartToken}`
+        : `bankid:///?autostarttoken=${autoStartToken}`
+}
+
+// Opens the BankID app the way BankID recommends: a link with referrerPolicy "origin", clicked
+// from code. It must run soon after the user's click, or browsers block opening an external app.
+export function openBankIdApp(autoStartToken: string) {
+    const link = document.createElement("a")
+    link.href = bankIdAutoStartUrl(autoStartToken)
+    link.referrerPolicy = "origin"
+    link.click()
+}
 
 export function useBankIdLogin() {
-  const [status, setStatus] = useState<BankIdStatus>("idle");
-  // errorMessage är en nyckel i språkfilerna, t.ex. "login.errors.bankIdTimeout".
-  // Den översätts med t() där den visas (LoginPage).
-  const [errorMessage, setErrorMessage] = useState("");
-  const auth = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+    const auth = useAuth()
+    const navigate = useNavigate()
 
-  // Kept in refs so the cleanup below can always reach the CURRENT
-  // timers, and so a poll that resolves after unmount doesn't try to
-  // update state on a component that's gone.
-  const timerRef = useRef<number | null>(null);
-  const cancelledRef = useRef(false);
+    const [status, setStatus] = useState<BankIdFlowStatus>("idle")
+    const [qrData, setQrData] = useState<string | null>(null)
+    const [hintCode, setHintCode] = useState<string | null>(null)
+    const [autoStartToken, setAutoStartToken] = useState<string | null>(null)
+    const [startedAt, setStartedAt] = useState<number | null>(null)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  function stopPolling() {
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }
+    // Refs, not state: the polling loop must always see the CURRENT order,
+    // not the value captured in whichever render started it.
+    const orderRef = useRef<string | null>(null)
+    const pollTimer = useRef<number | null>(null)
 
-  // Runs on unmount (e.g. the user navigates away mid-login).
-  useEffect(() => {
-    return () => {
-      cancelledRef.current = true;
-      stopPolling();
-    };
-  }, []);
+    const stopPolling = useCallback(() => {
+        if (pollTimer.current !== null) {
+            window.clearTimeout(pollTimer.current)
+            pollTimer.current = null
+        }
+    }, [])
 
-  async function start(personalId: string) {
-    setErrorMessage("");
-    setStatus("pending");
-    cancelledRef.current = false;
+    const fail = useCallback((hint: string | null) => {
+        orderRef.current = null
+        setStatus("failed")
+        setQrData(null)
+        setHintCode(hint)
+        setErrorMessage(failureMessage(hint))
+    }, [])
 
-    try {
-      const response = await apiClient.post("/auth/bankid/start", { personalId });
-      const orderRef = response.data.orderRef;
-      const deadline = Date.now() + TIMEOUT_MS;
-      poll(orderRef, deadline);
-    } catch {
-      setStatus("failed");
-      setErrorMessage("login.errors.bankIdStartFailed");
-    }
-  }
+    const poll = useCallback(async (ref: string) => {
+        try {
+            const { data } = await apiClient.get<StatusResponse>(`/auth/bankid/status/${ref}`)
+            if (orderRef.current !== ref) return // cancelled or replaced while the request was in flight
 
-  async function poll(orderRef: string, deadline: number) {
-    if (cancelledRef.current) return;
+            if (data.status === "pending") {
+                setQrData(data.qrData ?? null)
+                setHintCode(data.hintCode ?? null)
+                // setTimeout after each answer (not setInterval), so slow responses never overlap.
+                pollTimer.current = window.setTimeout(() => poll(ref), POLL_INTERVAL_MS)
+                return
+            }
 
-    if (Date.now() > deadline) {
-      setStatus("failed");
-      setErrorMessage("login.errors.bankIdTimeout");
-      return;
-    }
+            if (data.status === "complete" && data.accessToken) {
+                orderRef.current = null
+                setStatus("complete")
+                auth.setAccessToken(data.accessToken)
+                navigate("/dashboard")
+                return
+            }
 
-    try {
-      const response = await apiClient.get(`/auth/bankid/status/${orderRef}`);
-      if (cancelledRef.current) return;
+            fail(data.hintCode ?? null)
+        } catch {
+            if (orderRef.current === ref) fail(null)
+        }
+    }, [auth, navigate, fail])
 
-      if (response.data.status === "pending") {
-        // setTimeout after each response, not setInterval.
-        // Avoids stacking overlapping requests if one is slow.
-        timerRef.current = window.setTimeout(() => poll(orderRef, deadline), POLL_INTERVAL_MS);
-        return;
-      }
+    const cancel = useCallback(async () => {
+        stopPolling()
+        const ref = orderRef.current
+        orderRef.current = null
+        setStatus("idle")
+        setQrData(null)
+        setHintCode(null)
+        setAutoStartToken(null)
+        setStartedAt(null)
+        setErrorMessage(null)
+        if (ref) {
+            try {
+                await apiClient.post(`/auth/bankid/cancel/${ref}`)
+            } catch {
+                // Best effort: the order expires on its own anyway.
+            }
+        }
+    }, [stopPolling])
 
-      if (response.data.status === "complete") {
-        // Identical to password login from here: the backend issued
-        // a real token and set the same HttpOnly refresh cookie.
-        setStatus("complete");
-        auth.setAccessToken(response.data.accessToken);
-        queryClient.clear(); // in case the previous user's cached data is stored
-        navigate("/dashboard");
-        return;
-      }
+    const start = useCallback(async (): Promise<string | null> => {
+        await cancel() // never leave an old order running behind a new one
+        setStatus("starting")
+        try {
+            const { data } = await apiClient.post<StartResponse>("/auth/bankid/start")
+            orderRef.current = data.orderRef
+            setAutoStartToken(data.autoStartToken)
+            setStartedAt(Date.now())
+            setStatus("pending")
+            poll(data.orderRef)
+            return data.autoStartToken
+        } catch {
+            fail(null)
+            return null
+        }
+    }, [cancel, poll, fail])
 
-      setStatus("failed");
-      setErrorMessage("login.errors.bankIdFailed");
-    } catch {
-      if (cancelledRef.current) return;
-      setStatus("failed");
-      setErrorMessage("login.errors.bankIdError");
-    }
-  }
+    // MOCK ONLY: plays the user's phone approving. The backend answers 404 unless the mock is active in Development.
+    const simulateApproval = useCallback(async (personalId: string): Promise<boolean> => {
+        const ref = orderRef.current
+        if (!ref) return false
+        try {
+            await apiClient.post(`/auth/bankid/mock/approve/${ref}`, { personalId })
+            return true
+        } catch {
+            return false
+        }
+    }, [])
 
-  function cancel() {
-    cancelledRef.current = true;
-    stopPolling();
-    setStatus("idle");
-  }
+    // Leaving the page mid-login: stop polling and cancel the order.
+    useEffect(() => {
+        return () => {
+            stopPolling()
+            const ref = orderRef.current
+            orderRef.current = null
+            if (ref) apiClient.post(`/auth/bankid/cancel/${ref}`).catch(() => {})
+        }
+    }, [stopPolling])
 
-  return { status, errorMessage, start, cancel };
+    return { status, qrData, hintCode, autoStartToken, startedAt, errorMessage, start, cancel, simulateApproval }
 }
