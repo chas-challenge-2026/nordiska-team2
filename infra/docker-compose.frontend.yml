@@ -1,0 +1,15 @@
+# Frontend as an OPTIONAL add-on, like the assistant.
+# Start everything, from infra/:
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.assistant.yml -f docker-compose.frontend.yml up -d --build
+
+services:
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        # The BROWSER calls these, so they're host addresses (localhost),
+        # not Docker service names.
+        VITE_API_BASE_URL: http://localhost:8080/api
+        VITE_ASSISTANT_BASE_URL: http://localhost:5080/api/assistant
+    ports:
+      - "8081:80"
