@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text;
 using System.Threading.RateLimiting;
 using Scalar.AspNetCore;
@@ -14,6 +15,7 @@ using NordiskaPortal.Api.Filters;
 using NordiskaPortal.Api.Services;
 using NordiskaPortal.Api.Middleware;
 using NordiskaPortal.Api.Localization;
+using NordiskaPortal.Api.Services.BankId;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +34,9 @@ builder.Services.AddScoped<TaxReportService>();
 builder.Services.AddScoped<TaxReportBackfillService>();
 builder.Services.AddScoped<FaqService>();
 builder.Services.AddScoped<FaqTranslationService>();
-builder.Services.AddSingleton<IBankIdService, BankIdService>();
+builder.Services.TryAddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<BankIdOrderStore>();
+builder.Services.AddScoped<IBankIdService, MockBankIdService>();
 builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<FaqCategoryService>();
@@ -97,6 +101,18 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         });
     });
+
+    // BankID status is polled once per second while the QR code is shown.
+    // 120/min = 1 per second with margin for a second tab. Per IP, like SensitiveEndpoints.
+    options.AddPolicy("BankIdPolling", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            }));
 
     options.AddSlidingWindowLimiter("sliding", limiterOptions =>
     {
