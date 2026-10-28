@@ -13,11 +13,11 @@ function getLastMonths(count: number) {
   const now = new Date();
   return Array.from({ length: count }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    return { year: d.getFullYear(), month: d.getMonth() + 1 }; // getMonth() är 0-indexerad, backend vill ha 1–12
+    return { year: d.getFullYear(), month: d.getMonth() + 1 }; 
   });
 }
 
-// Första bokstaven versal ("oktober 2026" -> "Oktober 2026")
+
 function capitalize(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
@@ -26,7 +26,7 @@ export default function BankStatementsCard({ accountId }: { accountId: number })
   const { t, i18n } = useTranslation();
   const months = getLastMonths(24);
   const { showAlert } = useAlert();
-  // Vilken månad som laddas ner just nu, t.ex. "2026-10". null = ingen.
+  
   const [downloading, setDownloading] = useState<string | null>(null);
 
   async function handleDownload(year: number, month: number) {
@@ -34,7 +34,7 @@ export default function BankStatementsCard({ accountId }: { accountId: number })
     try {
       await downloadBankStatement(accountId, year, month);
     } catch (err) {
-      // 404 = inget kontoutdrag för den månaden. Övriga fel tolkas av apiErrorMessage.
+      
       const message =
         axios.isAxiosError(err) && err.response?.status === 404
           ? t("bankStatements.notFound")
