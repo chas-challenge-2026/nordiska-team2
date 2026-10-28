@@ -256,7 +256,9 @@
 
     "bankStatements": {
     "title": "Bank statements",
-    "download": "Download"
+    "download": "Download",
+    "notFound": "There is no bank statement for that month.",
+    "error": "Could not download the bank statement"
     },
     
     "settings": {
