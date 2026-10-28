@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -257,7 +257,7 @@ namespace NordiskaPortal.Api.Migrations
                     { 6, "You deposit money in the app under 'My accounts' by selecting the account and 'Deposit'.", "Deposits & Withdrawals", 6, new[] { "deposit", "add", "money", "account" }, "en", "How do I deposit money into my account?" },
                     { 7, "Deposits are normally booked within two banking days.", "Deposits & Withdrawals", 7, new[] { "deposit", "time", "booked", "banking", "days" }, "en", "How long does a deposit take?" },
                     { 8, "Your tax report is available under 'Documents'.", "Reports", 8, new[] { "tax report", "tax statement", "report", "declaration" }, "en", "Where can I find my tax report?" },
-                    { 9, "You can generate and download a bank statement under 'My Reports' by selecting an account and a date range.", "Reports", 9, new[] { "bank statement", "transactions", "report", "pdf", "download" }, "en", "How do I download a bank statement?" },
+                    { 9, "You can generate and download a bank statement under 'Documents' by selecting an account and a time interval.", "Reports", 9, new[] { "bank statement", "transactions", "report", "pdf", "download" }, "en", "How do I download a bank statement?" },
                     { 10, "You log in with your email address and password, or with BankID.", "Account & Login", 10, new[] { "login", "log in", "logging", "bankid", "password", "forgot" }, "en", "How do I log in?" }
                 });
 
