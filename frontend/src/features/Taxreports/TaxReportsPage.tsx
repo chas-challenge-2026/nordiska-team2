@@ -21,7 +21,7 @@ export default function TaxReportsPage() {
 
     return (
         <>
-            <div>
+            <div className="space-y-6">
                 <PageHeader title={t("taxReports.title")}/>
                  <Card title={t("taxReports.available")}
                         headerVariant="secondary">

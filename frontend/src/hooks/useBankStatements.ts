@@ -1,7 +1,7 @@
 import { apiClient } from "../client";
 
 export async function downloadBankStatement(accountId: number, year: number, month: number) {
-    const response = await apiClient.get(`/api/bank-statements/${accountId}/${year}/${month}`, {
+    const response = await apiClient.get(`/bank-statements/${accountId}/${year}/${month}`, {
         responseType: "blob", // Skickar som PDF och inte JSON
     })
 
