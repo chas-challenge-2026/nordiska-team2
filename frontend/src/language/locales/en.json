@@ -256,7 +256,11 @@
 
     "bankStatements": {
     "title": "Bank statements",
-    "download": "Download"
+    "download": "Download",
+    "year": "Year",
+    "month": "Month",
+    "all": "All",
+    "empty": "No bank statements for the selected year and month."
     },
     
     "settings": {

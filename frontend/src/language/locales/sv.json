@@ -257,7 +257,11 @@
 
     "bankStatements": {
     "title": "Kontoutdrag",
-    "download": "Ladda ner"
+    "download": "Ladda ner",
+    "year": "År",
+    "month": "Månad",
+    "all": "Alla",
+    "empty": "Inga kontoutdrag för valt år och månad."
     },
 
     "settings": {
