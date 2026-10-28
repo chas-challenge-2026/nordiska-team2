@@ -254,6 +254,16 @@
         "download": "Ladda ner",
         "none": "Inga rapporter hittades för kontot."
     },
+
+    "bankStatements": {
+    "title": "Kontoutdrag",
+    "download": "Ladda ner",
+    "year": "År",
+    "month": "Månad",
+    "all": "Alla",
+    "empty": "Inga kontoutdrag för valt år och månad."
+    },
+
     "settings": {
         "title": "Inställningar",
         "subtitle": "Anpassa hur portalen ser ut och vilket språk den visas på.",
