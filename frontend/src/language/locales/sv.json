@@ -277,7 +277,25 @@
         "selected": "Valt",
         "language": "Språk",
         "languageHint": "Välj vilket språk portalen ska visas på.",
-        "savedNote": "✓ Dina val sparas automatiskt på den här enheten."
+        "savedNote": "✓ Dina val sparas automatiskt på den här enheten.",
+        "history": {
+            "title": "Historik",
+            "empty": "Ingen aktivitet ännu",
+            "error": "Kunde inte hämta historiken",
+            "actions": {
+                "login": "Inloggning",
+                "login_failed": "Misslyckad inloggning",
+                "bankid_login": "Inloggning med BankID",
+                "logout": "Utloggning",
+                "deposit": "Insättning",
+                "withdrawal": "Uttag",
+                "transfer": "Överföring",
+                "account_opened": "Konto öppnat",
+                "account_closed": "Konto avslutat",
+                "savings_goal_created": "Sparmål skapat",
+                "savings_goal_deleted": "Sparmål borttaget"
+            }
+        }
     },
     "transactionType": {
         "Deposit": "Insättning", "Withdrawal": "Uttag", "Interest": "Ränta", "Tax": "Skatt",

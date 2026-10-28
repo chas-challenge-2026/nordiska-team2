@@ -276,7 +276,25 @@
         "selected": "Selected",
         "language": "Language",
         "languageHint": "Choose which language the portal is shown in.",
-        "savedNote": "✓ Your choices are saved automatically on this device."
+        "savedNote": "✓ Your choices are saved automatically on this device.",
+        "history": {
+            "title": "History",
+            "empty": "No activity yet",
+            "error": "Could not retrieve history",
+            "actions": {
+                "login": "Login",
+                "login_failed": "Failed login",
+                "bankid_login": "Login with BankID",
+                "logout": "Logout",
+                "deposit": "Deposit",
+                "withdrawal": "Withdraw",
+                "transfer": "Transfer",
+                "account_opened": "Account Open",
+                "account_closed": "Account Closed",
+                "savings_goal_created": "Savings Goal Created",
+                "savings_goal_deleted": "Savings Goal Deleted"
+            }
+        }
     },
     "transactionType": {
         "Deposit": "Deposit", "Withdrawal": "Withdrawal", "Interest": "Interest", "Tax": "Tax",
