@@ -5,6 +5,8 @@ import Card from "../../components/cards/Card";
 import ListItem from "../../components/ui/ListItem";
 import { useTranslation } from "react-i18next";
 import PageHeader from "../../components/ui/Pageheader";
+import BankStatementsCard from "./BankStatementsCard";
+
 
 export default function TaxReportsPage() {
     const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -40,6 +42,7 @@ export default function TaxReportsPage() {
                     </ul>
                     {years?.length === 0 && <p>{t("taxReports.none")}</p>}
                 </Card>
+                <BankStatementsCard accountId={accountId} />
             </div>
         </>
     )

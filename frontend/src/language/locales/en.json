@@ -253,6 +253,12 @@
         "download": "Download",
         "none": "No reports were found for this account."
     },
+
+    "bankStatements": {
+    "title": "Bank statements",
+    "download": "Download"
+    },
+    
     "settings": {
         "title": "Settings",
         "subtitle": "Customize how the portal looks and which language it is shown in.",
