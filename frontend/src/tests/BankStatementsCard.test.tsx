@@ -36,12 +36,12 @@ describe("BankStatementsCard", () => {
     vi.useRealTimers();
   });
 
-  it("visar de senaste 12 månaderna med stor bokstav", () => {
+  it("visar de senaste 24 månaderna med stor bokstav", () => {
     render(<BankStatementsCard accountId={1} />);
 
-    expect(screen.getAllByRole("button", { name: "Ladda ner" })).toHaveLength(12);
+    expect(screen.getAllByRole("button", { name: "Ladda ner" })).toHaveLength(24);
     expect(screen.getByText("Oktober 2026")).toBeInTheDocument();
-    expect(screen.getByText("November 2025")).toBeInTheDocument();
+    expect(screen.getByText("November 2024")).toBeInTheDocument();
   });
 
   it("anropar nedladdning med rätt konto, år och månad (1–12, inte 0–11)", async () => {

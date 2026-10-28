@@ -258,7 +258,11 @@
     "title": "Bank statements",
     "download": "Download",
     "notFound": "There is no bank statement for that month.",
-    "error": "Could not download the bank statement"
+    "error": "Could not download the bank statement",
+    "year": "Year",
+    "month": "Month",
+    "all": "All",
+    "empty": "No bank statements for the selected year and month."
     },
     
     "settings": {

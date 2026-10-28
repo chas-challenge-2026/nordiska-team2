@@ -259,7 +259,11 @@
     "title": "Kontoutdrag",
     "download": "Ladda ner",
     "notFound": "Det finns inget kontoutdrag för den månaden.",
-    "error": "Kunde inte hämta kontoutdraget"
+    "error": "Kunde inte hämta kontoutdraget",
+    "year": "År",
+    "month": "Månad",
+    "all": "Alla",
+    "empty": "Inga kontoutdrag för valt år och månad."
     },
 
     "settings": {
