@@ -35,6 +35,7 @@ services:
       Assistant__Model: ${ASSISTANT_MODEL:-qwen2.5:3b}
       Assistant__Threads: ${OLLAMA_CPUS:-2}
       Cors__AllowedOrigins__0: ${CORS_ORIGIN}
+      Cors__AllowedOrigins__1: http://localhost:8081
     ports:
       - "5080:8080"
     depends_on:
@@ -45,4 +46,5 @@ services:
 
 volumes:
   ollama-data:
+    external: true
     name: ollama-data

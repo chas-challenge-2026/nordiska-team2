@@ -50,9 +50,19 @@ public class BankContext : DbContext
             {
                 Id = 2,
                 Name = "Erik Johansson",
-                PersonalId = "19421231-9240",
+                PersonalId = "19991212-5678",
                 Address = "Kungsgatan 5, 411 19 Göteborg",
                 Email = "erik@example.com",
+                PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
+                CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new Customer
+            {
+                Id = 3,
+                Name = "Developer",
+                PersonalId = "19421231-9240",
+                Address = "",
+                Email = "dev@example.com",
                 PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                 CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
             }

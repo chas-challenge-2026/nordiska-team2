@@ -33,8 +33,9 @@ export default function LoginPage() {
     async function startBankId(device: "this" | "other") {
         setBankIdDevice(device)
         const autoStartToken = await bankId.start()
-        // Same device: open the BankID app straight away. The "Öppna BankID-appen" link stays as a fallback.
-        if (device === "this" && autoStartToken) {
+        // Same device: open the BankID app straight away. Never for the mock: its tokens are made up,
+        // so the real BankID app would only show an error.
+        if (device === "this" && autoStartToken && !isBankIdMock) {
             openBankIdApp(autoStartToken)
         }
     }
@@ -216,7 +217,7 @@ export default function LoginPage() {
                                 </>
                             )}
 
-                            {bankIdDevice === "this" && bankId.autoStartToken && (
+                            {bankIdDevice === "this" && bankId.autoStartToken && !isBankIdMock && (
                                 // A link the user taps, rather than opening the app automatically: some phones
                                 // only follow app links that come straight from a tap.
                                 <a

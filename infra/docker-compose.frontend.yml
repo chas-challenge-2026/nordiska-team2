@@ -13,3 +13,6 @@ services:
         VITE_ASSISTANT_BASE_URL: http://localhost:5080/api/assistant
     ports:
       - "8081:80"
+  app:
+    environment:
+      Cors__AllowedOrigins__1: http://localhost:8081

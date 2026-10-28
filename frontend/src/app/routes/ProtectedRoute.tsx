@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"
 import { useTranslation } from "react-i18next"
-import { AssistantWidget } from "../../features/assistant";
+import { AssistantWidget } from "../../features/assistant/AssistantWidget";
 import { refreshAccessToken } from "../../client";   
 
 export default function ProtectedRoute() {
