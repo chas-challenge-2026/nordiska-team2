@@ -274,6 +274,18 @@
         "download": "Download",
         "none": "No reports were found for this account."
     },
+
+    "bankStatements": {
+    "title": "Bank statements",
+    "download": "Download",
+    "notFound": "There is no bank statement for that month.",
+    "error": "Could not download the bank statement",
+    "year": "Year",
+    "month": "Month",
+    "all": "All",
+    "empty": "No bank statements for the selected year and month."
+    },
+    
     "settings": {
         "title": "Settings",
         "subtitle": "Customize how the portal looks and which language it is shown in.",

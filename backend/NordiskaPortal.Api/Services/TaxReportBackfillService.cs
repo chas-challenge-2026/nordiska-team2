@@ -9,6 +9,7 @@ namespace NordiskaPortal.Api.Services
     {
         private readonly BankContext _db;
         private readonly TaxReportService _taxReportService;
+        private readonly InterestService _interestService;
         private readonly PdfGeneratorService _pdfGeneratorService;
         private readonly ILogger<TaxReportBackfillService> _logger;
 
@@ -22,11 +23,13 @@ namespace NordiskaPortal.Api.Services
         public TaxReportBackfillService(
             BankContext db,
             TaxReportService taxReportService,
+            InterestService interestService,
             PdfGeneratorService pdfGeneratorService,
             ILogger<TaxReportBackfillService> logger)
         {
             _db = db;
             _taxReportService = taxReportService;
+            _interestService = interestService;
             _pdfGeneratorService = pdfGeneratorService;
             _logger = logger;
         }
@@ -42,7 +45,7 @@ namespace NordiskaPortal.Api.Services
                     continue;
                 }
 
-                await _taxReportService.ApplyYearEndInterestAsync(accountId, year);
+                await _interestService.ApplyYearEndInterestAsync(accountId, year);
 
                 var reportData = await _taxReportService.BuildReportAsync(accountId, year);
                 if (reportData == null)
@@ -51,11 +54,10 @@ namespace NordiskaPortal.Api.Services
                     continue;
                 }
 
-                var pdfResult = _pdfGeneratorService.GenerateSingleReport(reportData, PdfReportType.TaxReport, null, null);
-                if (!pdfResult.Success)
+                byte[]? pdfBytes = _pdfGeneratorService.GenerateSingleReportPdf(reportData, PdfReportType.TaxReport, null, null);
+                if (pdfBytes == null)
                 {
-                    _logger.LogWarning("PDF generation FAILED for account {AccountId}, year {Year}. Error: {ErrorCode} ({ErrorDetail})",
-                        accountId, year, pdfResult.ErrorCode, pdfResult.ErrorMessage);
+                    _logger.LogWarning("PDF generation FAILED for account {AccountId}, year {Year}.", accountId, year);
                     continue;
                 }
 
@@ -64,7 +66,7 @@ namespace NordiskaPortal.Api.Services
                     AccountId = accountId,
                     Year = year,
                     ReportId = reportData.Metadata.ReportId,
-                    PdfData = pdfResult.PdfBytes!,
+                    PdfData = pdfBytes,
                     GeneratedAt = DateTime.UtcNow
                 });
 

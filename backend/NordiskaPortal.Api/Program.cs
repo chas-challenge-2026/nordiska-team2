@@ -43,6 +43,7 @@ builder.Services.AddScoped<FaqCategoryService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<BankStatementService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<InterestService>();
 builder.Services.Configure<LanguageSettings>(builder.Configuration.GetSection(LanguageSettings.SectionName));
 builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
