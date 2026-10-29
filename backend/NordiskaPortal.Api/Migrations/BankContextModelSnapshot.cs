@@ -130,6 +130,16 @@ namespace NordiskaPortal.Api.Migrations
                             Name = "Erik Johansson",
                             PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                             PersonalId = "19991212-5678"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "",
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "dev@example.com",
+                            Name = "Developer",
+                            PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
+                            PersonalId = "19421231-9240"
                         });
                 });
 

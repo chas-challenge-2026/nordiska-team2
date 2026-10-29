@@ -12,7 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NordiskaPortal.Api.Migrations
 {
     [DbContext(typeof(BankContext))]
+<<<<<<<< HEAD:backend/NordiskaPortal.Api/Migrations/20261028103025_InitialCreate.Designer.cs
+    [Migration("20261028103025_InitialCreate")]
+========
     [Migration("20261028093053_InitialCreate")]
+>>>>>>>> origin/frontend/bankStatements:backend/NordiskaPortal.Api/Migrations/20261028093053_InitialCreate.Designer.cs
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -133,6 +137,16 @@ namespace NordiskaPortal.Api.Migrations
                             Name = "Erik Johansson",
                             PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                             PersonalId = "19991212-5678"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "",
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "dev@example.com",
+                            Name = "Developer",
+                            PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
+                            PersonalId = "19421231-9240"
                         });
                 });
 

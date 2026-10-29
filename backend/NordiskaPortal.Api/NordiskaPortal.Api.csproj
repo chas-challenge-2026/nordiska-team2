@@ -35,5 +35,6 @@
 
   <ItemGroup>
     <Content Include="certificates\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Certs\*.pem" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

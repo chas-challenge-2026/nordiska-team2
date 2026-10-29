@@ -27,6 +27,9 @@ appsettings.Local.json
 # Test results
 [Tt]est[Rr]esult*/
 coverage.*
+backend/NordiskaPortal.Assistant/eval/results/
 
 # EF Core migrations bundle (if you ever generate one)
 efbundle
+*.p12
+*.pfx

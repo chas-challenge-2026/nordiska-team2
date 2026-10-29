@@ -56,6 +56,27 @@
         "bankIdOtherDevice": "BankID on another device",
         "bankIdWaiting": "Waiting for BankID...",
         "cancel": "Cancel",
+        "bankId": {
+            "scanInstruction": "Open the BankID app on your phone and scan the QR code.",
+            "secondsLeft_one": "{{count}} second left",
+            "secondsLeft_other": "{{count}} seconds left",
+            "qrAlt": "BankID QR code. Click to show full screen.",
+            "closeFullscreen": "Close",
+            "openApp": "Open the BankID app",
+            "errors": {
+                "startFailed": "Time ran out before the QR code was scanned. Try again.",
+                "expired": "The login took too long. Try again.",
+                "userCancel": "The login was cancelled in the BankID app.",
+                "certificate": "Your BankID is not valid. Contact your bank.",
+                "notACustomer": "There is no customer linked to this BankID.",
+                "generic": "Something went wrong with BankID. Try again."
+            },
+            "mock": {
+                "title": "Test mode: simulate the phone",
+                "approve": "Approve in the \"BankID app\"",
+                "approveFailed": "Could not approve. Has the time run out?"
+            }
+        },
         "errors": {
             "missingFields": "Please enter both email and password",
             "invalidCredentials": "Wrong email or password, please try again!",

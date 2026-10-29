@@ -224,7 +224,8 @@ namespace NordiskaPortal.Api.Migrations
                 values: new object[,]
                 {
                     { 1, "Storgatan 1, 111 22 Stockholm", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "anna@example.com", "Anna Lindqvist", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19850505-1234" },
-                    { 2, "Kungsgatan 5, 411 19 Göteborg", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "erik@example.com", "Erik Johansson", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19991212-5678" }
+                    { 2, "Kungsgatan 5, 411 19 Göteborg", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "erik@example.com", "Erik Johansson", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19991212-5678" },
+                    { 3, "Kungsgatan 5, 411 19 Göteborg", new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc), "dev@example.com", "Developer", "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO", "19421231-9240" }
                 });
 
             migrationBuilder.InsertData(
