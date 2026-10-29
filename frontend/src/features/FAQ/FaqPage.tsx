@@ -79,11 +79,11 @@ export function FaqPage() {
       </p>
 
       {isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.searching")}</p>}
-      {error && <p className="text-sm text-red-600 mb-4">{t(error)}</p>}
+      {error && <p className="text-sm text-cancel mb-4">{t(error)}</p>}
 
       {categories.isLoading && <p className="text-sm text-gray-500 mb-4">{t("faq.loadingCategories")}</p>}
       {categories.isError && (
-        <p className="text-sm text-red-600 mb-4">{t("faq.categoriesError")}</p>
+        <p className="text-sm text-cancel mb-4">{t("faq.categoriesError")}</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -130,7 +130,7 @@ export function FaqPage() {
       >
         {categoryEntries.isLoading && <p className="text-gray-500">{t("faq.loadingQuestions")}</p>}
         {categoryEntries.isError && (
-          <p className="text-red-600">{t("faq.questionsError")}</p>
+          <p className="text-cancel">{t("faq.questionsError")}</p>
         )}
         {categoryEntries.data?.length === 0 && (
           <p className="text-gray-500">{t("faq.noQuestions")}</p>
