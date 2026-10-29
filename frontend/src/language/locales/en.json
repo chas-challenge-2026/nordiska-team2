@@ -149,6 +149,11 @@
         "chartTitle": "Overview",
         "history": "History",
         "loadingHistory": "Loading history...",
+        "interestEarned": "Interest so far this year",
+        "loadingInterest": "Loading interest...",
+        "interestError": "Interest couldn't be shown right now. Please try again later.",
+        "interestProjected": "Estimated annual interest {{year}}",
+        "interestRateBadge": "Interest rate {{rate}}% ",
         "chart": {
             "noData": "No transactions to show",
             "startBalance": "Opening balance",

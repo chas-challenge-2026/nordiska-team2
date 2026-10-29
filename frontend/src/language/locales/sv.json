@@ -150,6 +150,11 @@
         "chartTitle": "Översikt",
         "history": "Historik",
         "loadingHistory": "Laddar historik...",
+        "interestEarned": "Ränta hittills i år",
+        "loadingInterest": "Laddar ränta...",
+        "interestError": "Räntan kunde inte visas just nu. Försök igen senare.",
+        "interestProjected": "Beräknad årsränta {{year}}",
+        "interestRateBadge": "Ränta {{rate}} % ",
         "chart": {
             "noData": "Inga transaktioner att visa",
             "startBalance": "Startsaldo",
