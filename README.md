@@ -61,17 +61,17 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 ### 1. Request Pipeline & Layered Architecture
 Incoming requests pass through the ASP.NET Core middleware pipeline (exception handling, localization, CORS, rate limiting, JWT auth, and audit verification) before reaching controllers and services.
 
-![Backend Request Pipeline and Architecture](docs/images/backend-pipeline.png)
+<img src="docs/images/backend-pipeline.png" alt="Backend Request Pipeline and Architecture" width="500" />
 
 ### 2. Transaction, Ledger & Audit Flow (Unit of Work)
 Deposits are pure inserts, while withdrawals and transfers execute inside a `Serializable` database transaction. Business state changes and `AuditEntry` records share the same scoped `BankContext` and commit atomically in a single `SaveChangesAsync()` call.
 
-![Backend Transaction and Ledger Flow](docs/images/backend-transaction-flow.png)
+<img src="docs/images/backend-transaction-flow.png" alt="Backend Transaction and Ledger Flow" width="500" />
 
 ### 3. PDF Generation & Signing Flow (.NET ↔ Native C/C++)
 `PdfGeneratorService` serializes report models to JSON, ensures an X.509 signing certificate (`.pfx`) exists, and invokes `Nordiska.PdfEngine.Native` via P/Invoke to generate and cryptographically sign PDFs.
 
-![Backend PDF Generation Flow](docs/images/backend-pdf-flow.png)
+<img src="docs/images/backend-pdf-flow.png" alt="Backend PDF Generation Flow" width="420" />
 
 ---
 
