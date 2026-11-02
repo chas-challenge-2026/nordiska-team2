@@ -5,11 +5,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?logo=vite)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.3-38B2AC?logo=tailwindcss)](https://tailwindcss.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2F15-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
 [![NuGet](https://img.shields.io/nuget/v/Nordiska.PdfEngine.Native?label=Nordiska.PdfEngine.Native)](https://www.nuget.org/packages/Nordiska.PdfEngine.Native)
 
-Team 2's full refactoring of the Nordiska Sparbanken self-service portal from the legacy v1 Razor Pages monolith to a secure, scalable v2 architecture (.NET 8 Web API, React 18 SPA, PostgreSQL 15, and a native C/C++ PDF engine).
+Team 2's full refactoring of the Nordiska Sparbanken self-service portal from the legacy v1 Razor Pages monolith to a secure, scalable v2 architecture (.NET 8 Web API, React 18 SPA, PostgreSQL, and a native C/C++ PDF engine).
 
 ---
 
@@ -26,8 +26,7 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 9. [Testing & Status](#testing--status)
 10. [Architecture Decision Log (ADR)](#architecture-decision-log-adr)
 11. [Known Limitations & Scope](#known-limitations--scope)
-12. [Live Demo Fallback](#live-demo-fallback)
-13. [Troubleshooting](#troubleshooting)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -35,7 +34,7 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 
 - **Immutable Ledger Accounting:** Eliminates v1 race conditions. Balances are dynamically computed via `SUM(SignedAmount)` using `Serializable` isolation for withdrawals and transfers.
 - **Modern Auth & Security:** Replaces MD5 hashes and 365-day cookies with `BCrypt`, short-lived in-memory JWTs, `HttpOnly` refresh tokens, and a mocked BankID flow.
-- **Native C/C++ PDF Engine (`Nordiska.PdfEngine.Native`):** Replaces blocking `Thread.Sleep` calls with a high-speed C/C++ engine (`libharu` + `OpenSSL`) for batch generation and cryptographic signing (`SHA-256` + `PKCS#1`) of tax reports and bank statements.
+- **Native C/C++ PDF Engine (`Nordiska.PdfEngine.Native`):** Replaces blocking `Thread.Sleep` calls with a high-speed C/C++ engine (`libharu`, `PoDoFo`, `OpenSSL`) for batch generation and digital signing (`.pfx` / PKCS#12) of tax reports and bank statements (see [`native/README.md`](native/README.md)).
 - **React 18 SPA & i18n:** Responsive Vite + React + TypeScript portal with full Swedish and English support (`Accept-Language`).
 - **Rule-Based FAQ:** Database-backed FAQ search with keyword normalization, relevance scoring, and category filtering.
 - **Observability & Protection:** Atomic database audit logging (`AuditEntry`) with a safety-net middleware, endpoint rate limiting, structured `ProblemDetails` error handling, and `/health` checks.
@@ -48,8 +47,8 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 |---|---|---|
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router v7, Zustand, Axios, i18next | SPA with BankID/email login, dashboard, transfers, bank statements, savings goals, tax reports, and FAQ. |
 | **Backend API** | .NET 8 (C#), ASP.NET Core Web API, EF Core 8, FluentValidation, Scalar | Layered REST API (`Controllers` → `Services` → `BankContext`), JWT auth, rate limiting, and audit trail. |
-| **Database** | PostgreSQL 15 | Relational database managed via EF Core Code-First migrations. |
-| **Native Engine** | C11 / C++17, CMake, libharu, OpenSSL 3.x, cJSON | High-throughput PDF generation and signing packaged as a NuGet library. |
+| **Database** | PostgreSQL (12 in Docker Compose / 15 in Testcontainers) | Relational database managed via EF Core Code-First migrations. |
+| **Native Engine** | C11 / C++17, CMake 3.25+, libharu, PoDoFo, OpenSSL 3.x, cJSON, zlib | High-throughput PDF generation and digital signing packaged as [`Nordiska.PdfEngine.Native`](native/README.md). |
 | **Infrastructure** | Docker, Docker Compose, GitHub Actions | Containerized local development, CI/CD, and deployment. |
 
 ---
@@ -180,7 +179,7 @@ Real `.env` files are git-ignored. Copy the provided `.env.example` templates be
 | **`docker.ps1`** (Windows) | `.\backend\NordiskaPortal.Api\Scripts\docker.ps1` | **Full DB & Docker Reset:** Reads `DB_PASSWORD` from `infra/.env`, recreates EF migrations (`InitialCreate`), runs `docker compose down -v`, rebuilds `app`, starts containers, and applies migrations. Run when migrations conflict or you want fresh seed data. |
 | **`reset-db.sh`** (macOS/Linux/WSL) | `./backend/NordiskaPortal.Api/Scripts/reset-db.sh` | Bash equivalent of `docker.ps1`. |
 | **Frontend scripts** | `cd frontend && npm run <script>` | `dev` (start Vite), `build` (typecheck + bundle), `lint` (ESLint), `test` (Vitest). |
-| **Native scripts** | `native/scripts/` | `generate_mock_json.py` (synthetic benchmark data), `gen_logo.py` (logo asset embedding). |
+| **Native build & test** | `cd native && just <target>` | Managed via `devenv` and `just` (`just build`, `just test`, `just run`). See [`native/README.md`](native/README.md). |
 
 ---
 
@@ -217,7 +216,7 @@ All automated test suites across Backend, Frontend, and Native pass.
   ```bash
   cd frontend && npm test -- --run
   ```
-- **Native (`CTest`, `Valgrind`, `ASan`):** Unit tests for JSON streaming and PDF Engine API. Zero memory leaks in project source code, and benchmarked at **10,000 PDFs in ~17 seconds** in GitHub Actions (target: < 5 minutes).
+- **Native (`CTest`, `Valgrind`, `ASan`):** Unit/integration tests, memory-safety checks, and throughput benchmarks. For full build and test documentation, see [`native/README.md`](native/README.md).
 
 ---
 
@@ -227,7 +226,7 @@ All automated test suites across Backend, Frontend, and Native pass.
 |---|---|---|
 | **Ledger & Concurrency** | Immutable Ledger (`SUM(SignedAmount)`) + `Serializable` isolation | Structurally prevents balance corruption. Deposits are append-only inserts; withdrawals/transfers detect concurrent overdraft attempts via PostgreSQL serialization. |
 | **Audit Trail** | Shared Scoped `BankContext` + `AuditSafetyNetMiddleware` | Staging `AuditEntry` in the caller's unit of work guarantees atomic commits with the business operation. The middleware catches any state-changing endpoint missing an explicit audit call. |
-| **PDF Engine** | C/C++ (`libharu` + `OpenSSL`) packaged as NuGet (`Nordiska.PdfEngine.Native`) | Delivers high-speed batch generation and PKCS#1 cryptographic signing while allowing the .NET backend to consume native binaries cleanly via P/Invoke. |
+| **PDF Engine Integration** | Native C/C++ library (`Nordiska.PdfEngine.Native`) consumed via P/Invoke | Offloads batch PDF rendering and PKCS#12 (`.pfx`) signing from .NET to a single C ABI entry point (`pdf_engine_generate_and_sign`) with per-report error callbacks. |
 | **Authentication** | In-memory JWT + `HttpOnly` Refresh Token + `BCrypt` | Mitigates XSS token theft (no JWT in `localStorage`) and eliminates v1's vulnerable MD5 hashes and 1-year sessions. |
 
 ---
@@ -244,7 +243,7 @@ All automated test suites across Backend, Frontend, and Native pass.
   - Mobile responsiveness has minor gaps (dashboard quick-actions could be collapsed into a menu, and the logout button is hidden on small screens).
   - Customers can only open one savings account type, and transaction history renders without pagination.
 - **Native:**
-  - While our C/C++ code is leak-free, the underlying third-party signing library leaks 66 bytes per signed PDF (deemed low impact and out of scope to patch upstream).
+  - See [`native/README.md`](native/README.md) and `native/docs/` for native module architecture and details.
 
 ### Customer Feedforward & Scope Prioritization
 - **Completed (High Priority — v2 Core & Customer Value):**
@@ -254,15 +253,6 @@ All automated test suites across Backend, Frontend, and Native pass.
   - **Dual Interest Visualization (Feedforward):** Added backend calculation and UI views for both **interest earned year-to-date** and **projected year-end interest**.
 - **Delimited (Lower Priority / Out of MVP Scope):**
   - Dynamic FAQ admin input UI, senior citizen usability testing ("let grandma test the app"), and AI chatbot were deprioritized to ensure all core v2 deliverables and tests reached production quality on time.
-
----
-
-## Live Demo Fallback
-
-If the staging/production environment or network is unavailable during the live presentation:
-1. **Offline Local Stack:** The entire system runs locally via Docker Compose (`docker compose up`) + `npm run dev`.
-2. **One-Command Reset:** Running `docker.ps1` / `reset-db.sh` resets the database to a clean, predictable state with seeded customers and multi-year transactions in under a minute.
-3. **Pre-Generated Tax Reports:** `TaxReportBackfillService` automatically generates and stores signed PDF tax reports at API startup for immediate download.
 
 ---
 
