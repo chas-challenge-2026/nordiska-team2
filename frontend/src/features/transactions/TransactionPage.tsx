@@ -143,6 +143,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals"]})
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setAmount("");
       setDescription("");
     },
@@ -160,6 +161,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setAmount("");
       setDescription("");
     },

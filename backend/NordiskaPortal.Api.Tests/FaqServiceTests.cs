@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.DTOs;
 using NordiskaPortal.Api.Models;
@@ -9,6 +13,10 @@ namespace NordiskaPortal.Api.Tests.Services
 {
     public class FaqServiceTests
     {
+        public FaqServiceTests()
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("sv");
+        }
         private static BankContext CreateContext(string dbName)
         {
             var options = new DbContextOptionsBuilder<BankContext>()
@@ -16,6 +24,14 @@ namespace NordiskaPortal.Api.Tests.Services
                 .Options;
 
             return new BankContext(options);
+        }
+
+        private static FaqService CreateFaqService(BankContext db)
+        {
+            var options = Options.Create(new LocalizationOptions { ResourcesPath = "Resources" });
+            var factory = new ResourceManagerStringLocalizerFactory(options, NullLoggerFactory.Instance);
+            var localizer = new StringLocalizer<SharedResource>(factory);
+            return new FaqService(new FaqTranslationService(db), localizer);
         }
 
         private static async Task SeedFaqAsync(BankContext db)
@@ -76,7 +92,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("årsrapport"));
@@ -96,7 +112,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("När betalas räntan ut?"));
@@ -118,7 +134,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("sätta in pengar"));
@@ -139,7 +155,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("vad är vädret idag"));
@@ -158,7 +174,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest(""));
@@ -174,7 +190,7 @@ namespace NordiskaPortal.Api.Tests.Services
             using var db = CreateContext(
                 nameof(SearchAsync_NoEntriesInDatabase_ReturnsNoAnswer));
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("ränta"));
@@ -192,7 +208,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("räntan"));
@@ -211,7 +227,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("räntorna"));
@@ -229,7 +245,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("uttaget"));
@@ -248,7 +264,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("insättningen"));
@@ -269,7 +285,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("betalar"));
@@ -288,7 +304,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("hur gör jag ett uttag"));
@@ -306,7 +322,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedFaqAsync(db);
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("ÅRSRAPPORT!!!"));
@@ -327,7 +343,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             db.Database.EnsureCreated();
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("hur loggar jag in"));
@@ -346,13 +362,13 @@ namespace NordiskaPortal.Api.Tests.Services
 
             db.Database.EnsureCreated();
 
-            var service = new FaqService(db);
+            var service = CreateFaqService(db);
 
             var result = await service.SearchAsync(
                 new FaqSearchRequest("var hittar jag min årsrapport"));
 
             Assert.True(result.Matched);
-            Assert.Equal("Skatt & Rapporter", result.Category);
+            Assert.Equal("Rapporter", result.Category);
         }
     }
 }

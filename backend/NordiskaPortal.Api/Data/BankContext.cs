@@ -19,6 +19,7 @@ public class BankContext : DbContext
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
     public DbSet<AuditEntry> AuditEntries { get; set; }
     public DbSet<FaqEntryTranslation> FaqEntryTranslations { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -395,5 +396,9 @@ public class BankContext : DbContext
 
         // Audit Entry
         modelBuilder.Entity<AuditEntry>().HasIndex(a => new { a.CustomerId, a.Timestamp });
+
+        // Notification
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.RefId, n.Type }).IsUnique();
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.CustomerId, n.CreatedAt });
     }
 }
