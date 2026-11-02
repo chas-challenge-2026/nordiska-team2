@@ -11,6 +11,7 @@ services:
         # not Docker service names.
         VITE_API_BASE_URL: http://localhost:8080/api
         VITE_ASSISTANT_BASE_URL: http://localhost:5080/api/assistant
+        VITE_BANKID_MOCK: ${VITE_BANKID_MOCK:-true}
     ports:
       - "8081:80"
   app:

@@ -29,7 +29,7 @@ services:
   assistant:
     build: ../backend/NordiskaPortal.Assistant
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT:-Production}
       Jwt__Key: ${JWT_KEY}
       Assistant__BaseUrl: http://ollama:11434
       Assistant__Model: ${ASSISTANT_MODEL:-qwen2.5:3b}
