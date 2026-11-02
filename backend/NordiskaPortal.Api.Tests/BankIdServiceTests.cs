@@ -1,20 +1,28 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Services;
+using NordiskaPortal.Api.Services.BankId;
 using Xunit;
 
 namespace NordiskaPortal.Api.Tests
 {
+    // Completion paths of the mock BankID: these reach the real database and the real AuthService.
+    // Order-flow paths that never touch the database are in MockBankIdServiceTests.
     [Collection("Postgres collection")]
-    public class BankIdServiceTests
+    public class MockBankIdServiceCompletionTests
     {
-        private readonly PostgresFixture _fixture;
+        private const string AnnaPersonalId = "19850505-1234"; // seeded, customer id 1
 
-        public BankIdServiceTests(PostgresFixture fixture)
+        private readonly PostgresFixture _fixture;
+        private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 27, 12, 0, 0, TimeSpan.Zero));
+        private readonly BankIdOrderStore _store;
+
+        public MockBankIdServiceCompletionTests(PostgresFixture fixture)
         {
             _fixture = fixture;
+            _store = new BankIdOrderStore(_time);
         }
 
         private static IConfiguration BuildTestConfig()
@@ -30,63 +38,24 @@ namespace NordiskaPortal.Api.Tests
             return new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
         }
 
-        // BankIdService is a Singleton in production, depending on
-        // IServiceScopeFactory rather than BankContext/IAuthService
-        // directly (see backend-documentation.md §5b for why). Testing
-        // it through a fake/direct-injection shortcut would miss exactly
-        // the thing worth proving -- that the real scope-factory path
-        // works. This builds a small real DI container, wired the same
-        // shape as Program.cs's, against the same Testcontainers
-        // Postgres instance the other test classes share.
-        private IServiceScopeFactory BuildScopeFactory()
-        {
-            var services = new ServiceCollection();
-            services.AddScoped(_ => _fixture.CreateContext());
-            services.AddScoped<IAuthService>(sp =>
-            {
-                // Same BankContext instance for both -- mirrors Program.cs,
-                // where DI hands every scoped service the request's one context.
-                var db = sp.GetRequiredService<BankContext>();
-                return new AuthService(db, BuildTestConfig(), AuditServiceTests.For(db));
-            });
+        // One BankContext shared by the mock and AuthService, like one HTTP request in Program.cs.
+        private MockBankIdService CreateService(BankContext db) =>
+            new(_store, _time, db, new AuthService(db, BuildTestConfig(), AuditServiceTests.For(db)));
 
-            var provider = services.BuildServiceProvider();
-            return provider.GetRequiredService<IServiceScopeFactory>();
+        // Starts an order and plays the user's phone approving it.
+        private static async Task<string> StartAndApproveAsync(MockBankIdService service, string personalId)
+        {
+            var start = await service.StartAsync("127.0.0.1");
+            Assert.True(service.Approve(start.OrderRef, personalId));
+            return start.OrderRef;
         }
 
         [Fact]
-        public async Task GetStatusAsync_BeforeDelayElapses_ReturnsPending()
+        public async Task Approved_WithKnownPersonalId_CompletesWithRealTokens()
         {
-            var service = new BankIdService(BuildScopeFactory());
-            var orderRef = service.StartOrder("19850505-1234"); // Anna, seeded
-
-            var result = await service.GetStatusAsync(orderRef);
-
-            Assert.Equal("pending", result.Status);
-            Assert.Null(result.AccessToken);
-            Assert.Null(result.RefreshToken);
-        }
-
-        [Fact]
-        public async Task GetStatusAsync_UnknownOrderRef_ReturnsFailed()
-        {
-            var service = new BankIdService(BuildScopeFactory());
-
-            var result = await service.GetStatusAsync(Guid.NewGuid().ToString());
-
-            Assert.Equal("failed", result.Status);
-        }
-
-        [Fact]
-        public async Task GetStatusAsync_AfterDelayWithValidPersonalId_ReturnsCompleteWithRealTokens()
-        {
-            var service = new BankIdService(BuildScopeFactory());
-            var orderRef = service.StartOrder("19850505-1234"); // Anna, seeded
-
-            // The mock's simulated approval delay is 3 seconds -- waited
-            // out for real here rather than mocked, since the delay is a
-            // private implementation detail with no injection seam.
-            await Task.Delay(TimeSpan.FromSeconds(3.5));
+            await using var db = _fixture.CreateContext();
+            var service = CreateService(db);
+            var orderRef = await StartAndApproveAsync(service, AnnaPersonalId);
 
             var result = await service.GetStatusAsync(orderRef);
 
@@ -96,28 +65,27 @@ namespace NordiskaPortal.Api.Tests
         }
 
         [Fact]
-        public async Task GetStatusAsync_AfterDelayWithUnknownPersonalId_ReturnsFailed()
+        public async Task Approved_WithUnknownPersonalId_FailsWithNotACustomer()
         {
-            var service = new BankIdService(BuildScopeFactory());
-            var orderRef = service.StartOrder("00000000-0000"); // no matching customer
-
-            await Task.Delay(TimeSpan.FromSeconds(3.5));
+            await using var db = _fixture.CreateContext();
+            var service = CreateService(db);
+            var orderRef = await StartAndApproveAsync(service, "00000000-0000"); // no matching customer
 
             var result = await service.GetStatusAsync(orderRef);
 
             Assert.Equal("failed", result.Status);
+            Assert.Equal(BankIdHintCodes.NotACustomer, result.HintCode);
             Assert.Null(result.AccessToken);
         }
 
         [Fact]
-        public async Task GetStatusAsync_PolledAgainAfterCompletion_ReturnsFailed()
+        public async Task PolledAgainAfterCompletion_Fails()
         {
-            // Orders are one-time use -- the same orderRef must not
-            // resolve twice, whether the first result was complete or failed.
-            var service = new BankIdService(BuildScopeFactory());
-            var orderRef = service.StartOrder("19850505-1234");
+            // Orders are one-time use: the same orderRef must never resolve twice.
+            await using var db = _fixture.CreateContext();
+            var service = CreateService(db);
+            var orderRef = await StartAndApproveAsync(service, AnnaPersonalId);
 
-            await Task.Delay(TimeSpan.FromSeconds(3.5));
             var first = await service.GetStatusAsync(orderRef);
             var second = await service.GetStatusAsync(orderRef);
 
@@ -126,22 +94,18 @@ namespace NordiskaPortal.Api.Tests
         }
 
         [Fact]
-        public async Task GetStatusAsync_IssuedToken_HasCorrectCustomerIdClaim()
+        public async Task IssuedToken_HasCorrectCustomerIdClaim()
         {
-            // Proves the actual design goal from §5b: a BankID-issued
-            // token is a genuinely real, correctly signed token for the
-            // RIGHT customer -- not a stand-in or placeholder value.
-            var service = new BankIdService(BuildScopeFactory());
-            var orderRef = service.StartOrder("19850505-1234"); // Anna, customer id 1
+            // The design goal from §5b: a BankID-issued token is a real, correctly signed
+            // token for the RIGHT customer, not a placeholder.
+            await using var db = _fixture.CreateContext();
+            var service = CreateService(db);
+            var orderRef = await StartAndApproveAsync(service, AnnaPersonalId);
 
-            await Task.Delay(TimeSpan.FromSeconds(3.5));
             var result = await service.GetStatusAsync(orderRef);
 
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(result.AccessToken);
-            var subClaim = token.Claims.First(c => c.Type == "sub").Value;
-
-            Assert.Equal("1", subClaim);
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
+            Assert.Equal("1", token.Claims.First(c => c.Type == "sub").Value);
         }
     }
 }

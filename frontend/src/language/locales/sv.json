@@ -56,6 +56,27 @@
         "bankIdOtherDevice": "BankID på annan enhet",
         "bankIdWaiting": "Väntar på BankID...",
         "cancel": "Avbryt",
+        "bankId": {
+            "scanInstruction": "Öppna BankID-appen på din mobil och skanna QR-koden.",
+            "secondsLeft_one": "{{count}} sekund kvar",
+            "secondsLeft_other": "{{count}} sekunder kvar",
+            "qrAlt": "QR-kod för BankID. Klicka för att visa i helskärm.",
+            "closeFullscreen": "Stäng",
+            "openApp": "Öppna BankID-appen",
+            "errors": {
+                "startFailed": "Tiden gick ut innan QR-koden skannades. Försök igen.",
+                "expired": "Inloggningen tog för lång tid. Försök igen.",
+                "userCancel": "Inloggningen avbröts i BankID-appen.",
+                "certificate": "Ditt BankID är inte giltigt. Kontakta din bank.",
+                "notACustomer": "Det finns ingen kund kopplad till detta BankID.",
+                "generic": "Något gick fel med BankID. Försök igen."
+            },
+            "mock": {
+                "title": "Testläge: simulera mobilen",
+                "approve": "Godkänn i \"BankID-appen\"",
+                "approveFailed": "Kunde inte godkänna. Har tiden gått ut?"
+            }
+        },
         "errors": {
             "missingFields": "Vänligen fyll i både e-post och lösenord",
             "invalidCredentials": "Fel e-post eller lösenord, försök igen!",

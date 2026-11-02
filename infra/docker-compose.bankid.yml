@@ -1,0 +1,25 @@
+# Real BankID (BankID's TEST environment) as an OPTIONAL add-on, like the assistant and frontend.
+# Without this file the API runs the BankID mock.
+#
+# Needs YOUR OWN BankID test client certificate (.p12) and these values in infra/.env:
+#   BANKID_CERT_PATH=C:/Certs/BankID-Test/FPTestcert5_20240610.p12   (forward slashes)
+#   BANKID_CERT_PASSWORD=<password from the certificate zip's info file>
+#
+# Started by:  .\dockerV2.ps1 -RealBankId
+# or by hand (from infra/), adding  -f docker-compose.bankid.yml  to the other -f files.
+#
+# The certificate is mounted READ-ONLY and never copied into the image.
+# Linux loads it straight from the .p12 file; the Windows certificate-store workaround
+# (ClientCertificateThumbprint) is only needed for 'dotnet run' on Windows.
+
+services:
+  app:
+    environment:
+      BankId__UseRealApi: "true"
+      BankId__BaseUrl: https://appapi2.test.bankid.com/rp/v6.0/
+      BankId__ClientCertificatePath: /run/secrets/bankid/client.p12
+      BankId__ClientCertificatePassword: ${BANKID_CERT_PASSWORD:?Set BANKID_CERT_PASSWORD in infra/.env}
+      # Public CA, part of the published app (copied by the .csproj), relative to /app.
+      BankId__CaCertificatePath: Certs/Test-BankID-SSL-Root-CA-v1-Test.pem
+    volumes:
+      - ${BANKID_CERT_PATH:?Set BANKID_CERT_PATH in infra/.env}:/run/secrets/bankid/client.p12:ro
