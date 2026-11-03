@@ -5,9 +5,11 @@
 #        - the bank API and database  (docker-compose.yml + docker-compose.override.yml)
 #        - the AI assistant + Ollama  (docker-compose.assistant.yml, optional)
 #        - the frontend               (docker-compose.frontend.yml, optional)
-#        - real test BankID           (docker-compose.bankid.yml, only with -RealBankId)
+#        - BankID, one of two modes:
+#            mock (default)           (API runs as Development, via API_ENVIRONMENT)
+#            real test BankID         (docker-compose.bankid.yml, with -BankId real)
 #   3. Waits until everything answers, and re-applies the COMMITTED migrations.
-#   4. With -RealBankId: links your test BankID's personal number to a customer again
+#   4. With real BankID: links your test BankID's personal number to a customer again
 #      (the database reset removes that link every time).
 #
 # Never generates or deletes migrations. The AI model is kept between resets.
@@ -19,7 +21,9 @@
 #   .\dockerV2.ps1 -SkipAssistant                  # no AI assistant (faster, no model download)
 #   .\dockerV2.ps1 -SkipFrontend                   # no frontend container (use 'npm run dev' instead)
 #   .\dockerV2.ps1 -SkipAssistant -SkipFrontend    # bank API and database only
-#   .\dockerV2.ps1 -RealBankId                     # everything, with REAL test BankID instead of the mock
+#   .\dockerV2.ps1 -BankId mock                    # mock BankID (the default; same as no -BankId)
+#   .\dockerV2.ps1 -BankId real                    # REAL test BankID instead of the mock
+#   .\dockerV2.ps1 -RealBankId                     # shortcut for -BankId real
 #
 # Location: backend/NordiskaPortal.Api/Scripts/dockerV2.ps1
 #
@@ -66,9 +70,17 @@
 #                  name: ollama-data
 #          Otherwise every reset deletes and re-downloads the model (~2 GB).
 #          (The script creates the volume if it's missing.)
-#   [you]  The frontend Dockerfile declares 'ARG VITE_API_BASE_URL' and
-#          'ARG VITE_ASSISTANT_BASE_URL' BEFORE 'npm run build'. VITE_ values are baked in
-#          at build time; without the ARG lines the build args are silently ignored.
+#   [you]  The frontend Dockerfile declares 'ARG VITE_API_BASE_URL',
+#          'ARG VITE_ASSISTANT_BASE_URL' and 'ARG VITE_BANKID_MOCK' BEFORE 'npm run build'.
+#          VITE_ values are baked in at build time; without the ARG lines the build args
+#          are silently ignored. ([auto] warns if VITE_BANKID_MOCK is missing.)
+#   [auto] infra/docker-compose.yml lets the script choose the API's environment
+#          (stops if it doesn't). In the app service's environment:
+#              ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT:-Production}
+#          Plain 'docker compose up' still runs Production.
+#   [you]  infra/docker-compose.frontend.yml passes the BankID mode to the build:
+#              VITE_BANKID_MOCK: ${VITE_BANKID_MOCK:-true}
+#          (under build: args:, next to VITE_API_BASE_URL). The script sets the value.
 #
 # Git
 #   [you]  Pull the latest main first, so you reset to the team's migrations.
@@ -76,11 +88,13 @@
 #          This script never generates migrations; changes there came from elsewhere.
 #
 # BankID
-#   Without -RealBankId, Docker runs the BankID MOCK. The Docker API runs as Production,
-#   where the mock's "simulate the phone" step is switched off, so BankID login can't be
-#   completed against Docker; use e-mail login there.
+#   -BankId mock (default): Docker runs the BankID MOCK.
+#   [auto] The API runs as Development (API_ENVIRONMENT), where the mock's
+#          "simulate the phone" step is switched on (it answers 404 in Production).
+#   [auto] The frontend container is built with the "Testläge: simulera mobilen" box.
+#          Log in: BankID tab > "BankID på annan enhet" > approve in that box.
 #
-#   With -RealBankId (real BankID TEST environment), you also need:
+#   -BankId real / -RealBankId (real BankID TEST environment), you also need:
 #   [you]  BankID's test client certificate (.p12), downloaded OUTSIDE the repo
 #          (bankid.com > Developers > Test > "Certificate for test").
 #   [you]  A BankID app configured for test, with a test BankID in it
@@ -88,7 +102,7 @@
 #   [auto] infra/docker-compose.bankid.yml exists.
 #   [auto] infra/.env has BANKID_CERT_PATH (and the file exists), BANKID_CERT_PASSWORD and
 #          BANKID_TEST_PERSONAL_ID (your test BankID's personal number, YYYYMMDD-XXXX).
-#          Optional: BANKID_TEST_CUSTOMER_EMAIL (default erik@example.com).
+#          Optional: BANKID_TEST_CUSTOMER_EMAIL (default dev@example.com).
 #   [auto] The public CA file is in backend/NordiskaPortal.Api/Certs/.
 #   [auto] Links BANKID_TEST_PERSONAL_ID to that customer after every reset.
 #   [you]  If the API doesn't start, the script prints its last log lines. A certificate
@@ -98,10 +112,15 @@
 param(
     [switch]$SkipAssistant,
     [switch]$SkipFrontend,
-    [switch]$RealBankId
+    [ValidateSet("mock", "real")]
+    [string]$BankId = "mock",
+    [switch]$RealBankId          # shortcut for -BankId real
 )
 
 $ErrorActionPreference = "Stop"
+
+# One flag for the rest of the script, whichever way real BankID was asked for.
+$useRealBankId = $RealBankId -or ($BankId -eq "real")
 
 $repoRoot     = (Resolve-Path "$PSScriptRoot\..\..\..").Path
 $apiDir       = Join-Path $repoRoot "backend\NordiskaPortal.Api"
@@ -137,7 +156,14 @@ $includeFrontend  = (-not $SkipFrontend) -and $hasFrontend
 $composeArgs = $baseFiles
 if ($includeAssistant) { $composeArgs += $assistantFiles }
 if ($includeFrontend)  { $composeArgs += $frontendFiles }
-if ($RealBankId)       { $composeArgs += @("-f", "docker-compose.bankid.yml") }
+# BankID mode, passed to Compose as shell variables (they win over infra/.env):
+#   real: the BankID add-on (certificate, real API); the API runs as Production.
+#   mock: the API runs as Development, so the mock's "simulate the phone" step works.
+if ($useRealBankId) { $composeArgs += @("-f", "docker-compose.bankid.yml") }
+$apiEnvironment  = if ($useRealBankId) { "Production" } else { "Development" }
+
+# Baked into the frontend build: shows or hides the "Testläge: simulera mobilen" box.
+$bankIdMockValue = if ($useRealBankId) { "false" } else { "true" }
 
 # 'down' includes every add-on that starts containers of its own, so containers from an
 # earlier run with more add-ons are stopped too, whatever this run includes.
@@ -276,8 +302,30 @@ if ($includeFrontend) {
     }
 }
 
-if ($RealBankId) {
-    if (-not $hasBankId) { throw "-RealBankId needs infra/docker-compose.bankid.yml, which wasn't found." }
+# Mock BankID needs the API as Development; that only works if the compose file reads API_ENVIRONMENT.
+if (-not $useRealBankId) {
+    # Looks in the base file and the override (map style 'KEY: value' or list style '- KEY=value').
+    $baseCompose = ($baseFiles | Where-Object { $_ -like "*.yml" } |
+        ForEach-Object { Get-Content (Join-Path $infraDir $_) -Raw }) -join "`n"
+    if ($baseCompose -notmatch 'ASPNETCORE_ENVIRONMENT\s*[:=]\s*"?\$\{API_ENVIRONMENT') {
+        throw ("Mock BankID needs the API to run as Development. In infra/docker-compose.yml, set the app service's`n" +
+               "environment line to:  ASPNETCORE_ENVIRONMENT: `${API_ENVIRONMENT:-Production}`n" +
+               "Or run with -BankId real.")
+    }
+}
+
+# Frontend: warn if the Dockerfile doesn't take the BankID mode. Not fatal; the frontend still
+# builds, but the "Testläge: simulera mobilen" box is missing and mock BankID can't be approved.
+if ($includeFrontend) {
+    $frontendDockerfile = Join-Path $repoRoot "frontend\Dockerfile"
+    if ((Test-Path $frontendDockerfile) -and -not ((Get-Content $frontendDockerfile -Raw) -match 'ARG\s+VITE_BANKID_MOCK')) {
+        Write-Host "WARNING: frontend/Dockerfile has no 'ARG VITE_BANKID_MOCK' before 'npm run build'." -ForegroundColor Yellow
+        Write-Host "         The Docker frontend won't get the BankID mode (mock box shown or hidden)." -ForegroundColor Yellow
+    }
+}
+
+if ($useRealBankId) {
+    if (-not $hasBankId) { throw "Real BankID needs infra/docker-compose.bankid.yml, which wasn't found." }
 
     $bankIdCertPath = Get-EnvValue $envLines "BANKID_CERT_PATH"
     if ([string]::IsNullOrWhiteSpace($bankIdCertPath)) {
@@ -296,7 +344,7 @@ if ($RealBankId) {
         throw "BANKID_TEST_PERSONAL_ID in $envPath must be your test BankID's personal number (YYYYMMDD-XXXX)."
     }
     $bankIdCustomerEmail = Get-EnvValue $envLines "BANKID_TEST_CUSTOMER_EMAIL"
-    if ([string]::IsNullOrWhiteSpace($bankIdCustomerEmail)) { $bankIdCustomerEmail = "erik@example.com" }
+    if ([string]::IsNullOrWhiteSpace($bankIdCustomerEmail)) { $bankIdCustomerEmail = "dev@example.com" }
     if ($bankIdCustomerEmail -notmatch '^[^@\s''"]+@[^@\s''"]+$') {
         throw "BANKID_TEST_CUSTOMER_EMAIL in $envPath doesn't look like an e-mail address."
     }
@@ -317,6 +365,8 @@ Write-Host ""
 Write-Host "This will PERMANENTLY DELETE all local data in the nordiska database" -ForegroundColor Yellow
 Write-Host "(database volume removed, containers rebuilt, committed migrations reapplied)." -ForegroundColor Yellow
 if ($includeAssistant) { Write-Host "The downloaded AI model is kept." -ForegroundColor Yellow }
+if ($useRealBankId) { Write-Host "BankID: REAL test environment." -ForegroundColor Cyan }
+else                { Write-Host "BankID: mock (the API runs as Development)." -ForegroundColor Cyan }
 Write-Host ""
 if ((Read-Host "Type 'yes' to continue, anything else to cancel") -ne "yes") {
     Write-Host "Cancelled. No changes made." -ForegroundColor Cyan
@@ -344,9 +394,17 @@ try {
     }
     # 'up' waits for ollama to be healthy and for ollama-pull to finish before starting the assistant,
     # and fails if the model download fails.
+    # Shell variables win over infra/.env, so the chosen BankID mode always reaches Compose.
+    # They're removed again afterwards, so they don't linger in your PowerShell window.
+    $env:API_ENVIRONMENT  = $apiEnvironment
+    $env:VITE_BANKID_MOCK = $bankIdMockValue
     Invoke-Native "Rebuilding images and starting containers..." { docker compose @composeArgs up -d --build }
 }
-finally { Pop-Location }
+finally {
+    Remove-Item Env:API_ENVIRONMENT  -ErrorAction SilentlyContinue
+    Remove-Item Env:VITE_BANKID_MOCK -ErrorAction SilentlyContinue
+    Pop-Location
+}
 
 # ---------------------------------------------------------------------------
 # 3. Health checks and migrations
@@ -354,7 +412,7 @@ finally { Pop-Location }
 
 # The API runs pending migrations itself at startup, so once /health answers, startup is done.
 # If it never answers, show its last log lines: startup errors (e.g. a BankID certificate
-# problem with -RealBankId) appear there.
+# problem with real BankID) appear there.
 try {
     Wait-ForUrl "the API" "$apiUrl/health" 3 -RequireOk
 }
@@ -376,7 +434,7 @@ finally { Pop-Location }
 
 # Real BankID: the reset gave every customer back their seeded personal number, so link
 # your test BankID to the chosen customer again. The SQL goes in via stdin, so no quoting issues.
-if ($RealBankId) {
+if ($useRealBankId) {
     $sql = "UPDATE ""Customers"" SET ""PersonalId"" = '$bankIdPersonalId' WHERE ""Email"" = '$bankIdCustomerEmail';"
     Push-Location $infraDir
     try {
@@ -407,9 +465,9 @@ if ($includeAssistant) { Write-Host "  AI assistant: $assistantUrl  (model: $ass
 if (-not $includeFrontend) {
     Write-Host "  Frontend:     not in Docker this run; use 'npm run dev' with VITE_API_BASE_URL=$apiUrl/api"
 }
-if ($RealBankId) {
+if ($useRealBankId) {
     Write-Host "  BankID:       REAL test environment; log in as $bankIdCustomerEmail with your test BankID"
 } else {
-    Write-Host "  BankID:       mock (BankID login can't be completed in Docker; use e-mail login)"
+    Write-Host "  BankID:       mock; BankID tab > 'BankID på annan enhet' > approve in 'Testläge: simulera mobilen'"
 }
 Write-Host "Do not run 'dotnet run' as well; the API is already running in Docker." -ForegroundColor Green

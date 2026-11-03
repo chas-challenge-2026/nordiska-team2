@@ -13,8 +13,10 @@ COPY . .
 # Changing them later means rebuilding the image, not restarting it.
 ARG VITE_API_BASE_URL
 ARG VITE_ASSISTANT_BASE_URL
+ARG VITE_BANKID_MOCK
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
-    VITE_ASSISTANT_BASE_URL=$VITE_ASSISTANT_BASE_URL
+    VITE_ASSISTANT_BASE_URL=$VITE_ASSISTANT_BASE_URL \
+    VITE_BANKID_MOCK=$VITE_BANKID_MOCK
 RUN npm run build
 
 # Stage 2: serve the built files with nginx (no Node in the final image)
