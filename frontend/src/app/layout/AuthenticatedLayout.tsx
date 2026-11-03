@@ -2,11 +2,13 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./navigation/Navbar";
 import MobileNavbar from "./navigation/MobileNavbar"
 import BlobBackground from "../../components/ui/BlobBackground";
+import NotificationToastListener from "../../components/notifications/NotificationToastListener";
 
 export default function AuthenticatedLayout() {
   return (
     <div className="grid min-h-screen grid-cols-1 
                     lg:grid-cols-12">
+      <NotificationToastListener />
       <Navbar />
       <MobileNavbar />
 

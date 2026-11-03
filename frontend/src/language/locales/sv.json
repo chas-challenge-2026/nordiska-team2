@@ -304,6 +304,27 @@
         "language": "Språk",
         "languageHint": "Välj vilket språk portalen ska visas på.",
         "savedNote": "✓ Dina val sparas automatiskt på den här enheten.",
+        "notifications": {
+            "title": "Notiser",
+            "hint": "Bekräftelser på dina senaste transaktioner.",
+            "empty": "Inga notiser ännu",
+            "error": "Kunde inte hämta notiser",
+            "status": {
+                "sent": "Skickad",
+                "pending": "Väntar",
+                "failed": "Misslyckades"
+            },
+            "types": {
+                "deposit_confirmation": "Insättningsbekräftelse",
+                "withdrawal_confirmation": "Uttagsbekräftelse",
+                "transfer_confirmation": "Överföringsbekräftelse"
+            },
+            "messages": {
+                "deposit_confirmation": "Insättning på {{amount}} till konto {{account}} har genomförts.",
+                "withdrawal_confirmation": "Uttag på {{amount}} från konto {{account}} har genomförts.",
+                "transfer_confirmation": "Överföring på {{amount}} från konto {{fromAccount}} till konto {{toAccount}} har genomförts."
+            }
+        },
         "history": {
             "title": "Historik",
             "empty": "Ingen aktivitet ännu",

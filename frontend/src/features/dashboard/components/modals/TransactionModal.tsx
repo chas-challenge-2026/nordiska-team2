@@ -6,7 +6,7 @@ import SelectOptions from "../../../../components/ui/Select";
 import DepositWithdrawFields from "../../../../components/forms/DepositWithdrawFields";
 import { useAccounts } from "../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../components/ui/Select";
-import { useAlert } from "../../../../hooks/useAlert";
+
 import { apiClient } from "../../../../client";
 import { useTranslation } from "react-i18next";
 import { apiErrorMessage } from "../../../../lib/apiErrorMessage";
@@ -27,7 +27,7 @@ export default function TransactionModal({
 }: TransactionModalProps) {
     const queryClient = useQueryClient()
     const { data: accounts } = useAccounts();
-    const { showAlert } = useAlert();
+
     const { t } = useTranslation();
 
     const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -71,8 +71,9 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
-            queryClient.invalidateQueries({ queryKey: ["savings-goals"] });  
-            showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.depositDone") })
+            queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });  
+
             resetAndClose();
         },
     });
@@ -87,9 +88,10 @@ export default function TransactionModal({
            onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] })
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(selectedAccount!.value)] });
-            queryClient.invalidateQueries({ queryKey: ["savings-goals"] }); 
+            queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] }); 
 
-            showAlert({ type: "success", title: t("common.done"), message: t("transactionModal.withdrawDone") })
+
             resetAndClose();
         },
     });

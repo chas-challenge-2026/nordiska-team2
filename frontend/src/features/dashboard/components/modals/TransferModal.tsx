@@ -8,7 +8,7 @@ import TextareaInput from "../../../../components/ui/TextareaInput";
 import SelectOptions from "../../../../components/ui/Select";
 import { useAccounts } from "../../../../hooks/useAccounts";
 import type { OptionType } from "../../../../components/ui/Select";
-import { useAlert } from "../../../../hooks/useAlert";
+
 import { useTranslation } from "react-i18next";
 import { apiErrorMessage } from "../../../../lib/apiErrorMessage";
 
@@ -23,7 +23,7 @@ export default function TransferModal({
 }: TransferProps) {
     const { data: accounts } = useAccounts(); // RIKTIG DATA
 
-    const { showAlert } = useAlert();
+
     const { t } = useTranslation();
     const accountOptions: OptionType[] = accounts?.map((account) => ({
         value: String(account.id), label: account.accountNumber })) ?? []
@@ -47,8 +47,9 @@ export default function TransferModal({
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(fromAccount!.value)] });
             queryClient.invalidateQueries({ queryKey: ["transactions", Number(toAccount!.value)] })
             queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-            showAlert({ type: "success", title: t("common.done"), message: t("transferModal.done") });
+
             resetAndClose();   
         }
     })
