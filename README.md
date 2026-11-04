@@ -17,17 +17,19 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 
 1. [What's New in v2](#whats-new-in-v2)
 2. [Tech Stack](#tech-stack)
-3. [Backend Overview (.NET 8 / C#)](#backend-overview-net-8--c)
-4. [Project Structure](#project-structure)
-5. [Prerequisites & Environment Variables](#prerequisites--environment-variables)
-6. [Quickstart](#quickstart)
-7. [Scripts & Tooling](#scripts--tooling)
-8. [Service URLs & Test Accounts](#service-urls--test-accounts)
-9. [BankID Testing (Real Test Environment)](#bankid-testing-real-test-environment)
-10. [Testing & Status](#testing--status)
-11. [Architecture Decision Log (ADR)](#architecture-decision-log-adr)
-12. [Known Limitations & Scope](#known-limitations--scope)
-13. [Troubleshooting](#troubleshooting)
+3. [Team & Responsibilities](#team--responsibilities)
+4. [Backend Overview (.NET 8 / C#)](#backend-overview-net-8--c)
+5. [Project Structure](#project-structure)
+6. [Prerequisites & Environment Variables](#prerequisites--environment-variables)
+7. [Quickstart](#quickstart)
+8. [Scripts & Tooling](#scripts--tooling)
+9. [Service URLs & Test Accounts](#service-urls--test-accounts)
+10. [BankID Testing (Real Test Environment)](#bankid-testing-real-test-environment)
+11. [Testing & Status](#testing--status)
+12. [Architecture Decision Log (ADR)](#architecture-decision-log-adr)
+13. [Known Limitations & Scope](#known-limitations--scope)
+14. [Specialist Feedforward](specialist-feedforward)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -55,6 +57,15 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 | **AI Assistant (optional)** | .NET 8 Web API, Ollama, `qwen2.5:3b` | Local chat assistant behind the same JWT as the bank API. Can be removed without touching the bank. |
 
 ---
+
+## Team & Responsibilities
+
+| Team | Members | Responsibility |
+|---|---|---|
+| **Project Lead** | Linus Ivarsson | Planning, prioritization, coordination between the team and scope decisions. |
+| **Frontend** | Olivia Mach, Emelie Björkman | React SPA: login (e-mail & BankID), dashboard, transfers, statements, savings goals, tax reports, FAQ, settings and i18n. |
+| **Backend** | Ivan Skvortsov,  Adchariya Changtam, Hussein Al-Hasnawy | .NET 8 API: ledger, auth (JWT, refresh tokens, BankID), audit log, rate limiting, migrations, tests, Docker setup. |
+| **Native** | Fredrik Bredberg | C/C++ PDF engine (`Nordiska.PdfEngine.Native`): generation, signing, benchmarks, NuGet packaging. |
 
 ## Backend Overview (.NET 8 / C#)
 
@@ -256,21 +267,27 @@ All automated test suites across Backend, Frontend, and Native pass.
   ```bash
   cd frontend && npm test -- --run
   ```
+   >For more details see [`docs/frontend-teststatus.md`](docs/frontend-teststatus.md)
 - **Native (`CTest`, `Valgrind`, `ASan`):** Unit/integration tests, memory-safety checks, and throughput benchmarks. For full build and test documentation, see [`native/README.md`](native/README.md).
 - **BankID (manual):** Same-device login with the BankID desktop app against the official test environment verified end to end.
 
 ---
 
 ## Architecture Decision Log (ADR)
+Decisions are grouped into **project scope** (what we chose to build) and **architecture** (how we built it).
 
-| Area | Decision | Rationale |
-|---|---|---|
-| **Ledger & Concurrency** | Immutable Ledger (`SUM(SignedAmount)`) + `Serializable` isolation | Structurally prevents balance corruption. Deposits are append-only inserts; withdrawals/transfers detect concurrent overdraft attempts via PostgreSQL serialization. |
-| **Audit Trail** | Shared Scoped `BankContext` + `AuditSafetyNetMiddleware` | Staging `AuditEntry` in the caller's unit of work guarantees atomic commits with the business operation. The middleware catches any state-changing endpoint missing an explicit audit call. |
-| **PDF Engine Integration** | Native C/C++ library (`Nordiska.PdfEngine.Native`) consumed via P/Invoke | Offloads batch PDF rendering and PKCS#12 (`.pfx`) signing from .NET to a single C ABI entry point (`pdf_engine_generate_and_sign`) with per-report error callbacks. |
-| **Authentication** | In-memory JWT + `HttpOnly` Refresh Token + `BCrypt` | Mitigates XSS token theft (no JWT in `localStorage`) and eliminates v1's vulnerable MD5 hashes and 1-year sessions. |
-| **BankID** | `IBankIdService` with mock (default) and real v6 implementation over mTLS | The whole team, CI and tests work without certificates or a BankID app, while the real flow uses the exact same frontend and token path. The QR secret and client certificate never reach the browser. |
-| **AI Assistant** | Separate API + local Ollama model, behind the same JWT | Keeps the bank API untouched and the feature removable; no customer data is sent to an external AI service. |
+| Area | Decision | Rationale | Responsible |
+|---|---|---|---|
+| **Deployment Scope** | Docker-based local solution; no cloud deployment | Limited time for the project, and cloud deployment was not a customer requirement. | Whole team |
+| **Platform Independence** | The whole stack runs in Docker containers, so it works on every team member's computer regardless of operating system | Reduces the risk of compatibility problems during the demo and when the customer or the jury test the platform. | Whole team |
+| **Calculation Accuracy** | Tax and interest calculations are simplified, not fully realistic | Demonstrating working functionality was judged more important than exact financial correctness. | Whole team |
+| **Feature Prioritization** | Excluded from the MVP: registration of new bank customers, support for multiple account types, an admin mode, and adding new FAQ questions (including admin handling of questions) | These features were judged not to raise the quality of the platform for the demo; the time went into the core v2 deliverables and tests instead. | Whole team |
+| **Ledger & Concurrency** | Immutable Ledger (`SUM(SignedAmount)`) + `Serializable` isolation | Structurally prevents balance corruption. Deposits are append-only inserts; withdrawals/transfers detect concurrent overdraft attempts via PostgreSQL serialization. | Backend |
+| **Audit Trail** | Shared Scoped `BankContext` + `AuditSafetyNetMiddleware` | Staging `AuditEntry` in the caller's unit of work guarantees atomic commits with the business operation. The middleware catches any state-changing endpoint missing an explicit audit call. | Backend |
+| **PDF Engine Integration** | Native C/C++ library (`Nordiska.PdfEngine.Native`) consumed via P/Invoke | Offloads batch PDF rendering and PKCS#12 (`.pfx`) signing from .NET to a single C ABI entry point (`pdf_engine_generate_and_sign`) with per-report error callbacks. | Native (C/C++) + Backend |
+| **Authentication** | In-memory JWT + `HttpOnly` Refresh Token + `BCrypt` | Mitigates XSS token theft (no JWT in `localStorage`) and eliminates v1's vulnerable MD5 hashes and 1-year sessions. | Backend + Frontend |
+| **BankID** | `IBankIdService` with mock (default) and real v6 implementation over mTLS | The whole team, CI and tests work without certificates or a BankID app, while the real flow uses the exact same frontend and token path. The QR secret and client certificate never reach the browser. | Backend + Frontend |
+| **AI Assistant** | Separate API + local Ollama model, behind the same JWT | Keeps the bank API untouched and the feature removable; no customer data is sent to an external AI service. | Backend + Frontend |
  
 ---
 
@@ -302,6 +319,19 @@ All automated test suites across Backend, Frontend, and Native pass.
   - Dynamic FAQ admin input UI, senior citizen usability testing ("let grandma test the app"), and AI chatbot were deprioritized to ensure all core v2 deliverables and tests reached production quality on time. The AI assistant exists as an **optional add-on** (`dockerV2.ps1`, skip with `-SkipAssistant`) and is not part of the MVP.
 
 ---
+
+### Demo Fallback
+
+- Video fallback - Recorded a video showcasing the most vital user flows, going through all major features. In case critical malfunctions are encountered during or right before the demo.
+
+### Specialist Feedforward
+The specialists gave three main points of feedforward. We weighed each against the time left and the customer value for the demo:
+ 
+| Feedforward | Outcome | How we processed it |
+|---|---|---|
+| **Visualize interest income in two ways:** interest earned so far, and interest expected by year-end | Implemented | Added a backend calculation and UI views for both **interest earned year-to-date** and **projected year-end interest**. Direct customer value at a small scope, so it was prioritized. |
+| **Extend the FAQ so new questions can be added to the database** | Deprioritized | The FAQ is database-backed with keyword search, scoring and category filtering, but adding questions needs an admin role and UI that the platform doesn't have yet (see the [decision log](#architecture-decision-log-adr)). Kept as a next step. |
+| **Let a pensioner test the platform and give feedback on the user experience** | Deprioritized | There wasn't enough time for a proper usability test with real feedback cycles before the demo. Kept as a next step; accessibility and mobile gaps are listed under [Known Limitations](#known-limitations). |
 
 ## Troubleshooting
 
