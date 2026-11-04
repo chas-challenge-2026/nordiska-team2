@@ -130,6 +130,16 @@ namespace NordiskaPortal.Api.Migrations
                             Name = "Erik Johansson",
                             PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                             PersonalId = "19991212-5678"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Address = "",
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "dev@example.com",
+                            Name = "Developer",
+                            PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
+                            PersonalId = "19421231-9240"
                         });
                 });
 
@@ -384,7 +394,7 @@ namespace NordiskaPortal.Api.Migrations
                         new
                         {
                             Id = 9,
-                            Answer = "You can generate and download a bank statement under 'My Reports' by selecting an account and a date range.",
+                            Answer = "You can generate and download a bank statement under 'Documents' by selecting an account and a time interval.",
                             Category = "Reports",
                             FaqEntryId = 9,
                             Keywords = new[] { "bank statement", "transactions", "report", "pdf", "download" },
@@ -401,6 +411,64 @@ namespace NordiskaPortal.Api.Migrations
                             Language = "en",
                             Question = "How do I log in?"
                         });
+                });
+
+            modelBuilder.Entity("NordiskaPortal.Api.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RefId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId", "CreatedAt");
+
+                    b.HasIndex("RefId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("NordiskaPortal.Api.Models.RefreshToken", b =>
@@ -491,7 +559,7 @@ namespace NordiskaPortal.Api.Migrations
                             AccountType = "Savings",
                             CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
                             CustomerId = 1,
-                            InterestRate = 0.0280m
+                            InterestRate = 0.0350m
                         },
                         new
                         {

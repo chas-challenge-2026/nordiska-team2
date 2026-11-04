@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.Models;
 using NordiskaPortal.Api.Interop;
@@ -9,6 +9,7 @@ namespace NordiskaPortal.Api.Services
     {
         private readonly BankContext _db;
         private readonly TaxReportService _taxReportService;
+        private readonly InterestService _interestService;
         private readonly PdfGeneratorService _pdfGeneratorService;
         private readonly ILogger<TaxReportBackfillService> _logger;
 
@@ -22,11 +23,13 @@ namespace NordiskaPortal.Api.Services
         public TaxReportBackfillService(
             BankContext db,
             TaxReportService taxReportService,
+            InterestService interestService,
             PdfGeneratorService pdfGeneratorService,
             ILogger<TaxReportBackfillService> logger)
         {
             _db = db;
             _taxReportService = taxReportService;
+            _interestService = interestService;
             _pdfGeneratorService = pdfGeneratorService;
             _logger = logger;
         }
@@ -42,7 +45,7 @@ namespace NordiskaPortal.Api.Services
                     continue;
                 }
 
-                await _taxReportService.ApplyYearEndInterestAsync(accountId, year);
+                await _interestService.ApplyYearEndInterestAsync(accountId, year);
 
                 var reportData = await _taxReportService.BuildReportAsync(accountId, year);
                 if (reportData == null)

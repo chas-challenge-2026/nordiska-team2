@@ -3,6 +3,8 @@ import { useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../../client";
 import { useAccounts } from "../../hooks/useAccounts";
+import { useInterest } from "../../hooks/useInterest";
+import { TrendingUp, CalendarDays } from "lucide-react";
 import SelectOptions from "../../components/ui/Select";
 import type { OptionType } from "../../components/ui/Select";
 import Card from "../../components/cards/Card";
@@ -43,7 +45,27 @@ export default function TransactionPage() {
   const [description, setDescription] = useState("");
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isDeleteGoalModalOpen, setIsDeleteGoalModalOpen] = useState(false);
-  const [isGoalMenuOpen, setIsGoalMenuOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState<"goal" | "account" | null>(null)
+
+  // Stänger öppen dropdown vid klick utanför den (eller Esc).
+  // Klick inuti en [data-dropdown] hanteras av knapparnas egna onClick.
+  useEffect(() => {
+    if (!openMenu) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target as Element).closest("[data-dropdown]")) setOpenMenu(null);
+    }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenMenu(null);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [openMenu]);
   const [mode, setMode] = useState<"deposit" | "withdraw">("deposit");
   const { data: goals } = useSavingsGoals();
   const { t } = useTranslation();
@@ -51,7 +73,6 @@ export default function TransactionPage() {
 
 const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
 const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountOptions: OptionType[] = accounts?.map((account) => ({
@@ -63,6 +84,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
   const selectedOption = accountOptions.find((o) => o.value === String(selectedAccountId)) ?? null;
 
   const selectedAccount = accounts?.find((a) => a.id === selectedAccountId);
+  const { data: interest, isLoading: interestLoading, isError: interestError } = useInterest(selectedAccountId);
   const accountGoals = goals?.filter((goal) => goal.accountId === selectedAccountId) ?? [];
   const goalOptions: OptionType[] = accountGoals.map((goal) => ({
     value: String(goal.id),
@@ -121,6 +143,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals"]})
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setAmount("");
       setDescription("");
     },
@@ -138,6 +161,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedAccountId] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setAmount("");
       setDescription("");
     },
@@ -202,15 +226,15 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
             />
           </div>
           <div>
-            <div className="relative">
+            <div className="relative" data-dropdown>
               {/*========== Hantera sparmål ==========*/}
               <Button 
                   label={t("accountsPage.manageGoals")}
                   className="w-full rounded-none sm:rounded-card"
                   variant="dropDown"
-                  onClick={() => setIsGoalMenuOpen((open) => !open)}
+                  onClick={() => setOpenMenu((menu) => (menu === "goal" ? null : "goal"))}
                 ><span>▼</span> </Button>
-                {isGoalMenuOpen && (
+                {openMenu === "goal" && (
                   <ul className="absolute z-10 w-full right-0 mt-0.5
                                   rounded-default border border-border bg-card 
                                   shadow-sm text-small"
@@ -218,7 +242,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                setIsGoalMenuOpen(false)
+                                setOpenMenu(null)
                                 setIsGoalModalOpen(true)
                               }}
                       >
@@ -228,7 +252,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     <li>
                       <button className="w-full text-left hover:bg-background px-2 py-2"
                               onClick={() => {
-                                  setIsGoalMenuOpen(false);
+                                  setOpenMenu(null);
                                   setIsDeleteGoalModalOpen(true);
                               }}
                       >
@@ -240,14 +264,14 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
             </div>
         </div>
           {/*========== Hantera Konto ==========*/}
-          <div className="relative">
+          <div className="relative" data-dropdown>
             <Button 
               label={t("accountsPage.manageAccount")}
               className="w-full rounded-none sm:rounded-card"
               variant="dropDown"
-              onClick={() => setIsAccountMenuOpen((open) => !open)}
+              onClick={() => setOpenMenu((menu) => (menu === "account" ? null : "account"))}
             ><span>▼</span> </Button>
-            {isAccountMenuOpen && (
+            {openMenu === "account" && (
               <ul className="absolute z-10 w-full right-0 mt-0.5
                               md:rounded-default border border-border bg-card 
                               shadow-sm text-small"
@@ -255,7 +279,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                            setIsAccountMenuOpen(false)
+                            setOpenMenu(null)
                             setIsCreateAccountModalOpen(true)
                           }}
                   >
@@ -265,7 +289,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                 <li>
                   <button className="w-full text-left hover:bg-background px-2 py-2"
                           onClick={() => {
-                              setIsAccountMenuOpen(false);
+                              setOpenMenu(null);
                               setIsDeleteAccountModalOpen(true);
                           }}
                   >
@@ -280,13 +304,13 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
 
         {/* ========== Hantera sparmål ========== */}
       <div className="hidden md:flex md:flex-row gap-2">
-      <div className="relative">
+      <div className="relative" data-dropdown>
          <Button
             label={t("accountsPage.manageGoals")}
             variant="dropDown"
-            onClick={() => setIsGoalMenuOpen((open) => !open)}
+            onClick={() => setOpenMenu((menu) => (menu === "goal" ? null : "goal"))}
           ><span>▼</span> </Button>
-          {isGoalMenuOpen && (
+          {openMenu === "goal" && (
             <ul className="absolute z-10 w-full mt-0.5
                             rounded-default border border-border bg-card
                             shadow-sm text-small"
@@ -294,7 +318,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                          setIsGoalMenuOpen(false)
+                          setOpenMenu(null)
                           setIsGoalModalOpen(true)
                         }}
                 >
@@ -304,7 +328,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                            setIsGoalMenuOpen(false);
+                            setOpenMenu(null);
                             setIsDeleteGoalModalOpen(true);
                         }}
                 >
@@ -317,13 +341,13 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     
     {/* ========== Hantera konto ========== */}
 
-      <div className="relative">
+      <div className="relative" data-dropdown>
          <Button
             label={t("accountsPage.manageAccount")}
             variant="dropDown"
-            onClick={() => setIsAccountMenuOpen((open) => !open)}
+            onClick={() => setOpenMenu((menu) => (menu === "account" ? null : "account"))}
           ><span>▼</span> </Button>
-          {isAccountMenuOpen && (
+          {openMenu === "account" && (
             <ul className="absolute z-10 w-full mt-0.5
                             rounded-default border border-border bg-card
                             shadow-sm text-small"
@@ -331,7 +355,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                          setIsAccountMenuOpen(false)
+                          setOpenMenu(null)
                           setIsCreateAccountModalOpen(true)
                         }}
                 >
@@ -341,7 +365,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
               <li>
                 <button className="w-full text-left hover:bg-background px-2 py-2"
                         onClick={() => {
-                            setIsAccountMenuOpen(false);
+                            setOpenMenu(null);
                             setIsDeleteAccountModalOpen(true);
                         }}
                 >
@@ -357,18 +381,58 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     {/* ============ UNDRE RADEN: de tre saldokorten ============ */}
     <div className="flex md:gap-3 flex-col md:flex-row">
       <Card 
-        title={selectedAccount?.name ?? t("common.account")}
-        subtitle={t("accountsPage.balance")} 
+        headerContent={
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold text-medium">
+              {selectedAccount ? t(selectedAccount.name) : t("common.account")}
+            </h2>
+            {selectedAccount?.interest !== undefined && (
+              <span className="rounded-full bg-success/15 px-3 py-1 text-small font-semibold text-success whitespace-nowrap">
+                {t("accountsPage.interestRateBadge", { rate: selectedAccount.interest.toLocaleString(locale) })}
+              </span>
+            )}
+          </div>
+        }
         headerVariant="secondary"
-        headerClassName="min-h-25"
         >
           <div>
             <p className="mt-2 text-small text-muted">{t("accountCard.availableBalance")}</p>
             {selectedAccount?.balance !== undefined &&
               <p className="mt-2 text-balance font-bold text-brand">
-                
+
                 {amountFormatter.format(selectedAccount.balance)}
               </p>}
+            {interestLoading && (
+              <p className="mt-4 border-t border-border-light py-3 text-small text-muted">
+                {t("accountsPage.loadingInterest")}
+              </p>
+            )}
+            {interestError && (
+              <p role="alert" className="mt-4 border-t border-border-light py-3 text-small text-cancel">
+                {t("accountsPage.interestError")}
+              </p>
+            )}
+            {interest && (
+              <ul className="mt-4 divide-y divide-border-light border-t border-border-light text-small">
+                <li className="flex items-center gap-2 py-3">
+                  <TrendingUp className="h-4 w-4 text-success" aria-hidden="true" />
+                  <span className="text-muted">{t("accountsPage.interestEarned")}</span>
+                  <span className="ml-auto font-bold text-success whitespace-nowrap">
+                    {interest.earnedToDate > 0 ? "+" : ""}
+                    {amountFormatter.format(interest.earnedToDate)}
+                  </span>
+                </li>
+                <li className="flex items-center gap-2 py-3">
+                  <CalendarDays className="h-4 w-4 text-muted" aria-hidden="true" />
+                  <span className="text-muted">
+                    {t("accountsPage.interestProjected", { year: interest.year })}
+                  </span>
+                  <span className="ml-auto font-bold text-foreground whitespace-nowrap">
+                    {amountFormatter.format(interest.projectedAtYearEnd)}
+                  </span>
+                </li>
+              </ul>
+            )}
           </div>
       </Card>
       <Card 
@@ -383,11 +447,9 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
             ) : ( 
               <h2 className="font-semibold text-medium">{accountGoal?.name ?? t("common.savingsGoal")}</h2>
             )}
-              <p className="text-small opacity-85">{t("common.savingsGoal")}</p>
           </>
         }
         headerVariant="secondary"
-        headerClassName="min-h-25"
         >
           <div>
             {accountGoal ? ( 
@@ -413,9 +475,7 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
       </Card>
       <Card 
         title={t("accountsPage.latestActivity")}
-        subtitle={t("accountsPage.latestActivitySubtitle")}
         headerVariant="secondary"
-        headerClassName="min-h-25"
         >
           <div>
             {history && history.length > 0 
@@ -465,17 +525,6 @@ const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
                     ? t("accountsPage.afterDeposit", { amount: amountFormatter.format(previewDepositBalance) })
                     : t("accountsPage.afterWithdraw", { amount: amountFormatter.format(previewWithdrawBalance) }) }
                 </p>
-              <div className="flex gap-3 mt-2">
-                {[100, 500, 1000].map((present) => (
-                  <Button 
-                    key={present}
-                    label={t("accountsPage.presetAmount", { amount: present })}
-                    variant="primary"
-                    onClick={() => setAmount(String(present))} 
-                    />
-                ))}
-              </div>
-
 
               <Button
                 variant="secondary"

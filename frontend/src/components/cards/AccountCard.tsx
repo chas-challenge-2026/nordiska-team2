@@ -25,7 +25,7 @@ export default function AccountCard({
             title={name}
             subtitle={accountNumber}
             headerVariant="primary"
-            className="hover:-translate-y-2 transition duration-150"
+            className="h-full hover:-translate-y-2 transition duration-150"
             to={to}
         >
             <p className="text-small text-muted">

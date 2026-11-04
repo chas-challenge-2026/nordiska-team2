@@ -2,6 +2,8 @@ import { useSettings } from '../../hooks/useSettings'
 import type { Theme } from '../../app/Context/SettingsContext'
 import { useTranslation } from 'react-i18next'
 import PageHeader from '../../components/ui/Pageheader'
+import AuditHistoryCard from '../../components/cards/AuditHistoryCard'
+import NotificationsCard from '../../components/cards/NotificationsCard'
 
 // label är nycklar i språkfilerna
 const themeOptions = [
@@ -121,6 +123,8 @@ export default function SettingsPage() {
             </section>
 
             <p className="text-small text-muted">{t("settings.savedNote")}</p>
+            <NotificationsCard />
+            <AuditHistoryCard />
         </div>
     )
 }

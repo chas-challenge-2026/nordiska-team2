@@ -20,7 +20,7 @@ export default function AccountOverview({ accounts, onCreateAccount }: AccountOv
                                 {accounts.map((account) => (
                                     <AccountCard
                                         key={account.id}
-                                        name={account.name}
+                                        name={t(account.name)}
                                         accountNumber={account.accountNumber}
                                         balance={account.balance}
                                         interest={account.interest}
@@ -28,7 +28,7 @@ export default function AccountOverview({ accounts, onCreateAccount }: AccountOv
                                     />
                                 ))}
                                 {Array.from({ length: placeholderCount }).map((_, i) => (
-                                    <div key={`placeholder-${i}`} onClick={onCreateAccount} className="cursor-pointer">
+                                    <div key={`placeholder-${i}`} onClick={onCreateAccount} className="h-full cursor-pointer">
                                         <AccountCard
                                             name={t("dashboard.createAccountCard.title")}
                                             accountNumber={t("dashboard.createAccountCard.subtitle")}

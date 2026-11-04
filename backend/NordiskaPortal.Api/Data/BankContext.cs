@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NordiskaPortal.Api.Models;
 
 namespace NordiskaPortal.Api.Data;
@@ -19,6 +19,7 @@ public class BankContext : DbContext
     public DbSet<SavingsGoal> SavingsGoals { get; set; }
     public DbSet<AuditEntry> AuditEntries { get; set; }
     public DbSet<FaqEntryTranslation> FaqEntryTranslations { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,6 +56,16 @@ public class BankContext : DbContext
                 Email = "erik@example.com",
                 PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
                 CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new Customer
+            {
+                Id = 3,
+                Name = "Developer",
+                PersonalId = "19421231-9240",
+                Address = "",
+                Email = "dev@example.com",
+                PasswordHash = "$2b$12$hg6bJTmUyy.QTahIR9LWf.6vdXcGceKXaMd0r4mOeVbyvAAeX8vEO",
+                CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
             }
         );
 
@@ -73,7 +84,7 @@ public class BankContext : DbContext
                 Id = 2,
                 CustomerId = 1,
                 AccountNumber = "NKM-10002",
-                InterestRate = 0.0280m,
+                InterestRate = 0.0350m,
                 AccountType = "Savings",
                 CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, DateTimeKind.Utc)
             },
@@ -385,5 +396,9 @@ public class BankContext : DbContext
 
         // Audit Entry
         modelBuilder.Entity<AuditEntry>().HasIndex(a => new { a.CustomerId, a.Timestamp });
+
+        // Notification
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.RefId, n.Type }).IsUnique();
+        modelBuilder.Entity<Notification>().HasIndex(n => new { n.CustomerId, n.CreatedAt });
     }
 }

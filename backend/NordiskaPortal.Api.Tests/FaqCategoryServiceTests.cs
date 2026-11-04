@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using NordiskaPortal.Api.Controllers;
 using NordiskaPortal.Api.Data;
 using NordiskaPortal.Api.DTOs;
@@ -11,6 +15,10 @@ namespace NordiskaPortal.Api.Tests.Services
 {
     public class FaqCategoryServiceTests
     {
+        public FaqCategoryServiceTests()
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("sv");
+        }
         private static BankContext CreateContext(string dbName)
         {
             var options = new DbContextOptionsBuilder<BankContext>()
@@ -20,10 +28,18 @@ namespace NordiskaPortal.Api.Tests.Services
             return new BankContext(options);
         }
 
+        private static FaqCategoryService CreateCategoryService(BankContext db) =>
+            new FaqCategoryService(new FaqTranslationService(db));
+
         private static FaqController CreateController(BankContext db)
         {
-            var faqService = new FaqService(db);
-            var categoryService = new FaqCategoryService(db);
+            var translations = new FaqTranslationService(db);
+            var options = Options.Create(new LocalizationOptions { ResourcesPath = "Resources" });
+            var factory = new ResourceManagerStringLocalizerFactory(options, NullLoggerFactory.Instance);
+            var localizer = new StringLocalizer<SharedResource>(factory);
+
+            var faqService = new FaqService(translations, localizer);
+            var categoryService = new FaqCategoryService(translations);
 
             return new FaqController(faqService, categoryService);
         }
@@ -51,7 +67,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedSmallSetAsync(db);
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var categories = await service.GetCategoriesAsync();
 
@@ -80,7 +96,7 @@ namespace NordiskaPortal.Api.Tests.Services
             );
             await db.SaveChangesAsync();
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var categories = await service.GetCategoriesAsync();
             var ids = categories.Select(c => c.Id).ToList();
@@ -101,7 +117,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedSmallSetAsync(db);
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var entries = await service.GetEntriesByCategoryAsync("konto-inlogg");
 
@@ -120,7 +136,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedSmallSetAsync(db);
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var entries = await service.GetEntriesByCategoryAsync("does-not-exist");
 
@@ -137,7 +153,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedSmallSetAsync(db);
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var entries = await service.GetEntriesByCategoryAsync("  RANTA ");
 
@@ -155,7 +171,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             await SeedSmallSetAsync(db);
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var popular = await service.GetPopularAsync();
 
@@ -173,7 +189,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             db.Database.EnsureCreated();
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var categories = await service.GetCategoriesAsync();
             var counts = categories.ToDictionary(c => c.Id, c => c.QuestionCount);
@@ -181,7 +197,7 @@ namespace NordiskaPortal.Api.Tests.Services
             Assert.Equal(4, categories.Count);
             Assert.Equal(4, counts["ranta"]);
             Assert.Equal(3, counts["insattning-uttag"]);
-            Assert.Equal(2, counts["skatt-rapporter"]);
+            Assert.Equal(2, counts["rapporter"]);
             Assert.Equal(1, counts["konto-inlogg"]);
         }
 
@@ -195,7 +211,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             db.Database.EnsureCreated();
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var categories = await service.GetCategoriesAsync();
 
@@ -217,7 +233,7 @@ namespace NordiskaPortal.Api.Tests.Services
 
             db.Database.EnsureCreated();
 
-            var service = new FaqCategoryService(db);
+            var service = CreateCategoryService(db);
 
             var popular = await service.GetPopularAsync();
 

@@ -11,6 +11,7 @@ type SelectProps = {
     options: OptionType[];
     className?: string;
     placeholder?: string;
+    formatOptionLabel?: (option: OptionType, meta: { context: "menu" | "value" }) => React.ReactNode;
 }
 
 export default function SelectOptions({
@@ -19,6 +20,7 @@ export default function SelectOptions({
     options,
     className="",
     placeholder,
+    formatOptionLabel,
 }: SelectProps){
 
     return(
@@ -30,6 +32,7 @@ export default function SelectOptions({
                 placeholder={placeholder}
                 unstyled
                 menuPosition="fixed"
+                formatOptionLabel={formatOptionLabel}
                 classNames={{
                     control: () => `border border-border rounded-card p-1 pl-2 bg-card text-brand-text  ${className}`,
                     menu: () => "border border-border rounded-default bg-card text-foreground mt-0.5 z-50 text-small",

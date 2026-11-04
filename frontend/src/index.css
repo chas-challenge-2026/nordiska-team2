@@ -15,9 +15,9 @@
   --color-border: #C6C6C6;
   --color-toggle: #dddddd;
   --color-border-light: #C6C6C6;
-  --color-success: #5cb85c;
-  --color-success-border: #4cae4c;
-  --color-cancel: #CB4F4F;
+  --color-success: #3f8a62;
+  --color-success-border: #367654;
+  --color-cancel: #b35a5a;
 
   /* Border radius */
   --radius-default: 4px;
@@ -72,6 +72,9 @@
     --color-border-light: #2a2f36;
     --color-brand-text: #7fb3d5;
     --color-sidebar: #171a1f;
+    --color-success: #6fb58c; /* ljusare så att grön/röd text syns mot mörk bakgrund */
+    --color-success-border: #5fa57c;
+    --color-cancel: #d27a7a;
 
     /* Säkerhetsnät: Tailwinds grå färger "vänds" så att de funkar på mörk bakgrund */
     --color-gray-200: #333a42; /* kantlinjer */
@@ -91,6 +94,9 @@
     --color-border-light: #eeeeee;
     --color-brand-text: #1a5276;
     --color-sidebar: #1a5276;
+    --color-success: #3f8a62;
+    --color-success-border: #367654;
+    --color-cancel: #b35a5a;
   }
 }
 

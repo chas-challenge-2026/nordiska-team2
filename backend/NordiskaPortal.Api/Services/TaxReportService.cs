@@ -143,8 +143,10 @@ namespace NordiskaPortal.Api.Services
             {
                 TransactionType.Deposit => transaction.Amount,
                 TransactionType.Interest => transaction.Amount,
+                TransactionType.TransferIn => transaction.Amount,
                 TransactionType.Withdrawal => -transaction.Amount,
                 TransactionType.Tax => -transaction.Amount,
+                TransactionType.TransferOut => -transaction.Amount,
                 _ => 0m
             };
         }
@@ -174,43 +176,6 @@ namespace NordiskaPortal.Api.Services
                 TransactionType.Tax => "Skatt",
                 _ => transaction.Type.ToString()
             };
-        }
-
-        public async Task ApplyYearEndInterestAsync(int accountId, int year)
-        {
-            bool alreadyApplied = await _db.Transactions.AnyAsync(t =>
-                t.AccountId == accountId &&
-                t.Type == TransactionType.Interest &&
-                t.TransactionDate.Year == year);
-
-            if (alreadyApplied)
-                return;
-
-            var account = await _db.SavingsAccounts.FindAsync(accountId);
-            if (account == null)
-                return;
-
-            var yearStart = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            decimal startingBalance = await GetBalanceAsOfAsync(accountId, yearStart);
-
-            decimal interest = Math.Round(startingBalance * account.InterestRate, 2);
-            if (interest <= 0m)
-                return;
-
-            var interestDate = new DateTime(year, 12, 31, 0, 0, 0, DateTimeKind.Utc);
-
-            _db.Transactions.Add(new Transaction
-            {
-                AccountId = accountId,
-                Type = TransactionType.Interest,
-                Description = $"Årsränta {year} ({account.InterestRate:P2})",
-                Amount = interest,
-                TransactionDate = interestDate,
-                PostingDate = Transaction.CalculatePostingDate(interestDate),
-                Status = TransactionStatus.Posted
-            });
-
-            await _db.SaveChangesAsync();
         }
     }
 }

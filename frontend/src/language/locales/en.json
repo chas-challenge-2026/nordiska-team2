@@ -56,6 +56,27 @@
         "bankIdOtherDevice": "BankID on another device",
         "bankIdWaiting": "Waiting for BankID...",
         "cancel": "Cancel",
+        "bankId": {
+            "scanInstruction": "Open the BankID app on your phone and scan the QR code.",
+            "secondsLeft_one": "{{count}} second left",
+            "secondsLeft_other": "{{count}} seconds left",
+            "qrAlt": "BankID QR code. Click to show full screen.",
+            "closeFullscreen": "Close",
+            "openApp": "Open the BankID app",
+            "errors": {
+                "startFailed": "Time ran out before the QR code was scanned. Try again.",
+                "expired": "The login took too long. Try again.",
+                "userCancel": "The login was cancelled in the BankID app.",
+                "certificate": "Your BankID is not valid. Contact your bank.",
+                "notACustomer": "There is no customer linked to this BankID.",
+                "generic": "Something went wrong with BankID. Try again."
+            },
+            "mock": {
+                "title": "Test mode: simulate the phone",
+                "approve": "Approve in the \"BankID app\"",
+                "approveFailed": "Could not approve. Has the time run out?"
+            }
+        },
         "errors": {
             "missingFields": "Please enter both email and password",
             "invalidCredentials": "Wrong email or password, please try again!",
@@ -64,7 +85,8 @@
             "bankIdTimeout": "The BankID login took too long. Please try again.",
             "bankIdFailed": "The BankID login failed.",
             "bankIdError": "Something went wrong during the BankID login."
-        }
+        },
+        "newCustomerText": "Do you want to become a new customer? We'll soon be opening up registration for new customers."
     },
     "bankIdPin": {
         "enterPin": "Enter PIN",
@@ -116,6 +138,9 @@
         "interest": "Interest rate {{rate}}%",
         "warmingUp": "We're warming things up for a new account here"
     },
+    "accountTypes": {
+        "savings": "Personal account" 
+    },
     "accountsPage": {
         "loadingAccounts": "Loading accounts...",
         "noAccounts": "No accounts found.",
@@ -145,6 +170,11 @@
         "chartTitle": "Overview",
         "history": "History",
         "loadingHistory": "Loading history...",
+        "interestEarned": "Interest so far this year",
+        "loadingInterest": "Loading interest...",
+        "interestError": "Interest couldn't be shown right now. Please try again later.",
+        "interestProjected": "Estimated annual interest {{year}}",
+        "interestRateBadge": "Interest rate {{rate}}% ",
         "chart": {
             "noData": "No transactions to show",
             "startBalance": "Opening balance",
@@ -249,6 +279,18 @@
         "download": "Download",
         "none": "No reports were found for this account."
     },
+
+    "bankStatements": {
+    "title": "Bank statements",
+    "download": "Download",
+    "notFound": "There is no bank statement for that month.",
+    "error": "Could not download the bank statement",
+    "year": "Year",
+    "month": "Month",
+    "all": "All",
+    "empty": "No bank statements for the selected year and month."
+    },
+    
     "settings": {
         "title": "Settings",
         "subtitle": "Customize how the portal looks and which language it is shown in.",
@@ -260,7 +302,46 @@
         "selected": "Selected",
         "language": "Language",
         "languageHint": "Choose which language the portal is shown in.",
-        "savedNote": "✓ Your choices are saved automatically on this device."
+        "savedNote": "✓ Your choices are saved automatically on this device.",
+        "notifications": {
+            "title": "Notifications",
+            "hint": "Confirmations of your recent transactions.",
+            "empty": "No notifications yet",
+            "error": "Could not retrieve notifications",
+            "status": {
+                "sent": "Sent",
+                "pending": "Pending",
+                "failed": "Failed"
+            },
+            "types": {
+                "deposit_confirmation": "Deposit confirmation",
+                "withdrawal_confirmation": "Withdrawal confirmation",
+                "transfer_confirmation": "Transfer confirmation"
+            },
+            "messages": {
+                "deposit_confirmation": "Deposit of {{amount}} to account {{account}} has been completed.",
+                "withdrawal_confirmation": "Withdrawal of {{amount}} from account {{account}} has been completed.",
+                "transfer_confirmation": "Transfer of {{amount}} from account {{fromAccount}} to account {{toAccount}} has been completed."
+            }
+        },
+        "history": {
+            "title": "History",
+            "empty": "No activity yet",
+            "error": "Could not retrieve history",
+            "actions": {
+                "login": "Login",
+                "login_failed": "Failed login",
+                "bankid_login": "Login with BankID",
+                "logout": "Logout",
+                "deposit": "Deposit",
+                "withdrawal": "Withdraw",
+                "transfer": "Transfer",
+                "account_opened": "Account Open",
+                "account_closed": "Account Closed",
+                "savings_goal_created": "Savings Goal Created",
+                "savings_goal_deleted": "Savings Goal Deleted"
+            }
+        }
     },
     "transactionType": {
         "Deposit": "Deposit", "Withdrawal": "Withdrawal", "Interest": "Interest", "Tax": "Tax",

@@ -29,6 +29,7 @@ export default function Alert({
                         p-5 rounded-card border border-border 
                         ${className}`}
                 >
+                {title && <p className="font-semibold text-xsmall opacity-90 mb-0.5">{title}</p>}
                 <p className="text-bold">{message}</p>
             
             </div>    
