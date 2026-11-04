@@ -65,7 +65,7 @@ Team 2's full refactoring of the Nordiska Sparbanken self-service portal from th
 | **Project Lead** | Linus Ivarsson | Planning, prioritization, coordination between the team and scope decisions. |
 | **Frontend** | Olivia Mach, Emelie Björkman | React SPA: login (e-mail & BankID), dashboard, transfers, statements, savings goals, tax reports, FAQ, settings and i18n. |
 | **Backend** | Ivan Skvortsov,  Adchariya Changtam, Hussein Al-Hasnawy | .NET 8 API: ledger, auth (JWT, refresh tokens, BankID), audit log, rate limiting, migrations, tests, Docker setup. |
-| **Native** | Fredrik Bredberg | C/C++ PDF engine (`Nordiska.PdfEngine.Native`): generation, signing, benchmarks, NuGet packaging. |
+| **Native** | Fredrik Cewers Bredberg | C/C++ PDF engine (`Nordiska.PdfEngine.Native`): generation, signing, testing, benchmarks, NuGet packaging, etc. |
 
 ## Backend Overview (.NET 8 / C#)
 
@@ -304,6 +304,10 @@ Decisions are grouped into **project scope** (what we chose to build) and **arch
   - Mobile responsiveness has minor gaps (dashboard quick-actions could be collapsed into a menu, and the logout button is hidden on small screens).
   - Customers can only open one savings account type, and transaction history renders without pagination.
 - **Native:**
+  - PoDoFo has a memory leak during signing(66 bytes per report). It is in the library, not our code, and is fixed in a newer minor version that is not yet in vcpkg. Upgrading (or writing our own vcpkg port) was deprioritized for the MVP, but it should be done before long-lived processes or very large batches run in production.
+  - `pdf_engine_generate_and_sign` is synchronous with no cancellation and renders reports one at a time, so it must be run from a background job.
+  - Signing is basic PKCS#12: long-term validation or HSM integration. A real certificate and secure password handling are needed in production.
+  - Only Windows x64 and Linux x64 are built. Valgrind and ASan run on Linux only, and the layout is fixed (A4 portrait, two report types).
   - See [`native/README.md`](native/README.md) and `native/docs/` for native module architecture and details.
 - **AI Assistant:**
   - Runs on CPU with a small local model, so answers can be slow and less accurate than a hosted model.
